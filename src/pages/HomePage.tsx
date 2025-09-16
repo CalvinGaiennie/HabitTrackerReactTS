@@ -2,8 +2,10 @@ import { useEffect, useState} from "react";
 function HomePage() {
   const [message, setMessage] = useState<string>("Loading...");
 
+  const API_BASE = import.meta.env.VITE_API_BASE;
+
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/")
+    fetch(`${API_BASE}/`)
       .then((res) => res.json())
       .then((data) => setMessage(data.message))
       .catch((err) => setMessage("Error: " + err));
