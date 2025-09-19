@@ -11,7 +11,8 @@ function HomePage() {
       .catch((err) => setMessage("Error: " + err));
   }, []);
   return (
-    <div>
+    <div className="container d-flex flex-column align-items-center">
+      <h1>Habit Tracker</h1>
         <h1>{message}</h1>
     </div>
   )
