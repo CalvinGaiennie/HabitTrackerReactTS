@@ -8,17 +8,21 @@ function NavBar() {
                     <NavLink className="nav-link fs-5 text-dark px-3" to="/">
                     Home</NavLink>
                 </li>
+                <li className="nav-item mb-md-0">
+                    <NavLink className="nav-link fs-5 text-dark px-3" to="/Diet">
+                    Diet</NavLink>
+                </li>
                 {/* <li className="nav-item mb-md-0">
                     <NavLink className="nav-link fs-5 text-dark px-3" to="/FinancePage">
                     Finance</NavLink>
                 </li> */}
                 <li className="nav-item mb-md-0">
-                    <NavLink className="nav-link fs-5 text-dark px-3" to="/">
-                    Diet</NavLink>
+                    <NavLink className="nav-link fs-5 text-dark px-3" to="/Workout">
+                    Workout</NavLink>
                 </li>
                 <li className="nav-item mb-md-0">
-                    <NavLink className="nav-link fs-5 text-dark px-3" to="/">
-                    Workout</NavLink>
+                    <NavLink className="nav-link fs-5 text-dark px-3" to="/Account">
+                    Account</NavLink>
                 </li>
             </ul>
         </nav>
