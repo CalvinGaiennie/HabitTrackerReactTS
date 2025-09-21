@@ -23,10 +23,14 @@ export interface Metric {
 }
 
 export interface MetricCreate {
+    user_id: number;
     name: string;
     description?: string;
     data_type: "int" | "boolean" | "text" | "scale" | "decimal";
+    scale_min: number;
+    scale_max: number;
     unit?: string;
+    notes_on: boolean;
 }
 
 export async function getMetrics(): Promise<Metric[]> {
