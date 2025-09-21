@@ -30,11 +30,11 @@ export interface MetricCreate {
 }
 
 export async function getMetrics(): Promise<Metric[]> {
-    return request<Metric[]>("/metrics");
+    return request<Metric[]>("/metrics/");
 }
 
 export async function createMetric(data: MetricCreate): Promise<Metric> {
-    return request<Metric>("/metrics", {
+    return request<Metric>("/metrics/", {
         method: "POST",
         body: JSON.stringify(data),
     })
