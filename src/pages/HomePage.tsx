@@ -1,5 +1,5 @@
 // import { useEffect } from "react";
-import type { MetricCreate } from "../types/Metrics.ts";
+// import type { MetricCreate } from "../types/Metrics.ts";
 // import { createMetric } from "../services/metrics.ts";
 
 function HomePage() {
