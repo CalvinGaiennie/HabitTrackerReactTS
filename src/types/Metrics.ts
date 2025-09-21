@@ -22,8 +22,13 @@ export interface Metric {
   updated_at: string;   // ISO date string
 }
 
-// Create Metric payload (for POST requests)
-export type MetricCreate = Omit<
-  Metric,
-  "id" | "created_at" | "updated_at"
->;
+export interface MetricCreate {
+    user_id: number;
+    name: string;
+    description?: string;
+    data_type: "int" | "boolean" | "text" | "scale" | "decimal";
+    scale_min?: number;
+    scale_max?: number;
+    unit?: string;
+    notes_on: boolean;
+}

@@ -1,84 +1,110 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import type { MetricCreate } from "../types/Metrics.ts";
 import { createMetric } from "../services/metrics.ts";
 
 
 function AccountPage() {
- const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    data_type: "text",
-    scale_min: 1,
-    scale_max: 5,
-    unit: "",
-    notes_on: false,
- })
-
- const form: MetricCreate = {
+ const [formData, setFormData] = useState<MetricCreate>({
     user_id: 1,
     name: "",
     description: "",
     data_type: "text",
-    scale_min: 1,
-    scale_max: 5,
     unit: "",
     notes_on: false,
-  };
+ })
+
+  const isSubmitting = useRef(false);
 
   const handleChange =(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData(prev => {
+      if (name === "scale_min" || name ==="scale_max"){
+        return {...prev, [name]: Number(value) };
+      }
+      if (name === "notes_on") {
+        return { ...prev, notes_on: value === "true"};
+      }
+      if (name === "data_type") {
+        return { ...prev, data_type: value as MetricCreate["data_type"]};
+      }
+      return { ...prev, [name]: value}
+    });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Submitting metric...");
+    if (!formData.name.trim()) {
+      alert("Name is required");
+      isSubmitting.current = false;
+      return;
+    }
+
+    if (formData.data_type === "scale" && formData.scale_min! >= formData.scale_max!) {
+      alert("Scale min must be less than scale max");
+      isSubmitting.current = false;
+      return;
+    }
+    try {
+      await createMetric(formData);
+      alert("Metric created successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong creating the metric.");
+    } finally {
+      isSubmitting.current = false;
+    }
   }
 
   return (
     <div className="container d-flex flex-column align-items-center">
       <h1>Account</h1>
       <h2>Add Metric</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="w-100" style={{ maxWidth: "500px"}}>
         <div>
           <label>Name:</label>
-          <input name="name"
-          value={formData.name}
-          onChange={handleChange}
-          className="form-control"
+          <input 
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            className="form-control"
           />
         </div>
         <div>
           <label>Description:</label>
-          <input name="description"
-          value={formData.description}
-          onChange={handleChange}
-          className="form-control"
+          <input 
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            className="form-control"
           />
         </div>
         <div>
           <label>Type:</label>
-          <select>
-            <option value="int">Number</option>
-            <option value="boolean">True/False</option>
-            <option value="text">Text</option>
-            <option value="scale">Scale (ex. 1-5)</option>
+          <select 
+            name="data_type"
+            value={formData.data_type}
+            onChange={handleChange}
+            className="form-select"
+            >
+              <option value="int">Number</option>
+              <option value="boolean">True/False</option>
+              <option value="text">Text</option>
+              <option value="scale">Scale (ex. 1-5)</option>
           </select>
         </div>
         { formData.data_type === "scale" && (
           <div>
             <label>Scale</label>
-            <input name="name"
-              value={formData.name}
+            <input name="scale_min"
+              value={formData.scale_min ?? ""}
               onChange={handleChange}
               className="form-control"
             />
-            <input name="name"
-              value={formData.name}
+            <input name="scale_max"
+              value={formData.scale_max ?? ""}
               onChange={handleChange}
               className="form-control"
             />
@@ -95,7 +121,12 @@ function AccountPage() {
         </div>
         <div>
           <label>Do you want to include a notes section?</label>
-          <select>
+          <select 
+            name="notes_on"
+            value={String(formData.notes_on)}
+            onChange={handleChange}
+            className="form-select"
+          >
             <option value="true">Yes</option>
             <option value="false">No</option>
           </select>
@@ -108,24 +139,3 @@ function AccountPage() {
 }
 
 export default AccountPage
-
-export interface Metric {
-  id: number;
-  user_id: number;
-  category?: string;
-  subcategory?: string;
-  name: string;
-  description?: string;
-  parent_id?: number;
-  is_required: boolean;
-  data_type: "int" | "boolean" | "text" | "scale" | "decimal";
-  unit?: string;
-  scale_min?: number;
-  scale_max?: number;
-  modifier_label?: string;
-  modifier_value?: string;
-  notes_on: boolean;
-  active: boolean;
-  created_at: string;   // ISO date string
-  updated_at: string;   // ISO date string
-}
