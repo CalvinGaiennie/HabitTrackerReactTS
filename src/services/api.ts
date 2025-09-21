@@ -1,20 +1,19 @@
-const BASE_URL = "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
-export async function createLinkToken() {
-    const res = await fetch(`${BASE_URL}/create_link_token`);
-    return res.json();
-}
-
-export async function exchangePublicToken(public_token: string) {
-    const res = await fetch(`${BASE_URL}/exchange_token`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json"},
-        body: JSON.stringify({ public_token}),
+async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    const res = await fetch(`${API_BASE}${endpoint}`, {
+        headers: {
+            "Content-Type": "application/json",
+        },
+        ...options,
     });
-    return res.json();
+
+    if (!res.ok) {
+        const errorBody = await res.text();
+        throw new Error(`API error ${res.status}: ${errorBody}`);
+    }
+
+    return res.json() as Promise<T>;
 }
 
-export async function getTransactions() {
-    const res = await fetch(`${BASE_URL}/transactions`);
-    return res.json();
-}
+export default request;
