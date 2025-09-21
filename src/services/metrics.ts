@@ -1,6 +1,7 @@
 import request from "./api";
 import type { Metric, MetricCreate} from "../types/Metrics.ts"
-export async function getMetrics(): Promise<Metric[]> {
+
+export async function getActiveMetrics(): Promise<Metric[]> {
     return request<Metric[]>("/metrics/");
 }
 

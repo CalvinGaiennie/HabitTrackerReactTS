@@ -13,20 +13,13 @@ export interface DailyLog {
     created_at: string;   
 }
 
-export async function GetDailyLogs(): Promise<DailyLog[]> {
-    return request<DailyLog[]>("/daily_logs");
-}
-
-export async function createDailyLog(data: DailyLog): Promise<DailyLog> 
-{
+export async function saveDailyLog(log: Omit<DailyLog, "id" | "created_at">) {
     return request<DailyLog>("/daily_logs", {
         method: "POST",
-        body: JSON.stringify(data)
-    }) 
+        body: JSON.stringify(log),
+    });
 }
 
-export async function deactivateDailyLog(id: number): Promise<{ message: string}> {
-    return request<{ message: string}>(`/daily_logs/${id}`, {
-        method: "DELETE",
-    });
+export async function getDailyLogs(log_date: string ) {
+    return request(`/daily_logs?log_date=${encodeURIComponent(log_date)}`);
 }

@@ -13,7 +13,8 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
         throw new Error(`API error ${res.status}: ${errorBody}`);
     }
 
-    return res.json() as Promise<T>;
+    const data: T = await res.json();
+    return data;
 }
 
 export default request;
