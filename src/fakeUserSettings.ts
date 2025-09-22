@@ -6,7 +6,9 @@ export const fakeUserSettings = {
     },
     {
       section: "To Do",
-      metricIds: [5, 6, 7, 8, 10],
+      metricIds: [5, 6, 7, 8],
     },
   ],
 };
+
+//I Need to set up a catch for not added active ones at the end under others or something
