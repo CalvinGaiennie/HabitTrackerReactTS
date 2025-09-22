@@ -6,7 +6,7 @@ export const fakeUserSettings = {
     },
     {
       section: "To Do",
-      metricIds: [5, 6, 7, 8],
+      metricIds: [5, 6, 7, 8, 11],
     },
   ],
 };
