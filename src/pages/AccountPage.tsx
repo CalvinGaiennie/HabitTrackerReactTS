@@ -133,6 +133,7 @@ function AccountPage() {
         </div>
         <button type="submit">Save Metric</button>
       </form>
+      {/* have a list here that allows you to delete and or update */}
     </div>
   )
 

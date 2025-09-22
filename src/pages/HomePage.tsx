@@ -2,15 +2,32 @@ import { useState, useEffect } from "react";
 import { getActiveMetrics } from "../services/metrics";
 import { saveDailyLog, getDailyLogs } from "../services/dailyLogs";
 import type { Metric } from "../types/Metrics.ts"
+import type { DailyLog } from "../types/dailyLogs.ts"
 import { useDebounce } from "../hooks/useDebounce";
 
 function HomePage() {
   const [activeMetrics, setActiveMetrics] = useState<Metric[]>([]);
   const [logValues, setLogValues] = useState<Record<number, string>>({});
-  const [logs, setLogs] = useState<Metric[]>([])
+  const [logs, setLogs] = useState<DailyLog[]>([])
 
   const debouncedValues = useDebounce(logValues, 1000);
   const today = new Date().toISOString().split("T")[0];
+
+  function renderLogValue(log: DailyLog) {
+  if (log.value_text !== null && log.value_text !== undefined) {
+    return log.value_text;
+  }
+  if (log.value_boolean !== null && log.value_boolean !== undefined) {
+    return log.value_boolean ? "Yes" : "No";
+  }
+  if (log.value_decimal !== null && log.value_decimal !== undefined) {
+    return log.value_decimal.toString();
+  }
+  if (log.value_int !== null && log.value_int !== undefined) {
+    return log.value_int.toString();
+  }
+  return "—"; // fallback if none set
+}
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -110,7 +127,32 @@ function HomePage() {
       </div>
       <div>
         <h2>Daily Logs</h2>
-        <pre>{JSON.stringify(logs, null, 2)}</pre>
+        {Object.entries(
+          logs.reduce((groups, log) => { 
+            const day = new Date(log.log_date).toISOString().split("T")[0];
+            if (!groups[day]) groups[day] = [];
+            groups[day].push(log);
+            return groups;
+          }, {} as Record<string, typeof logs>)
+        ).map(([day, dayLogs]) => (
+          <div key={day} className="mb-4">
+            <h3>
+              {
+                new Date(day).toLocaleDateString("en-US", {
+                weekday: "long",   // Sunday
+                month: "short",    // Sep
+                day: "numeric",    // 21
+                year: "2-digit",   // 25
+              })}
+          </h3>
+            {dayLogs.map((log) => (
+              <div key={log.id} className="pl-4 mb-3">
+                <h4>{log.metric.name}</h4>
+                {renderLogValue(log)}
+                </div>
+            ))}
+            </div>
+        ))}
       </div>
     </div>
   );

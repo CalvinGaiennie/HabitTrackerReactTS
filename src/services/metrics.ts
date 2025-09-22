@@ -12,8 +12,8 @@ export async function createMetric(data: MetricCreate): Promise<Metric> {
     })
 }
 
-export async function deactivateMetric(id: number): Promise<{ message: string}> {
-    return request<{ message: string}>(`/metrics/${id}`, {
-        method: "DELETE",
-    });
+export async function updateMetricActive(metricId: number, active: boolean): Promise<Metric> {
+    return request<Metric>(`/metrics/${metricId}/activate?active=${active}`, {
+        method: "PATCH",
+    })
 }

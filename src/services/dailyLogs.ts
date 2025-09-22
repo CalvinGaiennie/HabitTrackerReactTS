@@ -1,17 +1,7 @@
 import request from "./api";
 
-export interface DailyLog {
-    id: number;
-    user_id: number;
-    metric_id: number;
-    log_date: Date;
-    value_int: number;
-    value_boolean: boolean;
-    value_text: string;
-    value_decimal: string;
-    note: string;
-    created_at: string;   
-}
+import type { DailyLog } from "../types/dailyLogs.ts"
+
 
 export async function saveDailyLog(log: Omit<DailyLog, "id" | "created_at">) {
     return request<DailyLog>("/daily_logs", {
@@ -20,6 +10,8 @@ export async function saveDailyLog(log: Omit<DailyLog, "id" | "created_at">) {
     });
 }
 
-export async function getDailyLogs(log_date: string ) {
-    return request(`/daily_logs?log_date=${encodeURIComponent(log_date)}`);
+export async function getDailyLogs(log_date: string ): Promise<DailyLog[]> {
+    const res = await fetch(`/api/daily_logs?log_date=${log_date}`);
+    if (!res.ok) throw new Error("Failed to fetch logs");
+    return (await res.json()) as DailyLog[];
 }
