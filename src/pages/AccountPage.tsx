@@ -2,7 +2,6 @@ import { useState, useRef } from "react";
 import type { MetricCreate } from "../types/Metrics.ts";
 import { createMetric } from "../services/metrics.ts";
 
-
 function AccountPage() {
  const [formData, setFormData] = useState<MetricCreate>({
     user_id: 1,
@@ -89,7 +88,7 @@ function AccountPage() {
             onChange={handleChange}
             className="form-select"
             >
-              <option value="int">Number</option>
+              <option value="decimal">Number</option>
               <option value="boolean">True/False</option>
               <option value="text">Text</option>
               <option value="scale">Scale (ex. 1-5)</option>
