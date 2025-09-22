@@ -10,6 +10,9 @@ export async function saveDailyLog(log: Omit<DailyLog, "id" | "created_at">) {
     });
 }
 
-export async function getDailyLogs(log_date: string ): Promise<DailyLog[]> {
-    return request<DailyLog[]>(`/daily_logs?log_date=${log_date}`);
+export async function getDailyLogs(log_date?: string): Promise<DailyLog[]> {
+  const url = log_date
+    ? `/daily_logs?log_date=${log_date}`
+    : `/daily_logs`;
+  return request<DailyLog[]>(url);
 }

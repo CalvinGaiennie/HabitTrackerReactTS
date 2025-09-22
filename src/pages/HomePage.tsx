@@ -33,8 +33,7 @@ function HomePage() {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const today = new Date().toISOString().split("T")[0];
-        const data = await getDailyLogs(today);
+        const data = await getDailyLogs();
         setLogs(data);
       } catch (err) {
         console.error("Failed to fetch daily logs:", err);
@@ -88,7 +87,10 @@ function HomePage() {
 
         try {
           await saveDailyLog(payload);
-          console.log(`Saved log for metric ${metric.name}:`, rawValue);
+          
+          const data = await getDailyLogs();
+          setLogs(data);
+          console.log(`Saved log for metric ${metric.name}:`, rawValue)
         } catch (err) {
           console.error(`Failed to save log for metric ${metricId}:`, err);
           }
@@ -120,6 +122,7 @@ function HomePage() {
                         [metric.id]: e.target.checked.toString(),
                       })
                     }
+                    className={"m-2"}
                   />
                 ) : (
                   <input
@@ -144,22 +147,27 @@ function HomePage() {
         <h2>Daily Logs</h2>
         {Object.entries(
           logs.reduce((groups, log) => { 
-            const day = new Date(log.log_date).toISOString().split("T")[0];
+            const day = log.log_date;
             if (!groups[day]) groups[day] = [];
             groups[day].push(log);
             return groups;
-          }, {} as Record<string, typeof logs>)
-        ).map(([day, dayLogs]) => (
+          }, {} as Record<string, DailyLog[]>)
+        ).sort(([a], [b]) => (a < b ? 1 : -1))
+         .map(([day, dayLogs]) => (
+
           <div key={day} className="mb-4">
             <h3>
-              {
-                new Date(day).toLocaleDateString("en-US", {
-                weekday: "long",   // Sunday
-                month: "short",    // Sep
-                day: "numeric",    // 21
-                year: "2-digit",   // 25
-              })}
-          </h3>
+              {(() => {
+                const [y, m, d] = day.split("-").map(Number);
+                const displayDate = new Date(y, m - 1, d); // local midnight, no UTC shift
+                return displayDate.toLocaleDateString("en-US", {
+                  weekday: "long",
+                  month: "short",
+                  day: "numeric",
+                  year: "2-digit",
+                });
+              })()}
+            </h3>
             {dayLogs.map((log) => (
               <div key={log.id} className="pl-4 mb-3">
                 <h4>{log.metric.name}</h4>
