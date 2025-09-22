@@ -4,6 +4,7 @@ import { saveDailyLog, getDailyLogs } from "../services/dailyLogs";
 import type { Metric } from "../types/Metrics.ts"
 import type { DailyLog } from "../types/dailyLogs.ts"
 import { useDebounce } from "../hooks/useDebounce";
+import { fakeUserSettings } from "../fakeUserSettings";
 
 function HomePage() {
   const [activeMetrics, setActiveMetrics] = useState<Metric[]>([]);
@@ -99,32 +100,46 @@ function HomePage() {
   return (
     <div className="container d-flex flex-column align-items-center">
       <h1>Habit Tracker</h1>
-      <div>
-        {activeMetrics.map((metric) => (
-        <div key={metric.id} className="mb-3">
-          <label className="form-label">{metric.name}</label>
-          {metric.data_type === "boolean" ? (
-            <input
-              type="checkbox"
-              checked={logValues[metric.id] === "true"}
-              onChange={(e) =>
-                setLogValues({ ...logValues, [metric.id]: e.target.checked.toString() })
-              }
-          />
-          ) : (
+      {fakeUserSettings.homePageLayout.map((section) => (
+        <div key={section.section} className="mb-4 w-100">
+          <h2>{section.section}</h2>
+          {section.metricIds.map((metricId) => {
+            const metric = activeMetrics.find((m) => m.id === metricId);
+            if (!metric) return null;
 
-            <input
-            className="form-control"
-            value={logValues[metric.id] ?? ""}
-            onChange={(e) =>
-              setLogValues({ ...logValues, [metric.id]: e.target.value})
-            }
-            placeholder={`Enter ${metric.data_type}`}
-            />
-          )}
+            return (
+              <div key={metric.id} className="mb-3">
+                <label className="form-label">{metric.name}</label>
+                {metric.data_type === "boolean" ? (
+                  <input
+                    type="checkbox"
+                    checked={logValues[metric.id] === "true"}
+                    onChange={(e) =>
+                      setLogValues({
+                        ...logValues,
+                        [metric.id]: e.target.checked.toString(),
+                      })
+                    }
+                  />
+                ) : (
+                  <input
+                    className="form-control"
+                    value={logValues[metric.id] ?? ""}
+                    onChange={(e) =>
+                      setLogValues({
+                        ...logValues,
+                        [metric.id]: e.target.value,
+                      })
+                    }
+                    placeholder={`Enter ${metric.data_type}`}
+                  />
+
+                )}
+              </div>
+            )
+          })}
           </div>
-        ))}
-      </div>
+      ))}
       <div>
         <h2>Daily Logs</h2>
         {Object.entries(
