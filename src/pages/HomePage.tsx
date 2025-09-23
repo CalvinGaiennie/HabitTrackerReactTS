@@ -36,7 +36,7 @@ function HomePage() {
   async function handleSave(log: Omit<DailyLog, "id" | "created_at">) {
     try {
       await saveDailyLog(log);
-      const freshLogs = await getDailyLogs(today);
+      const freshLogs = await getDailyLogs();
       setLogs(freshLogs);
     } catch (err) {
       console.error("Error saving log:", err)
@@ -56,7 +56,6 @@ function HomePage() {
   }, []);
 
   //fetch todays logs to prefill inputs
-//NEED TO SEPERATE ENDPOINTS
 useEffect(() => {
   const fetchTodayLogs = async () => {
     try {
