@@ -139,8 +139,10 @@ useEffect(() => {
           <h2>{section.section}</h2>
           {section.metricIds.map((metricId) => {
             const metric = activeMetrics.find((m) => m.id === metricId);
+            if (!metric) return null;
+
             const hasLogToday = logs.some(
-            (log) => log.metric_id === metric.id && log.log_date === today);
+            (log) => log.metric_id === metric.id && new Date(log.log_date).toISOString().split("T")[0] === today);
 
             if (!metric) return null;
 
@@ -211,7 +213,7 @@ useEffect(() => {
         <h2>Daily Logs</h2>
         {Object.entries(
           logs.reduce((groups, log) => { 
-            const day = log.log_date;
+            const day = new Date(log.log_date).toISOString().split("T")[0];
             if (!groups[day]) groups[day] = [];
             groups[day].push(log);
             return groups;
