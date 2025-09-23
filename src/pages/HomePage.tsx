@@ -221,7 +221,7 @@ useEffect(() => {
          .map(([day, dayLogs]) => (
 
           <div key={day} className="mb-4">
-            <h3>
+            <h3 style={{ textDecoration: "underline" }}>
               {(() => {
                 const [y, m, d] = day.split("-").map(Number);
                 const displayDate = new Date(y, m - 1, d); // local midnight, no UTC shift
