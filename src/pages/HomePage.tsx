@@ -6,6 +6,7 @@ import type { DailyLog } from "../types/dailyLogs.ts";
 import { useDebounce } from "../hooks/useDebounce";
 import { fakeUserSettings } from "../fakeUserSettings";
 import LogViewer from "../components/LogViewer.tsx";
+import SpecificAdd from "../components/SpecificAdd.tsx";
 
 function HomePage() {
   const [activeMetrics, setActiveMetrics] = useState<Metric[]>([]);
@@ -80,6 +81,35 @@ function HomePage() {
 
     fetchMetrics();
   }, []);
+
+  // Listen for log saved events from SpecificAdd component
+  useEffect(() => {
+    const handleLogSaved = async () => {
+      try {
+        const data = await getDailyLogs();
+        setLogs(data);
+
+        // Also refresh today's logs for the form
+        const todayData = await getDailyLogs(today);
+        const values: Record<number, string> = {};
+        todayData.forEach((log) => {
+          if (log.value_text !== null) values[log.metric_id] = log.value_text;
+          if (log.value_int !== null)
+            values[log.metric_id] = log.value_int.toString();
+          if (log.value_decimal !== null)
+            values[log.metric_id] = log.value_decimal.toString();
+          if (log.value_boolean !== null)
+            values[log.metric_id] = log.value_boolean ? "true" : "false";
+        });
+        setLogValues(values);
+      } catch (err) {
+        console.error("Failed to refresh logs:", err);
+      }
+    };
+
+    window.addEventListener("logSaved", handleLogSaved);
+    return () => window.removeEventListener("logSaved", handleLogSaved);
+  }, [today]);
 
   useEffect(() => {
     const saveLogs = async () => {
@@ -209,6 +239,7 @@ function HomePage() {
         </div>
       ))}
       <div>
+        <SpecificAdd />
         <LogViewer logs={logs} />
       </div>
     </div>

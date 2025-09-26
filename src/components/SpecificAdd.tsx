@@ -71,17 +71,16 @@ function SpecificAdd() {
 
     const inputValue = logValues[selectedMetric.id.toString()];
 
-    // Initialize all values with defaults, then only set the one that matches the data type
-    const logData: Omit<DailyLog, "id" | "created_at"> = {
+    // Initialize with null values for all fields, then only set the one that matches the data type
+    const logData: any = {
       metric_id: selectedMetricId,
       user_id: 1, // Replace with actual user ID
       log_date: new Date(selectedDate),
-      value_int: 0,
-      value_boolean: false,
-      value_text: "",
-      value_decimal: "0",
+      value_int: null,
+      value_boolean: null,
+      value_text: null,
+      value_decimal: null,
       note: "",
-      metric: { id: selectedMetricId, name: selectedMetric.name },
     };
 
     // Only set the value for the specific data type that matches the metric
@@ -104,6 +103,9 @@ function SpecificAdd() {
     setLogValues({});
     setSelectedMetricId(undefined);
     setSelectedDate(new Date().toISOString().split("T")[0]);
+
+    // Trigger a custom event to notify the HomePage to refresh
+    window.dispatchEvent(new CustomEvent("logSaved"));
   };
 
   function renderLogInput() {
