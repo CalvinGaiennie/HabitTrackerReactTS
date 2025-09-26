@@ -1,7 +1,10 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { MetricCreate } from "../types/Metrics.ts";
+import type { DailyLog } from "../types/dailyLogs.ts";
 import { createMetric } from "../services/metrics.ts";
+import { getDailyLogs } from "../services/dailyLogs.ts";
 import SpecificAdd from "../components/SpecificAdd.tsx";
+import LogViewer from "../components/LogViewer.tsx";
 
 function AccountPage() {
   const [formData, setFormData] = useState<MetricCreate>({
@@ -12,8 +15,38 @@ function AccountPage() {
     unit: "",
     notes_on: false,
   });
+  const [logs, setLogs] = useState<DailyLog[]>([]);
 
   const isSubmitting = useRef(false);
+
+  // Fetch logs on component mount
+  useEffect(() => {
+    const fetchLogs = async () => {
+      try {
+        const data = await getDailyLogs();
+        setLogs(data);
+      } catch (err) {
+        console.error("Failed to fetch daily logs:", err);
+      }
+    };
+
+    fetchLogs();
+  }, []);
+
+  // Listen for log saved events from SpecificAdd component
+  useEffect(() => {
+    const handleLogSaved = async () => {
+      try {
+        const data = await getDailyLogs();
+        setLogs(data);
+      } catch (err) {
+        console.error("Failed to refresh logs:", err);
+      }
+    };
+
+    window.addEventListener("logSaved", handleLogSaved);
+    return () => window.removeEventListener("logSaved", handleLogSaved);
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -144,6 +177,7 @@ function AccountPage() {
       </form>
       {/* have a list here that allows you to delete and or update Metrics*/}
       <SpecificAdd />
+      <LogViewer logs={logs} />
     </div>
   );
 }
