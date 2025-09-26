@@ -70,37 +70,35 @@ function SpecificAdd() {
     if (!selectedMetric || !selectedMetricId || !selectedDate) return;
 
     const inputValue = logValues[selectedMetric.id.toString()];
-    let valueBoolean: boolean = false;
-    let valueText: string = "";
-    let valueDecimal: string = "0";
-    let valueInt: number = 0;
 
-    switch (selectedMetric.data_type) {
-      case "boolean":
-        valueBoolean = inputValue === "true";
-        break;
-      case "text":
-        valueText = inputValue || "";
-        break;
-      case "decimal":
-        valueDecimal = inputValue || "0";
-        break;
-      case "int":
-        valueInt = inputValue ? parseInt(inputValue, 10) : 0;
-        break;
-    }
-
+    // Initialize all values as null/empty, then only set the one that matches the data type
     const logData: Omit<DailyLog, "id" | "created_at"> = {
       metric_id: selectedMetricId,
       user_id: 1, // Replace with actual user ID
       log_date: new Date(selectedDate),
-      value_int: valueInt,
-      value_boolean: valueBoolean,
-      value_text: valueText,
-      value_decimal: valueDecimal,
+      value_int: null,
+      value_boolean: null,
+      value_text: null,
+      value_decimal: null,
       note: "",
       metric: { id: selectedMetricId, name: selectedMetric.name },
     };
+
+    // Only set the value for the specific data type that matches the metric
+    switch (selectedMetric.data_type) {
+      case "boolean":
+        logData.value_boolean = inputValue === "true";
+        break;
+      case "text":
+        logData.value_text = inputValue || "";
+        break;
+      case "decimal":
+        logData.value_decimal = inputValue || "0";
+        break;
+      case "int":
+        logData.value_int = inputValue ? parseInt(inputValue, 10) : 0;
+        break;
+    }
 
     await saveDailyLog(logData);
     setLogValues({});

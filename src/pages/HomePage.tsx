@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { getActiveMetrics } from "../services/metrics";
 import { saveDailyLog, getDailyLogs } from "../services/dailyLogs";
-import type { Metric } from "../types/Metrics.ts"
-import type { DailyLog } from "../types/dailyLogs.ts"
+import type { Metric } from "../types/Metrics.ts";
+import type { DailyLog } from "../types/dailyLogs.ts";
 import { useDebounce } from "../hooks/useDebounce";
 import { fakeUserSettings } from "../fakeUserSettings";
 import LogViewer from "../components/LogViewer.tsx";
@@ -11,22 +11,23 @@ import SpecificAdd from "../components/SpecificAdd.tsx";
 function HomePage() {
   const [activeMetrics, setActiveMetrics] = useState<Metric[]>([]);
   const [logValues, setLogValues] = useState<Record<number, string>>({});
-  const [logs, setLogs] = useState<DailyLog[]>([])
+  const [logs, setLogs] = useState<DailyLog[]>([]);
 
   const debouncedValues = useDebounce(logValues, 1000);
   const now = new Date();
   const today = [
     now.getFullYear(),
-    String(now.getMonth() + 1).padStart(2, "0"), String(now.getDate()).padStart(2, "0"),
-  ].join("-")
-  
+    String(now.getMonth() + 1).padStart(2, "0"),
+    String(now.getDate()).padStart(2, "0"),
+  ].join("-");
+
   async function handleSave(log: Omit<DailyLog, "id" | "created_at">) {
     try {
       await saveDailyLog(log);
       const freshLogs = await getDailyLogs();
       setLogs(freshLogs);
     } catch (err) {
-      console.error("Error saving log:", err)
+      console.error("Error saving log:", err);
     }
   }
   useEffect(() => {
@@ -43,54 +44,55 @@ function HomePage() {
   }, []);
 
   //fetch todays logs to prefill inputs
-useEffect(() => {
-  const fetchTodayLogs = async () => {
-    try {
-      const data = await getDailyLogs(today); 
-      const values: Record<number, string> = {};
+  useEffect(() => {
+    const fetchTodayLogs = async () => {
+      try {
+        const data = await getDailyLogs(today);
+        const values: Record<number, string> = {};
 
-      data.forEach(log => {
-        if (log.value_text !== null) values[log.metric_id] = log.value_text;
-        if (log.value_int !== null) values[log.metric_id] = log.value_int.toString();
-        if (log.value_decimal !== null) values[log.metric_id] = log.value_decimal.toString();
-        if (log.value_boolean !== null) values[log.metric_id] = log.value_boolean ? "true" : "false";
-      });
+        data.forEach((log) => {
+          if (log.value_text !== null) values[log.metric_id] = log.value_text;
+          if (log.value_int !== null)
+            values[log.metric_id] = log.value_int.toString();
+          if (log.value_decimal !== null)
+            values[log.metric_id] = log.value_decimal.toString();
+          if (log.value_boolean !== null)
+            values[log.metric_id] = log.value_boolean ? "true" : "false";
+        });
 
-      setLogValues(values);  
-    } catch (err) {
-      console.error("Failed to fetch today's logs:", err);
-    }
-  };
+        setLogValues(values);
+      } catch (err) {
+        console.error("Failed to fetch today's logs:", err);
+      }
+    };
 
-  fetchTodayLogs();
-}, [today]);
-
-
+    fetchTodayLogs();
+  }, [today]);
 
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
         const metrics = await getActiveMetrics();
-        setActiveMetrics(metrics); 
+        setActiveMetrics(metrics);
       } catch (err) {
-        console.error("Failed to fetch active metrics:", err)
+        console.error("Failed to fetch active metrics:", err);
       }
     };
 
-  fetchMetrics();
-  }, [])
+    fetchMetrics();
+  }, []);
 
   useEffect(() => {
     const saveLogs = async () => {
       for (const [metricId, rawValue] of Object.entries(debouncedValues)) {
         const metric = activeMetrics.find((m) => m.id === Number(metricId));
-        if ( !metric || rawValue === "") continue;
+        if (!metric || rawValue === "") continue;
 
         const payload: any = {
           user_id: 1,
           metric_id: Number(metricId),
           log_date: today,
-        }
+        };
 
         switch (metric.data_type) {
           case "int":
@@ -102,16 +104,15 @@ useEffect(() => {
             break;
           case "boolean":
             payload.value_boolean =
-             rawValue.toLowerCase() === "true" || rawValue === "1";
-             break;
+              rawValue.toLowerCase() === "true" || rawValue === "1";
+            break;
           case "text":
             payload.value_text = rawValue;
             break;
         }
 
-
         await handleSave(payload);
-        console.log(`Saved log for metric ${metric.name}:`, rawValue)
+        console.log(`Saved log for metric ${metric.name}:`, rawValue);
       }
     };
     saveLogs();
@@ -128,13 +129,21 @@ useEffect(() => {
             if (!metric) return null;
 
             const hasLogToday = logs.some(
-            (log) => log.metric_id === metric.id && new Date(log.log_date).toISOString().split("T")[0] === today);
+              (log) =>
+                log.metric_id === metric.id &&
+                new Date(log.log_date).toISOString().split("T")[0] === today
+            );
 
             if (!metric) return null;
 
             return (
               <div key={metric.id} className="mb-3">
-                <label className="form-label">{metric.name} {hasLogToday && <span className="badge bg-success ms-2">Today</span>}</label>
+                <label className="form-label">
+                  {metric.name}{" "}
+                  {hasLogToday && (
+                    <span className="badge bg-success ms-2">Today</span>
+                  )}
+                </label>
                 {metric.data_type === "boolean" ? (
                   <div>
                     <div className="form-check form-check-inline">
@@ -152,30 +161,36 @@ useEffect(() => {
                         }
                         className={"form-check-input"}
                       />
-                      <label htmlFor={`metric-${metric.id}-yes`} className="form-check-label">
+                      <label
+                        htmlFor={`metric-${metric.id}-yes`}
+                        className="form-check-label"
+                      >
                         Yes
                       </label>
                     </div>
-                     <div className="form-check form-check-inline">
-                        <input
-                          type="radio"
-                          id={`metric-${metric.id}-no`}
-                          name={`metric-${metric.id}`}   // group radios per metric
-                          value="false"
-                          checked={logValues[metric.id] === "false"}
-                          onChange={(e) =>
-                            setLogValues({
-                              ...logValues,
-                              [metric.id]: e.target.value,
-                            })
-                          }
-                          className="form-check-input"
-                        />
-                        <label htmlFor={`metric-${metric.id}-no`} className="form-check-label">
-                          No
-                        </label>
-                      </div>
+                    <div className="form-check form-check-inline">
+                      <input
+                        type="radio"
+                        id={`metric-${metric.id}-no`}
+                        name={`metric-${metric.id}`} // group radios per metric
+                        value="false"
+                        checked={logValues[metric.id] === "false"}
+                        onChange={(e) =>
+                          setLogValues({
+                            ...logValues,
+                            [metric.id]: e.target.value,
+                          })
+                        }
+                        className="form-check-input"
+                      />
+                      <label
+                        htmlFor={`metric-${metric.id}-no`}
+                        className="form-check-label"
+                      >
+                        No
+                      </label>
                     </div>
+                  </div>
                 ) : (
                   <input
                     className="form-control"
@@ -188,16 +203,14 @@ useEffect(() => {
                     }
                     placeholder={`Enter ${metric.data_type}`}
                   />
-
                 )}
               </div>
-            )
+            );
           })}
-          </div>
+        </div>
       ))}
       <div>
-        <SpecificAdd /> 
-        <LogViewer logs={logs}/>
+        <LogViewer logs={logs} />
       </div>
     </div>
   );
