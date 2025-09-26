@@ -5,6 +5,8 @@ import type { Metric } from "../types/Metrics.ts"
 import type { DailyLog } from "../types/dailyLogs.ts"
 import { useDebounce } from "../hooks/useDebounce";
 import { fakeUserSettings } from "../fakeUserSettings";
+import LogViewer from "../components/LogViewer.tsx";
+import SpecificAdd from "../components/SpecificAdd.tsx";
 
 function HomePage() {
   const [activeMetrics, setActiveMetrics] = useState<Metric[]>([]);
@@ -17,22 +19,7 @@ function HomePage() {
     now.getFullYear(),
     String(now.getMonth() + 1).padStart(2, "0"), String(now.getDate()).padStart(2, "0"),
   ].join("-")
-  function renderLogValue(log: DailyLog) {
-  if (log.value_text !== null && log.value_text !== undefined) {
-    return log.value_text;
-  }
-  if (log.value_boolean !== null && log.value_boolean !== undefined) {
-    return log.value_boolean ? "Yes" : "No";
-  }
-  if (log.value_decimal !== null && log.value_decimal !== undefined) {
-    return log.value_decimal.toString();
-  }
-  if (log.value_int !== null && log.value_int !== undefined) {
-    return log.value_int.toString();
-  }
-  return "—"; // fallback if none set
-}
-
+  
   async function handleSave(log: Omit<DailyLog, "id" | "created_at">) {
     try {
       await saveDailyLog(log);
@@ -209,38 +196,8 @@ useEffect(() => {
           </div>
       ))}
       <div>
-        <h2>Daily Logs</h2>
-        {Object.entries(
-          logs.reduce((groups, log) => { 
-            const day = new Date(log.log_date).toISOString().split("T")[0];
-            if (!groups[day]) groups[day] = [];
-            groups[day].push(log);
-            return groups;
-          }, {} as Record<string, DailyLog[]>)
-        ).sort(([a], [b]) => (a < b ? 1 : -1))
-         .map(([day, dayLogs]) => (
-
-          <div key={day} className="mb-4">
-            <h3 style={{ textDecoration: "underline" }}>
-              {(() => {
-                const [y, m, d] = day.split("-").map(Number);
-                const displayDate = new Date(y, m - 1, d); // local midnight, no UTC shift
-                return displayDate.toLocaleDateString("en-US", {
-                  weekday: "long",
-                  month: "short",
-                  day: "numeric",
-                  year: "2-digit",
-                });
-              })()}
-            </h3>
-            {dayLogs.map((log) => (
-              <div key={log.id} className="pl-4 mb-3">
-                <h4>{log.metric.name}</h4>
-                {renderLogValue(log)}
-                </div>
-            ))}
-            </div>
-        ))}
+        <SpecificAdd /> 
+        <LogViewer logs={logs}/>
       </div>
     </div>
   );

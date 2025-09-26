@@ -6,6 +6,7 @@ import WorkoutPage from "./pages/WorkoutPage";
 import AccountPage from "./pages/AccountPage";
 import NavBar from "./components/NavBar.tsx"
 import './App.css'
+import AnalyticsPage from "./pages/AnalyticsPage.tsx";
 function App() {
 
   return (
@@ -17,6 +18,7 @@ function App() {
       {/* <Route path="/Finance" element={<FinancePage/>} /> */}
       <Route path="/Workout" element={<WorkoutPage/>} />
       <Route path="/Account" element={<AccountPage/>} />
+      <Route path="/Analytics" element={<AnalyticsPage/>} />
      </Routes>
     </BrowserRouter>
   )

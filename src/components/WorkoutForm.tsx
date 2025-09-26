@@ -4,6 +4,7 @@ import type { Workout } from "../types/workouts.ts"
 
 function WorkoutForm() {
     const [workouts, setWorkouts] = useState<Workout[]>([]);
+    // const [sets, setSets] = useState<Set[]>
     // const [sets, setSets] = useState<Sets[]>([]);
 
     const now = new Date();
