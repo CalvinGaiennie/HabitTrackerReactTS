@@ -5,7 +5,6 @@ import type { Metric } from "../types/Metrics.ts";
 import type { DailyLog } from "../types/dailyLogs.ts";
 import { useDebounce } from "../hooks/useDebounce";
 import { fakeUserSettings } from "../fakeUserSettings";
-import LogViewer from "../components/LogViewer.tsx";
 
 function HomePage() {
   const [activeMetrics, setActiveMetrics] = useState<Metric[]>([]);
