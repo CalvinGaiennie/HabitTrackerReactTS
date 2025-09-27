@@ -4,12 +4,15 @@ import { saveDailyLog, getDailyLogs } from "../services/dailyLogs";
 import type { Metric } from "../types/Metrics.ts";
 import type { DailyLog } from "../types/dailyLogs.ts";
 import { useDebounce } from "../hooks/useDebounce";
-import { fakeUserSettings } from "../fakeUserSettings";
+// import { fakeUserSettings } from "../fakeUserSettings";
+import { getUserSettings } from "../services/users";
+import type { UserSettings } from "../types/users";
 
 function HomePage() {
   const [activeMetrics, setActiveMetrics] = useState<Metric[]>([]);
   const [logValues, setLogValues] = useState<Record<number, string>>({});
   const [logs, setLogs] = useState<DailyLog[]>([]);
+  const [settings, setSettings] = useState<UserSettings>();
 
   const debouncedValues = useDebounce(logValues, 1000);
   const now = new Date();
@@ -28,6 +31,19 @@ function HomePage() {
       console.error("Error saving log:", err);
     }
   }
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const user = await getUserSettings(1);
+        setSettings(user.settings);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchSettings();
+  }, []);
+
   useEffect(() => {
     const fetchLogs = async () => {
       try {
@@ -148,10 +164,10 @@ function HomePage() {
   return (
     <div className="container d-flex flex-column align-items-center">
       <h1>Habit Tracker</h1>
-      {fakeUserSettings.homePageLayout.map((section) => (
+      {settings?.homePageLayout?.map((section: any) => (
         <div key={section.section} className="mb-4 w-100">
           <h2>{section.section}</h2>
-          {section.metricIds.map((metricId) => {
+          {section.metricIds.map((metricId: number) => {
             const metric = activeMetrics.find((m) => m.id === metricId);
             if (!metric) return null;
 

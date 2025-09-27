@@ -23,10 +23,10 @@ function NavBar() {
             Workout
           </NavLink>
         </li>
-        {/* <li className="nav-item mb-md-0">
-                    <NavLink className="nav-link fs-5 text-dark px-3" to="/Analytics">
-                    Analytics</NavLink>
-                </li> */}
+        <li className="nav-item mb-md-0">
+          <NavLink className="nav-link fs-5 text-dark px-3" to="/Analytics">
+          Analytics</NavLink>
+        </li>
         <li className="nav-item mb-md-0">
           <NavLink className="nav-link fs-5 text-dark px-3" to="/Account">
             Account
