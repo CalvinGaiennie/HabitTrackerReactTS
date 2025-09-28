@@ -8,6 +8,7 @@ import fetchSettings from "../hooks/fetchSettings.ts";
 import type { UserSettings } from "../types/users";
 import fetchLogs from "../hooks/fetchLogs.ts";
 
+// IMPLEMENT auto no for empty days on booleans as an option
 function HomePage() {
   const [activeMetrics, setActiveMetrics] = useState<Metric[]>([]);
   const [logValues, setLogValues] = useState<Record<number, string>>({});

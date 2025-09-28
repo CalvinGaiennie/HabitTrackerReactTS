@@ -36,19 +36,40 @@ export default function fetchChartData(
         }))
         .filter((item) => item.metricId === selectedData);
 
-      // Group by value and count occurrences
-      const valueCounts = filteredData.reduce((acc, item) => {
-        const key = item.value.toString();
-        acc[key] = (acc[key] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
+      // Check if this is boolean data (only 0s and 1s)
+      const uniqueValues = [...new Set(filteredData.map((item) => item.value))];
+      const isBooleanData = uniqueValues.every((val) => val === 0 || val === 1);
 
-      const dataItems: DataItem[] = Object.entries(valueCounts).map(
-        ([value, count]) => ({
+      let dataItems: DataItem[];
+
+      if (isBooleanData) {
+        // For boolean data, aggregate into counts
+        const valueCounts = filteredData.reduce((acc, item) => {
+          const key = item.value.toString();
+          acc[key] = (acc[key] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
+
+        dataItems = Object.entries(valueCounts).map(([value, count]) => ({
           name: value === "1" ? "Yes" : "No",
-          value: count,
-        })
-      );
+          value: count as number | string as number,
+          createdAt: "",
+          metricId: 0,
+        }));
+      } else {
+        // For non-boolean data, keep individual data points and sort by date
+        dataItems = filteredData
+          .map((item) => ({
+            name: item.name,
+            value: item.value as number | string as number,
+            createdAt: item.createdAt,
+            metricId: item.metricId,
+          }))
+          .sort(
+            (a, b) =>
+              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+      }
 
       console.log("Filtered data items:", dataItems);
       setData(dataItems);

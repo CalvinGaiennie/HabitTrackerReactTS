@@ -101,7 +101,7 @@ function AnalyticsPage() {
   });
 
   return (
-    <div className="container">
+    <div className="container mb-5">
       <h1 className="text-center mb-4">Analytics Page</h1>
 
       {/* Debug info - remove this in production */}

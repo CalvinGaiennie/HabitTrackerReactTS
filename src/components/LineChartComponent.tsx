@@ -26,6 +26,7 @@ function LineChartComponent({
           tickFormatter={(value) => Math.round(value).toString()}
           tickCount={5}
         />
+        {/* implement better tick distribution later. ex a tick for every int when max - min is <= 12 2s on the even numbers when max - min is <= 24 5s on the numbers when max - min is <= 48 */}
         <Tooltip />
         <Legend />
         <Line
