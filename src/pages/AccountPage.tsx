@@ -2,9 +2,10 @@ import { useState, useRef, useEffect } from "react";
 import type { MetricCreate } from "../types/Metrics.ts";
 import type { DailyLog } from "../types/dailyLogs.ts";
 import { createMetric } from "../services/metrics.ts";
-import { getDailyLogs } from "../services/dailyLogs.ts";
 import SpecificAdd from "../components/SpecificAdd.tsx";
 import LogViewer from "../components/LogViewer.tsx";
+import SettingsEdit from "../components/SettingsEdit.tsx";
+import fetchLogs from "../hooks/fetchLogs.ts";
 
 function AccountPage() {
   const [formData, setFormData] = useState<MetricCreate>({
@@ -21,24 +22,14 @@ function AccountPage() {
 
   // Fetch logs on component mount
   useEffect(() => {
-    const fetchLogs = async () => {
-      try {
-        const data = await getDailyLogs();
-        setLogs(data);
-      } catch (err) {
-        console.error("Failed to fetch daily logs:", err);
-      }
-    };
-
-    fetchLogs();
+    fetchLogs(setLogs);
   }, []);
 
   // Listen for log saved events from SpecificAdd component
   useEffect(() => {
     const handleLogSaved = async () => {
       try {
-        const data = await getDailyLogs();
-        setLogs(data);
+        fetchLogs(setLogs);
       } catch (err) {
         console.error("Failed to refresh logs:", err);
       }
@@ -178,6 +169,7 @@ function AccountPage() {
       {/* have a list here that allows you to delete and or update Metrics*/}
       <SpecificAdd />
       <LogViewer logs={logs} />
+      <SettingsEdit />
     </div>
   );
 }

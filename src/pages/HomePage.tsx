@@ -4,9 +4,9 @@ import { saveDailyLog, getDailyLogs } from "../services/dailyLogs";
 import type { Metric } from "../types/Metrics.ts";
 import type { DailyLog } from "../types/dailyLogs.ts";
 import { useDebounce } from "../hooks/useDebounce";
-// import { fakeUserSettings } from "../fakeUserSettings";
-import { getUserSettings } from "../services/users";
+import fetchSettings from "../hooks/fetchSettings.ts";
 import type { UserSettings } from "../types/users";
+import fetchLogs from "../hooks/fetchLogs.ts";
 
 function HomePage() {
   const [activeMetrics, setActiveMetrics] = useState<Metric[]>([]);
@@ -33,28 +33,11 @@ function HomePage() {
   }
 
   useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const user = await getUserSettings(1);
-        setSettings(user.settings);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchSettings();
+    fetchSettings(setSettings);
   }, []);
 
   useEffect(() => {
-    const fetchLogs = async () => {
-      try {
-        const data = await getDailyLogs();
-        setLogs(data);
-      } catch (err) {
-        console.error("Failed to fetch daily logs:", err);
-      }
-    };
-
-    fetchLogs();
+    fetchLogs(setLogs);
   }, []);
 
   //fetch todays logs to prefill inputs

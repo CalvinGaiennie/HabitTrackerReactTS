@@ -4,24 +4,27 @@ import DietPage from "./pages/DietPage";
 import WorkoutPage from "./pages/WorkoutPage";
 // import FinancePage from "./pages/FinancePage";
 import AccountPage from "./pages/AccountPage";
-import NavBar from "./components/NavBar.tsx"
-import './App.css'
+import NavBar from "./components/NavBar.tsx";
+import "./App.css";
 import AnalyticsPage from "./pages/AnalyticsPage.tsx";
-function App() {
+import { AuthProvider } from "./context";
 
+function App() {
   return (
-    <BrowserRouter>
-    <NavBar/>
-     <Routes>
-      <Route path="/" element={<HomePage/>} />
-      <Route path="/Diet" element={<DietPage/>} />
-      {/* <Route path="/Finance" element={<FinancePage/>} /> */}
-      <Route path="/Workout" element={<WorkoutPage/>} />
-      <Route path="/Account" element={<AccountPage/>} />
-      <Route path="/Analytics" element={<AnalyticsPage/>} />
-     </Routes>
-    </BrowserRouter>
-  )
+    <AuthProvider>
+      <BrowserRouter>
+        <NavBar />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/Diet" element={<DietPage />} />
+          {/* <Route path="/Finance" element={<FinancePage/>} /> */}
+          <Route path="/Workout" element={<WorkoutPage />} />
+          <Route path="/Account" element={<AccountPage />} />
+          <Route path="/Analytics" element={<AnalyticsPage />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;
