@@ -6,7 +6,7 @@ import BubbleChartComponent from "../components/BubbleChartComponent";
 import type { Metric } from "../types/Metrics";
 import fetchMetrics from "../hooks/fetchMetrics";
 import type { DataItem } from "../types/chartData";
-import { useAuth } from "../context";
+// import { useAuth } from "../context"; // Commented out as not currently used
 import fetchChartData from "../hooks/fetchChartData.ts";
 
 // Data for bubble chart (x, y, z coordinates)
@@ -28,11 +28,7 @@ function AnalyticsPage() {
   const [selectedData, setSelectedData] = useState<number>(0);
   const [metrics, setMetrics] = useState<Metric[]>();
   const [data, setData] = useState<DataItem[]>();
-  const { authState } = useAuth();
-
-  const handleChartChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedChart(e.target.value as ChartType);
-  };
+  // const { authState } = useAuth(); // Commented out as not currently used
 
   const handleDataChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedData(Number(e.target.value));
