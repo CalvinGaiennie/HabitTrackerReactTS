@@ -13,7 +13,7 @@ function SettingsEdit() {
     <div className="card p-4 m-5 ">
       <h1>Settings</h1>
       <div className="row">
-        {settings?.homePageLayout.map((section, index) => (
+        {settings?.homePageLayout?.map((section, index) => (
           <div key={index} className="col-12 col-sm-6 col-md-6 col-lg-6 mb-3">
             <div className="card h-100">
               <div className="card-body">
