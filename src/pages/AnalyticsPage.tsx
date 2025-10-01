@@ -8,6 +8,8 @@ import fetchMetrics from "../hooks/fetchMetrics";
 import type { DataItem } from "../types/chartData";
 // import { useAuth } from "../context"; // Commented out as not currently used
 import fetchChartData from "../hooks/fetchChartData.ts";
+import Calendar from "../components/Calendar.tsx";
+import DatePicker from "../components/DatePicker.tsx"
 
 // Data for bubble chart (x, y, z coordinates)
 const bubbleData = [
@@ -29,6 +31,8 @@ function AnalyticsPage() {
   const [metrics, setMetrics] = useState<Metric[]>();
   const [data, setData] = useState<DataItem[]>();
   // const { authState } = useAuth(); // Commented out as not currently used
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
 
   const handleDataChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedData(Number(e.target.value));
@@ -70,10 +74,8 @@ function AnalyticsPage() {
   }, []);
 
   useEffect(() => {
-    if (1) {
       fetchChartData(setData, 1 as number, selectedData);
-    }
-  }, [selectedData, 1]);
+  }, [selectedData, startDate, endDate]);
 
   useEffect(() => {
     const dataTypeofSelectedData = metrics?.find(
@@ -94,61 +96,60 @@ function AnalyticsPage() {
         setSelectedChart("line");
         break;
     }
-  });
+  }, []);
 
   return (
-    <div className="container mb-5">
-      <h1 className="text-center mb-4">Analytics Page</h1>
-
-      {/* Debug info - remove this in production */}
-      <div className="mb-3">
-        <small className="text-muted">
-          Debug: Data: {data?.length || 0} items
-          {1 && ` | User ID: ${1}`}
-        </small>
-      </div>
-
-      {/* Data Selector */}
-      <div className="row justify-content-center mb-4">
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-body">
-              <label htmlFor="chart-select" className="form-label">
-                <strong>Select Data:</strong>
-              </label>
-              <select
-                id="data-select"
-                className="form-select"
-                value={selectedData}
-                onChange={handleDataChange}
-              >
-                <option value={0}>Select a metric...</option>
-                {metrics?.map((metric) => (
-                  <option key={metric.id} value={metric.id}>
-                    {metric.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* Selected Chart */}
-      <div className="row justify-content-center">
-        <div className="col-12">
-          <div className="card">
-            <div className="card-header">
-              <h3 className="text-center mb-0">{getChartTitle()}</h3>
-            </div>
-            <div className="card-body">
-              <div style={{ width: "100%", height: "400px" }}>
-                {renderChart()}
+      <div className="container mb-5">
+        <h1 className="text-center mb-4">Analytics Page</h1>
+        {/* Data Selector */}
+        <div className="row justify-content-center mb-4">
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+              {/* <h3>Select Dates</h3> */}
+                <div className="d-flex gap-5 pb-4">
+                  <DatePicker title="Start Date" setTargetDate={setStartDate} targetDate={startDate} />
+                  <DatePicker title="End Date" setTargetDate={setEndDate} targetDate={endDate} />
+                </div>
+                <div>
+                  <label htmlFor="chart-select" className="form-label">
+                    <strong>Select Data:</strong>
+                  </label>
+                  <select
+                    id="data-select"
+                    className="form-select"
+                    value={selectedData}
+                    onChange={handleDataChange}
+                    >
+                    <option value={0}>Select a metric...</option>
+                    {metrics?.map((metric) => (
+                      <option key={metric.id} value={metric.id}>
+                        {metric.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
           </div>
         </div>
+        {/* Selected Chart */}
+        <div className="row justify-content-center">
+          <div className="col-12">
+            <div className="card">
+              <div className="card-header">
+                <h3 className="text-center mb-0">{getChartTitle()}</h3>
+              </div>
+              <div className="card-body">
+                <div style={{ width: "100%", height: "400px" }}>
+                  {renderChart()}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <Calendar />
       </div>
-    </div>
   );
 }
 

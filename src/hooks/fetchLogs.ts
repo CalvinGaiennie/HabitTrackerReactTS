@@ -7,7 +7,7 @@ export default function fetchLogs(
 ) {
   const fetchLogs = async () => {
     try {
-      const data = await getDailyLogs(undefined, user_id?.toString());
+      const data = await getDailyLogs(undefined, undefined, undefined, user_id?.toString());
       setLogs(data);
     } catch (err) {
       console.error("Failed to fetch daily logs:", err);
