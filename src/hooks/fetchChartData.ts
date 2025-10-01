@@ -8,7 +8,7 @@ export default function fetchChartData(
 ) {
   const fetchChartData = async () => {
     try {
-      const data = await getDailyLogs(undefined, user_id?.toString());
+      const data = await getDailyLogs( user_id?.toString());
       console.log("Raw API data:", data);
       console.log("Selected metric ID:", selectedData);
 

@@ -8,7 +8,7 @@ export async function saveDailyLog(log: Omit<DailyLog, "id" | "created_at">) {
     });
 }
 
-export async function getDailyLogs(start_date?: string, end_date?: string, log_date?: string, user_id?: string): Promise<DailyLog[]> {
+export async function getDailyLogs(user_id?: string, start_date?: string, end_date?: string, log_date?: string): Promise<DailyLog[]> {
     let url = "/daily_logs";
     const params = new URLSearchParams();
     if (start_date) params.append("start_date", start_date);

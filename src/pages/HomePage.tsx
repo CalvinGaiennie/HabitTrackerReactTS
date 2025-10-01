@@ -26,7 +26,7 @@ function HomePage() {
   async function handleSave(log: Omit<DailyLog, "id" | "created_at">) {
     try {
       await saveDailyLog(log);
-      const freshLogs = await getDailyLogs();
+      const freshLogs = await getDailyLogs("1");
       setLogs(freshLogs);
     } catch (err) {
       console.error("Error saving log:", err);
@@ -45,7 +45,7 @@ function HomePage() {
   useEffect(() => {
     const fetchTodayLogs = async () => {
       try {
-        const data = await getDailyLogs(today);
+        const data = await getDailyLogs("1", undefined, undefined, today);
         const values: Record<number, string> = {};
 
         data.forEach((log) => {
@@ -88,7 +88,7 @@ function HomePage() {
         setLogs(data);
 
         // Also refresh today's logs for the form
-        const todayData = await getDailyLogs(today);
+        const todayData = await getDailyLogs("1", undefined, undefined, today);
         const values: Record<number, string> = {};
         todayData.forEach((log) => {
           if (log.value_text !== null) values[log.metric_id] = log.value_text;

@@ -96,7 +96,7 @@ function AnalyticsPage() {
         setSelectedChart("line");
         break;
     }
-  }, []);
+  }, [metrics, selectedData]);
 
   return (
       <div className="container mb-5">
