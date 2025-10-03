@@ -1,0 +1,121 @@
+/* Calendar Component Styles */
+.calendar {
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.calendar-header {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.calendar-grid {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-weekdays {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.calendar-weekday {
+  flex: 1;
+  padding: 1.2rem 0.75rem;
+  font-size: 1.1rem;
+  color: #6c757d;
+  border-right: 1px solid #dee2e6;
+}
+
+.calendar-weekday:last-child {
+  border-right: none;
+}
+
+.calendar-days {
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-week {
+  display: flex;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.calendar-week:last-child {
+  border-bottom: none;
+}
+
+.calendar-day {
+  flex: 1;
+  padding: 0.5rem 0.75rem 1rem 0.75rem;
+  text-align: left;
+  font-size: 1.1rem;
+  border-right: 1px solid #dee2e6;
+  min-height: 8rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  transition: background-color 0.2s ease;
+  position: relative;
+}
+
+.calendar-day:last-child {
+  border-right: none;
+}
+
+/* Current month days */
+.calendar-day-current {
+  color: #212529;
+  background-color: white;
+}
+
+.calendar-day-current:hover {
+  background-color: #f8f9fa;
+}
+
+/* Previous month days */
+.calendar-day-previous {
+  color: #adb5bd;
+  background-color: #f8f9fa;
+}
+
+/* Next month days */
+.calendar-day-next {
+  color: #adb5bd;
+  background-color: #f8f9fa;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .calendar {
+    max-width: 100%;
+  }
+
+  .calendar-day {
+    padding: 0.4rem 0.5rem 0.75rem 0.5rem;
+    min-height: 6rem;
+    font-size: 1rem;
+  }
+
+  .calendar-weekday {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .calendar-day {
+    padding: 0.3rem 0.25rem 0.5rem 0.25rem;
+    min-height: 4.5rem;
+    font-size: 0.9rem;
+  }
+
+  .calendar-weekday {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.8rem;
+  }
+}
