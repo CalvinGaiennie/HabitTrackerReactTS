@@ -182,7 +182,7 @@ function HomePage() {
           value_int: 0,
           value_boolean: false,
           value_text: "",
-          value_decimal: "",
+          value_decimal: null,
           note: "",
           metric: { id: Number(metricId), name: metric.name },
         };
@@ -193,7 +193,7 @@ function HomePage() {
             break;
           case "decimal":
           case "scale":
-            payload.value_decimal = parseFloat(rawValue).toString();
+            payload.value_decimal = parseFloat(rawValue);
             break;
           case "boolean":
             payload.value_boolean =

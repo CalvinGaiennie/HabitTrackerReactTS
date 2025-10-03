@@ -29,7 +29,7 @@ export interface DailyLog {
   value_int: number;
   value_boolean: boolean;
   value_text: string;
-  value_decimal: string;
+  value_decimal: number | null;
   note: string;
   created_at: string;
   metric: MetricMini;

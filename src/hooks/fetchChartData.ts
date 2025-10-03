@@ -57,7 +57,7 @@ export default function fetchChartData(
             : log.value_text
             ? log.value_text
             : log.value_decimal
-            ? parseFloat(log.value_decimal)
+            ? log.value_decimal
             : 0,
           metricId: log.metric_id,
           createdAt: log.log_date,

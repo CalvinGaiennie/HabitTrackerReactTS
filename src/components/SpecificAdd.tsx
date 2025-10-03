@@ -48,7 +48,7 @@ function SpecificAdd() {
             value = log.value_text || "";
             break;
           case "decimal":
-            value = log.value_decimal || "";
+            value = log.value_decimal?.toString() || "";
             break;
           case "int":
             value = log.value_int?.toString() || "";
@@ -79,7 +79,7 @@ function SpecificAdd() {
       value_int: 0,
       value_boolean: false,
       value_text: "",
-      value_decimal: "",
+      value_decimal: null,
       note: "",
       metric: { id: selectedMetricId, name: selectedMetric.name },
     };
@@ -93,7 +93,7 @@ function SpecificAdd() {
         logData.value_text = inputValue || "";
         break;
       case "decimal":
-        logData.value_decimal = inputValue || "0";
+        logData.value_decimal = inputValue ? parseFloat(inputValue) : 0;
         break;
       case "int":
         logData.value_int = inputValue ? parseInt(inputValue, 10) : 0;
