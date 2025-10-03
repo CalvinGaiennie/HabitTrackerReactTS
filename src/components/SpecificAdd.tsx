@@ -48,7 +48,7 @@ function SpecificAdd() {
             value = log.value_text || "";
             break;
           case "decimal":
-            value = log.value_decimal?.toString() || "";
+            value = log.value_decimal || "";
             break;
           case "int":
             value = log.value_int?.toString() || "";
@@ -72,16 +72,15 @@ function SpecificAdd() {
     const inputValue = logValues[selectedMetric.id.toString()];
 
     // Initialize with null values for all fields, then only set the one that matches the data type
-    const logData: Omit<DailyLog, "id" | "created_at"> = {
+    const logData: any = {
       metric_id: selectedMetricId,
       user_id: 1, // Replace with actual user ID
-      log_date: new Date(selectedDate).toISOString().split("T")[0],
-      value_int: 0,
-      value_boolean: false,
-      value_text: "",
+      log_date: new Date(selectedDate),
+      value_int: null,
+      value_boolean: null,
+      value_text: null,
       value_decimal: null,
       note: "",
-      metric: { id: selectedMetricId, name: selectedMetric.name },
     };
 
     // Only set the value for the specific data type that matches the metric
@@ -93,7 +92,7 @@ function SpecificAdd() {
         logData.value_text = inputValue || "";
         break;
       case "decimal":
-        logData.value_decimal = inputValue ? parseFloat(inputValue) : 0;
+        logData.value_decimal = inputValue || "0";
         break;
       case "int":
         logData.value_int = inputValue ? parseInt(inputValue, 10) : 0;

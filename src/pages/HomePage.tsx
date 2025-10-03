@@ -85,7 +85,11 @@ function HomePage() {
             values[log.metric_id] = log.value_boolean ? "true" : "false";
         });
 
-        setLogValues(values);
+        // Preserve existing user input that hasn't been saved yet
+        setLogValues((prevValues) => ({
+          ...prevValues,
+          ...values,
+        }));
       } catch (err) {
         console.error("Failed to fetch today's logs:", err);
       }
@@ -159,7 +163,11 @@ function HomePage() {
           if (log.value_boolean !== null)
             values[log.metric_id] = log.value_boolean ? "true" : "false";
         });
-        setLogValues(values);
+        // Preserve existing user input that hasn't been saved yet
+        setLogValues((prevValues) => ({
+          ...prevValues,
+          ...values,
+        }));
       } catch (err) {
         console.error("Failed to refresh logs:", err);
       }
