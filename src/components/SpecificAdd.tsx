@@ -48,7 +48,7 @@ function SpecificAdd() {
             value = log.value_text || "";
             break;
           case "decimal":
-            value = log.value_decimal || "";
+            value = log.value_decimal?.toString() || "";
             break;
           case "int":
             value = log.value_int?.toString() || "";
