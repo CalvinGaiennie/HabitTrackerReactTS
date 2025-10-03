@@ -6,6 +6,7 @@ export interface User {
 export interface UserSettings {
   enabledPages: string[];
   homePageLayout: HomePageSection[];
+  workoutTypes?: string[];
 }
 
 export interface HomePageSection {

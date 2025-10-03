@@ -15,11 +15,17 @@ function SettingsEdit() {
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const [newWorkoutType, setNewWorkoutType] = useState("");
 
   useEffect(() => {
     fetchSettings((fetchedSettings) => {
       setSettings(fetchedSettings);
-      setEditableSettings(fetchedSettings);
+      // Ensure workoutTypes exists as an empty array if not present
+      const settingsWithDefaults = {
+        ...fetchedSettings,
+        workoutTypes: fetchedSettings.workoutTypes || [],
+      };
+      setEditableSettings(settingsWithDefaults);
     });
   }, []);
 
@@ -41,7 +47,12 @@ function SettingsEdit() {
   };
 
   const handleCancel = () => {
-    setEditableSettings(settings);
+    // Ensure workoutTypes exists when canceling
+    const settingsWithDefaults = {
+      ...settings,
+      workoutTypes: settings?.workoutTypes || [],
+    };
+    setEditableSettings(settingsWithDefaults);
     setIsEditing(false);
     setSaveMessage(null);
   };
@@ -161,6 +172,23 @@ function SettingsEdit() {
   const getMetricName = (metricId: number): string => {
     const metric = metrics.find((m) => m.id === metricId);
     return metric ? metric.name : `Metric ${metricId}`;
+  };
+
+  const addWorkoutType = () => {
+    if (!newWorkoutType.trim()) return;
+
+    setEditableSettings((prev) => ({
+      ...prev!,
+      workoutTypes: [...(prev?.workoutTypes || []), newWorkoutType.trim()],
+    }));
+    setNewWorkoutType("");
+  };
+
+  const removeWorkoutType = (index: number) => {
+    setEditableSettings((prev) => ({
+      ...prev!,
+      workoutTypes: prev?.workoutTypes?.filter((_, i) => i !== index) || [],
+    }));
   };
 
   return (
@@ -294,6 +322,58 @@ function SettingsEdit() {
           </button>
         </div>
       )}
+
+      {/* Workout Types Section */}
+      <div className="mt-5">
+        <h3>Workout Types</h3>
+        <div className="card">
+          <div className="card-body">
+            {editableSettings?.workoutTypes &&
+            editableSettings.workoutTypes.length > 0 ? (
+              <div className="mb-3">
+                {editableSettings.workoutTypes.map((type, index) => (
+                  <div
+                    key={index}
+                    className="d-flex justify-content-between align-items-center mb-2"
+                  >
+                    {isEditing ? (
+                      <>
+                        <span className="form-control-plaintext">{type}</span>
+                        <button
+                          className="btn btn-danger btn-sm"
+                          onClick={() => removeWorkoutType(index)}
+                        >
+                          Remove
+                        </button>
+                      </>
+                    ) : (
+                      <span className="form-control-plaintext">{type}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted">No workout types defined</p>
+            )}
+
+            {isEditing && (
+              <div className="d-flex gap-2">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Add new workout type"
+                  value={newWorkoutType}
+                  onChange={(e) => setNewWorkoutType(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && addWorkoutType()}
+                />
+                <button className="btn btn-primary" onClick={addWorkoutType}>
+                  Add
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

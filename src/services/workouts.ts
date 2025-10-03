@@ -1,12 +1,20 @@
 import request from "./api";
-import type { Workout, WorkoutCreate } from "../types/workouts.ts";
+import type {
+  Workout,
+  WorkoutCreate,
+  WorkoutUpdate,
+} from "../types/workouts.ts";
 
 export async function getWorkouts(): Promise<Workout[]> {
   return request<Workout[]>("/workouts/");
 }
 
+export async function getWorkout(workoutId: number): Promise<Workout> {
+  return request<Workout>(`/workouts/${workoutId}`);
+}
+
 export async function createWorkout(data: WorkoutCreate): Promise<Workout> {
-  return request<Workout>("/workouts", {
+  return request<Workout>("/workouts/", {
     method: "POST",
     body: JSON.stringify(data),
   });
@@ -14,10 +22,18 @@ export async function createWorkout(data: WorkoutCreate): Promise<Workout> {
 
 export async function updateWorkout(
   workoutId: number,
-  data: Partial<WorkoutCreate>
+  data: WorkoutUpdate
 ): Promise<Workout> {
   return request<Workout>(`/workouts/${workoutId}`, {
     method: "PATCH",
     body: JSON.stringify(data),
+  });
+}
+
+export async function deleteWorkout(
+  workoutId: number
+): Promise<{ message: string }> {
+  return request<{ message: string }>(`/workouts/${workoutId}`, {
+    method: "DELETE",
   });
 }
