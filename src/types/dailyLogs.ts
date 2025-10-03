@@ -25,7 +25,7 @@ export interface DailyLog {
   id: number;
   user_id: number;
   metric_id: number;
-  log_date: Date;
+  log_date: string;
   value_int: number;
   value_boolean: boolean;
   value_text: string;

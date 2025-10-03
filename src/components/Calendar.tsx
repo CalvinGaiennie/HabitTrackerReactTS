@@ -19,7 +19,6 @@ const Calendar: React.FC<CalendarProps> = ({
 }) => {
   // console.log("Calendar component rendering with:", { year, month, metricsLength: metrics.length });
   const [logs, setLogs] = useState<DailyLog[]>([]);
-  const [loading, setLoading] = useState(true);
   const [currentYear, setCurrentYear] = useState(year);
   const [currentMonth, setCurrentMonth] = useState(month);
 
@@ -52,7 +51,6 @@ const Calendar: React.FC<CalendarProps> = ({
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        setLoading(true);
         // Fetch logs for a wider range to include previous and next month days
         const startDate = new Date(currentYear, currentMonth - 1, 1); // Previous month
         const endDate = new Date(currentYear, currentMonth + 2, 0); // Next month
@@ -95,8 +93,6 @@ const Calendar: React.FC<CalendarProps> = ({
         // }
       } catch (error) {
         console.error("Failed to fetch logs:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -111,7 +107,6 @@ const Calendar: React.FC<CalendarProps> = ({
   ) => {
     const actualMonth = targetMonth !== undefined ? targetMonth : currentMonth;
     const actualYear = targetYear !== undefined ? targetYear : currentYear;
-    const targetDate = new Date(actualYear, actualMonth, day);
 
     // Debug: Check if logs are available
     // if (day <= 3) {
@@ -223,7 +218,13 @@ const Calendar: React.FC<CalendarProps> = ({
   };
 
   // Generate calendar grid
-  const calendarDays = [];
+  const calendarDays: Array<{
+    day: number;
+    isCurrentMonth: boolean;
+    isPreviousMonth: boolean;
+    month: number;
+    year: number;
+  }> = [];
 
   // Add previous month days
   for (let i = firstDayOfWeek - 1; i >= 0; i--) {
@@ -340,8 +341,8 @@ const Calendar: React.FC<CalendarProps> = ({
                       dayLogs = getLogsForDay(dayData.day);
                     } else if (dayData.isPreviousMonth) {
                       // For previous month days, check the previous month
-                      const prevMonth = month === 0 ? 11 : month - 1;
-                      const prevYear = month === 0 ? year - 1 : year;
+                      const prevMonth = dayData.month;
+                      const prevYear = dayData.year;
                       dayLogs = logs.filter((log) => {
                         const [yearStr, monthStr, dayStr] =
                           log.log_date.split("-");
@@ -358,8 +359,8 @@ const Calendar: React.FC<CalendarProps> = ({
                       });
                     } else {
                       // For next month days, check the next month
-                      const nextMonth = month === 11 ? 0 : month + 1;
-                      const nextYear = month === 11 ? year + 1 : year;
+                      const nextMonth = dayData.month;
+                      const nextYear = dayData.year;
                       dayLogs = logs.filter((log) => {
                         const [yearStr, monthStr, dayStr] =
                           log.log_date.split("-");

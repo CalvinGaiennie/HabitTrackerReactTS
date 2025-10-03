@@ -19,7 +19,7 @@ function SettingsEdit({
   onSave,
   saveMessage = null,
 }: SettingsEditProps = {}) {
-  const [settings, setSettings] = useState<UserSettings>();
+  const [, setSettings] = useState<UserSettings>();
   const [editableSettings, setEditableSettings] = useState<UserSettings>();
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [newWorkoutType, setNewWorkoutType] = useState("");

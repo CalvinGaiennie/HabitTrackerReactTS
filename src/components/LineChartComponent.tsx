@@ -154,7 +154,7 @@ function LineChartComponent({
         />
         <Tooltip />
         <Legend
-          formatter={(value, entry) => {
+          formatter={() => {
             if (metric?.unit) {
               return `${metric.name} (${metric.unit})`;
             }

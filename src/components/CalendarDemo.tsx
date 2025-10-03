@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import CalendarWithLegend from "./CalendarWithLegend";
+import Calendar from "./Calendar";
 import type { Metric } from "../types/Metrics";
 
 const CalendarDemo: React.FC = () => {
@@ -16,6 +16,7 @@ const CalendarDemo: React.FC = () => {
       unit: "kg",
       is_required: false,
       active: true,
+      notes_on: false,
       created_at: "2024-01-01T00:00:00Z",
       updated_at: "2024-01-01T00:00:00Z",
     },
@@ -26,6 +27,7 @@ const CalendarDemo: React.FC = () => {
       data_type: "boolean",
       is_required: false,
       active: true,
+      notes_on: false,
       created_at: "2024-01-01T00:00:00Z",
       updated_at: "2024-01-01T00:00:00Z",
     },
@@ -37,6 +39,7 @@ const CalendarDemo: React.FC = () => {
       unit: "hours",
       is_required: false,
       active: true,
+      notes_on: false,
       created_at: "2024-01-01T00:00:00Z",
       updated_at: "2024-01-01T00:00:00Z",
     },
@@ -49,6 +52,7 @@ const CalendarDemo: React.FC = () => {
       scale_max: 10,
       is_required: false,
       active: true,
+      notes_on: false,
       created_at: "2024-01-01T00:00:00Z",
       updated_at: "2024-01-01T00:00:00Z",
     },
@@ -106,7 +110,7 @@ const CalendarDemo: React.FC = () => {
               </div>
             </div>
             <div className="card-body">
-              <CalendarWithLegend
+              <Calendar
                 year={currentYear}
                 month={currentMonth}
                 metrics={sampleMetrics}

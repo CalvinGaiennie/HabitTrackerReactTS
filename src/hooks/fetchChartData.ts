@@ -81,7 +81,7 @@ export default function fetchChartData(
         dataItems = Object.entries(valueCounts).map(([value, count]) => ({
           name: value === "1" ? "Yes" : "No",
           value: count as number | string as number,
-          createdAt: "",
+          createdAt: new Date().toISOString(),
           metricId: 0,
         }));
       } else {
@@ -90,7 +90,10 @@ export default function fetchChartData(
           .map((item) => ({
             name: item.name,
             value: item.value as number | string as number,
-            createdAt: item.createdAt,
+            createdAt:
+              typeof item.createdAt === "string"
+                ? item.createdAt
+                : (item.createdAt as Date).toISOString(),
             metricId: item.metricId,
           }))
           .sort(
