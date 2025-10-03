@@ -7,7 +7,10 @@ import LogViewer from "../components/LogViewer.tsx";
 import SettingsEdit from "../components/SettingsEdit.tsx";
 import fetchLogs from "../hooks/fetchLogs.ts";
 
+type TabType = "add-metric" | "add-log" | "view-logs" | "settings";
+
 function AccountPage() {
+  const [activeTab, setActiveTab] = useState<TabType>("add-metric");
   const [formData, setFormData] = useState<MetricCreate>({
     user_id: 1,
     name: "",
@@ -85,92 +88,180 @@ function AccountPage() {
     }
   };
 
-  return (
-    <div className="container d-flex flex-column align-items-center">
-      <h1>Account</h1>
-      <h2>Add Metric</h2>
-      <form
-        onSubmit={handleSubmit}
-        className="w-100"
-        style={{ maxWidth: "500px" }}
-      >
-        <div>
-          <label>Name:</label>
-          <input
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className="form-control"
-          />
-        </div>
-        <div>
-          <label>Description:</label>
-          <input
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            className="form-control"
-          />
-        </div>
-        <div>
-          <label>Type:</label>
-          <select
-            name="data_type"
-            value={formData.data_type}
-            onChange={handleChange}
-            className="form-select"
-          >
-            <option value="decimal">Number</option>
-            <option value="boolean">True/False</option>
-            <option value="text">Text</option>
-            <option value="scale">Scale (ex. 1-5)</option>
-            <option value="clock">Clock In/Out</option>
-          </select>
-        </div>
-        {formData.data_type === "scale" && (
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "add-metric":
+        return (
           <div>
-            <label>Scale</label>
-            <input
-              name="scale_min"
-              value={formData.scale_min ?? ""}
-              onChange={handleChange}
-              className="form-control"
-            />
-            <input
-              name="scale_max"
-              value={formData.scale_max ?? ""}
-              onChange={handleChange}
-              className="form-control"
-            />
+            <h2>Add New Metric</h2>
+            <form
+              onSubmit={handleSubmit}
+              className="w-100"
+              style={{ maxWidth: "500px" }}
+            >
+              <div className="mb-3">
+                <label className="form-label">Name:</label>
+                <input
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="form-control"
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Description:</label>
+                <input
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  className="form-control"
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Type:</label>
+                <select
+                  name="data_type"
+                  value={formData.data_type}
+                  onChange={handleChange}
+                  className="form-select"
+                >
+                  <option value="decimal">Number</option>
+                  <option value="boolean">True/False</option>
+                  <option value="text">Text</option>
+                  <option value="scale">Scale (ex. 1-5)</option>
+                  <option value="clock">Clock In/Out</option>
+                </select>
+              </div>
+              {formData.data_type === "scale" && (
+                <div className="mb-3">
+                  <label className="form-label">Scale Range</label>
+                  <div className="row">
+                    <div className="col-6">
+                      <input
+                        name="scale_min"
+                        value={formData.scale_min ?? ""}
+                        onChange={handleChange}
+                        className="form-control"
+                        placeholder="Min (e.g., 1)"
+                      />
+                    </div>
+                    <div className="col-6">
+                      <input
+                        name="scale_max"
+                        value={formData.scale_max ?? ""}
+                        onChange={handleChange}
+                        className="form-control"
+                        placeholder="Max (e.g., 5)"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div className="mb-3">
+                <label className="form-label">Unit</label>
+                <input
+                  name="unit"
+                  value={formData.unit}
+                  onChange={handleChange}
+                  className="form-control"
+                  placeholder="e.g., minutes, hours, reps"
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">
+                  Do you want to include a notes section?
+                </label>
+                <select
+                  name="notes_on"
+                  value={String(formData.notes_on)}
+                  onChange={handleChange}
+                  className="form-select"
+                >
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </select>
+              </div>
+              <button type="submit" className="btn btn-primary">
+                Save Metric
+              </button>
+            </form>
+            <hr />
+            <SpecificAdd />
           </div>
-        )}
-        <div>
-          <label>Unit</label>
-          <input
-            name="unit"
-            value={formData.unit}
-            onChange={handleChange}
-            className="form-control"
-          />
-        </div>
-        <div>
-          <label>Do you want to include a notes section?</label>
-          <select
-            name="notes_on"
-            value={String(formData.notes_on)}
-            onChange={handleChange}
-            className="form-select"
+        );
+      case "add-log":
+        return (
+          <div>
+            <h2>Add Log</h2>
+            <p>Add a new log entry for today.</p>
+            {/* Add log form will go here */}
+          </div>
+        );
+      case "view-logs":
+        return (
+          <div>
+            <h2>View Logs</h2>
+            <LogViewer logs={logs} />
+          </div>
+        );
+      case "settings":
+        return (
+          <div>
+            <h2>Settings</h2>
+            <SettingsEdit />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="container mt-4">
+      <h1>Account</h1>
+
+      {/* Tab Navigation */}
+      <ul className="nav nav-tabs mb-4">
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "add-metric" ? "active" : ""}`}
+            onClick={() => setActiveTab("add-metric")}
+            type="button"
           >
-            <option value="true">Yes</option>
-            <option value="false">No</option>
-          </select>
-        </div>
-        <button type="submit">Save Metric</button>
-      </form>
-      {/* have a list here that allows you to delete and or update Metrics*/}
-      <SpecificAdd />
-      <LogViewer logs={logs} />
-      <SettingsEdit />
+            Add Metric
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "add-log" ? "active" : ""}`}
+            onClick={() => setActiveTab("add-log")}
+            type="button"
+          >
+            Add Log
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "view-logs" ? "active" : ""}`}
+            onClick={() => setActiveTab("view-logs")}
+            type="button"
+          >
+            View Logs
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "settings" ? "active" : ""}`}
+            onClick={() => setActiveTab("settings")}
+            type="button"
+          >
+            Settings
+          </button>
+        </li>
+      </ul>
+
+      {/* Tab Content */}
+      <div className="tab-content">{renderTabContent()}</div>
     </div>
   );
 }
