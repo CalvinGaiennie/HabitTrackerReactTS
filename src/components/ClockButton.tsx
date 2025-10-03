@@ -15,6 +15,23 @@ function ClockButton({ metric, clockData, onClockToggle }: ClockButtonProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [sessionDuration, setSessionDuration] = useState(0);
 
+  // Debug logging
+  console.log(`ClockButton for metric ${metric.id}:`, { metric, clockData });
+
+  // If clockData is malformed (like raw JSON string), don't render
+  if (
+    typeof clockData === "string" ||
+    (clockData && !clockData.current_state)
+  ) {
+    console.error(`Invalid clockData for metric ${metric.id}:`, clockData);
+    return (
+      <div className="alert alert-warning">
+        <strong>{metric.name}</strong> - Clock data error. Please refresh the
+        page.
+      </div>
+    );
+  }
+
   // Update current time every second
   useEffect(() => {
     const interval = setInterval(() => {
@@ -25,8 +42,11 @@ function ClockButton({ metric, clockData, onClockToggle }: ClockButtonProps) {
 
   // Calculate session duration if clocked in
   useEffect(() => {
-    if (clockData?.current_state === "clocked_in" && clockData.last_updated) {
-      const lastUpdate = new Date(clockData.last_updated);
+    if (
+      safeClockData.current_state === "clocked_in" &&
+      safeClockData.last_updated
+    ) {
+      const lastUpdate = new Date(safeClockData.last_updated);
       const duration = Math.floor(
         (currentTime.getTime() - lastUpdate.getTime()) / 1000 / 60
       );
@@ -34,13 +54,15 @@ function ClockButton({ metric, clockData, onClockToggle }: ClockButtonProps) {
     } else {
       setSessionDuration(0);
     }
-  }, [currentTime, clockData]);
+  }, [currentTime, safeClockData]);
 
   const handleClick = () => {
     const newState =
-      clockData?.current_state === "clocked_in" ? "clocked_out" : "clocked_in";
+      safeClockData.current_state === "clocked_in"
+        ? "clocked_out"
+        : "clocked_in";
     console.log(
-      `Clock button clicked - current state: ${clockData?.current_state}, new state: ${newState}`
+      `Clock button clicked - current state: ${safeClockData.current_state}, new state: ${newState}`
     );
     onClockToggle(metric.id, newState);
   };
@@ -51,8 +73,19 @@ function ClockButton({ metric, clockData, onClockToggle }: ClockButtonProps) {
     return `${hours}h ${mins}m`;
   };
 
-  const isClockedIn = clockData?.current_state === "clocked_in";
-  const totalDuration = clockData?.total_duration_minutes || 0;
+  // Ensure clockData has proper structure
+  const safeClockData =
+    clockData && typeof clockData === "object" && "current_state" in clockData
+      ? clockData
+      : {
+          current_state: "clocked_out",
+          sessions: [],
+          total_duration_minutes: 0,
+          last_updated: null,
+        };
+
+  const isClockedIn = safeClockData.current_state === "clocked_in";
+  const totalDuration = safeClockData.total_duration_minutes || 0;
 
   return (
     <div className="clock-button-container mb-3">
@@ -87,10 +120,10 @@ function ClockButton({ metric, clockData, onClockToggle }: ClockButtonProps) {
         </div>
       </button>
 
-      {clockData?.sessions && clockData.sessions.length > 0 && (
+      {safeClockData.sessions && safeClockData.sessions.length > 0 && (
         <div className="mt-2">
           <small className="text-muted">
-            Sessions today: {clockData.sessions.length}
+            Sessions today: {safeClockData.sessions.length}
           </small>
         </div>
       )}
