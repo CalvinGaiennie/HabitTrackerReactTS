@@ -34,7 +34,10 @@ function HomePage() {
   }
 
   useEffect(() => {
-    fetchSettings(setSettings);
+    fetchSettings((fetchedSettings) => {
+      console.log("Settings received in HomePage:", fetchedSettings);
+      setSettings(fetchedSettings);
+    });
   }, []);
 
   useEffect(() => {
@@ -145,9 +148,16 @@ function HomePage() {
     saveLogs();
   }, [debouncedValues, activeMetrics]);
 
+  console.log("HomePage render - settings:", settings);
+  console.log("HomePage render - activeMetrics:", activeMetrics);
+
   return (
     <div className="container d-flex flex-column align-items-center">
       <h1>Habit Tracker</h1>
+      {!settings && <div>Loading settings...</div>}
+      {settings && !settings.homePageLayout && (
+        <div>No homePageLayout found</div>
+      )}
       {settings?.homePageLayout?.map((section: any) => (
         <div key={section.section} className="mb-4 w-100">
           <h2>{section.section}</h2>
@@ -160,8 +170,6 @@ function HomePage() {
                 log.metric_id === metric.id &&
                 new Date(log.log_date).toISOString().split("T")[0] === today
             );
-
-            if (!metric) return null;
 
             return (
               <div key={metric.id} className="mb-3">
