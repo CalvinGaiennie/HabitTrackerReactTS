@@ -68,36 +68,6 @@ function HomePage() {
     fetchLogs(setLogs);
   }, []);
 
-  //fetch todays logs to prefill inputs
-  useEffect(() => {
-    const fetchTodayLogs = async () => {
-      try {
-        const data = await getDailyLogs("1", undefined, undefined, today);
-        const values: Record<number, string> = {};
-
-        data.forEach((log) => {
-          if (log.value_text !== null) values[log.metric_id] = log.value_text;
-          if (log.value_int !== null)
-            values[log.metric_id] = log.value_int.toString();
-          if (log.value_decimal !== null)
-            values[log.metric_id] = log.value_decimal.toString();
-          if (log.value_boolean !== null)
-            values[log.metric_id] = log.value_boolean ? "true" : "false";
-        });
-
-        // Preserve existing user input that hasn't been saved yet
-        setLogValues((prevValues) => ({
-          ...prevValues,
-          ...values,
-        }));
-      } catch (err) {
-        console.error("Failed to fetch today's logs:", err);
-      }
-    };
-
-    fetchTodayLogs();
-  }, [today]);
-
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
@@ -144,6 +114,55 @@ function HomePage() {
     fetchMetrics();
   }, [today]);
 
+  // Fetch today's logs after metrics are loaded
+  useEffect(() => {
+    if (activeMetrics.length === 0) return;
+
+    const fetchTodayLogs = async () => {
+      try {
+        const data = await getDailyLogs("1", undefined, undefined, today);
+        const values: Record<number, string> = {};
+
+        data.forEach((log) => {
+          // Find the metric to determine its data type
+          const metric = activeMetrics.find((m) => m.id === log.metric_id);
+          if (!metric) return;
+
+          // Set value based on metric's data type, not what's in the database
+          switch (metric.data_type) {
+            case "text":
+              if (log.value_text !== null)
+                values[log.metric_id] = log.value_text;
+              break;
+            case "int":
+              if (log.value_int !== null)
+                values[log.metric_id] = log.value_int.toString();
+              break;
+            case "decimal":
+            case "scale":
+              if (log.value_decimal !== null)
+                values[log.metric_id] = log.value_decimal.toString();
+              break;
+            case "boolean":
+              if (log.value_boolean !== null)
+                values[log.metric_id] = log.value_boolean ? "true" : "false";
+              break;
+          }
+        });
+
+        // Preserve existing user input that hasn't been saved yet
+        setLogValues((prevValues) => ({
+          ...prevValues,
+          ...values,
+        }));
+      } catch (err) {
+        console.error("Failed to fetch today's logs:", err);
+      }
+    };
+
+    fetchTodayLogs();
+  }, [activeMetrics, today]);
+
   // Listen for log saved events from SpecificAdd component
   useEffect(() => {
     const handleLogSaved = async () => {
@@ -155,13 +174,30 @@ function HomePage() {
         const todayData = await getDailyLogs("1", undefined, undefined, today);
         const values: Record<number, string> = {};
         todayData.forEach((log) => {
-          if (log.value_text !== null) values[log.metric_id] = log.value_text;
-          if (log.value_int !== null)
-            values[log.metric_id] = log.value_int.toString();
-          if (log.value_decimal !== null)
-            values[log.metric_id] = log.value_decimal.toString();
-          if (log.value_boolean !== null)
-            values[log.metric_id] = log.value_boolean ? "true" : "false";
+          // Find the metric to determine its data type
+          const metric = activeMetrics.find((m) => m.id === log.metric_id);
+          if (!metric) return;
+
+          // Set value based on metric's data type, not what's in the database
+          switch (metric.data_type) {
+            case "text":
+              if (log.value_text !== null)
+                values[log.metric_id] = log.value_text;
+              break;
+            case "int":
+              if (log.value_int !== null)
+                values[log.metric_id] = log.value_int.toString();
+              break;
+            case "decimal":
+            case "scale":
+              if (log.value_decimal !== null)
+                values[log.metric_id] = log.value_decimal.toString();
+              break;
+            case "boolean":
+              if (log.value_boolean !== null)
+                values[log.metric_id] = log.value_boolean ? "true" : "false";
+              break;
+          }
         });
         // Preserve existing user input that hasn't been saved yet
         setLogValues((prevValues) => ({
@@ -175,7 +211,7 @@ function HomePage() {
 
     window.addEventListener("logSaved", handleLogSaved);
     return () => window.removeEventListener("logSaved", handleLogSaved);
-  }, [today]);
+  }, [activeMetrics, today]);
 
   useEffect(() => {
     const saveLogs = async () => {

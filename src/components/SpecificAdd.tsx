@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type { Metric } from "../types/Metrics.ts";
-import type { DailyLog } from "../types/dailyLogs.ts";
+import type { DailyLog, MetricMini } from "../types/dailyLogs.ts";
 import { getActiveMetrics } from "../services/metrics";
 import { saveDailyLog, getDailyLogs } from "../services/dailyLogs";
 
@@ -71,16 +71,27 @@ function SpecificAdd() {
 
     const inputValue = logValues[selectedMetric.id.toString()];
 
-    // Initialize with null values for all fields, then only set the one that matches the data type
-    const logData: any = {
+    // Initialize with default values for all fields, then only set the one that matches the data type
+    const logData: {
+      metric_id: number;
+      user_id: number;
+      log_date: string;
+      value_int: number;
+      value_decimal: number | null;
+      value_boolean: boolean;
+      value_text: string;
+      note: string;
+      metric: MetricMini;
+    } = {
       metric_id: selectedMetricId,
       user_id: 1, // Replace with actual user ID
-      log_date: new Date(selectedDate),
-      value_int: null,
-      value_boolean: null,
-      value_text: null,
+      log_date: selectedDate,
+      value_int: 0,
+      value_boolean: false,
+      value_text: "",
       value_decimal: null,
       note: "",
+      metric: selectedMetric,
     };
 
     // Only set the value for the specific data type that matches the metric
@@ -92,7 +103,7 @@ function SpecificAdd() {
         logData.value_text = inputValue || "";
         break;
       case "decimal":
-        logData.value_decimal = inputValue || "0";
+        logData.value_decimal = inputValue ? parseFloat(inputValue) : 0;
         break;
       case "int":
         logData.value_int = inputValue ? parseInt(inputValue, 10) : 0;
