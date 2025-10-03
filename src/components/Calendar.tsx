@@ -97,7 +97,7 @@ const Calendar: React.FC<CalendarProps> = ({
     };
 
     fetchLogs();
-  }, [currentYear, currentMonth, JSON.stringify(metrics)]);
+  }, [currentYear, currentMonth, metrics]);
 
   // Get logs for a specific day
   const getLogsForDay = (

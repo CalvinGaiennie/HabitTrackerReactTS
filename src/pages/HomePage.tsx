@@ -175,10 +175,16 @@ function HomePage() {
         const metric = activeMetrics.find((m) => m.id === Number(metricId));
         if (!metric || rawValue === "") continue;
 
-        const payload: any = {
+        const payload: Omit<DailyLog, "id" | "created_at"> = {
           user_id: 1,
           metric_id: Number(metricId),
           log_date: today,
+          value_int: 0,
+          value_boolean: false,
+          value_text: "",
+          value_decimal: "",
+          note: "",
+          metric: { id: Number(metricId), name: metric.name },
         };
 
         switch (metric.data_type) {
@@ -187,7 +193,7 @@ function HomePage() {
             break;
           case "decimal":
           case "scale":
-            payload.value_decimal = parseFloat(rawValue);
+            payload.value_decimal = parseFloat(rawValue).toString();
             break;
           case "boolean":
             payload.value_boolean =
@@ -203,7 +209,7 @@ function HomePage() {
       }
     };
     saveLogs();
-  }, [debouncedValues, activeMetrics]);
+  }, [debouncedValues, activeMetrics, today]);
 
   console.log("HomePage render - settings:", settings);
   console.log("HomePage render - activeMetrics:", activeMetrics);
@@ -215,7 +221,7 @@ function HomePage() {
       {settings && !settings.homePageLayout && (
         <div>No homePageLayout found</div>
       )}
-      {settings?.homePageLayout?.map((section: any) => (
+      {settings?.homePageLayout?.map((section) => (
         <div key={section.section} className="mb-4 w-100">
           <h2>{section.section}</h2>
           <div className="row">

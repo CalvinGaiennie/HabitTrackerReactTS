@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { UserSettings, HomePageSection } from "../types/users";
 import type { Metric } from "../types/Metrics";
 import fetchSettings from "../hooks/fetchSettings.ts";
@@ -48,7 +48,7 @@ function SettingsEdit({
     fetchMetrics();
   }, []);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!editableSettings) return;
 
     try {
@@ -59,13 +59,14 @@ function SettingsEdit({
       console.error("Failed to save settings:", error);
       throw error; // Let the parent handle the error display
     }
-  };
+  }, [editableSettings, onSave]);
 
   // Expose the save method to parent component
   useEffect(() => {
     if (onSave) {
       // Store the save function reference
-      (window as any).settingsSaveRef = handleSave;
+      (window as unknown as Record<string, unknown>).settingsSaveRef =
+        handleSave;
     }
   }, [onSave, handleSave]);
 

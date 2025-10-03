@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { Metric } from "../types/Metrics";
 import type { ClockData } from "../types/dailyLogs";
 
@@ -19,8 +19,8 @@ function ClockButton({ metric, clockData, onClockToggle }: ClockButtonProps) {
   console.log(`ClockButton for metric ${metric.id}:`, { metric, clockData });
 
   // Ensure clockData has proper structure
-  const safeClockData =
-    clockData && typeof clockData === "object" && "current_state" in clockData
+  const safeClockData = useMemo(() => {
+    return clockData && typeof clockData === "object" && "current_state" in clockData
       ? clockData
       : {
           current_state: "clocked_out" as const,
@@ -28,20 +28,7 @@ function ClockButton({ metric, clockData, onClockToggle }: ClockButtonProps) {
           total_duration_minutes: 0,
           last_updated: null,
         };
-
-  // If clockData is malformed (like raw JSON string), don't render
-  if (
-    typeof clockData === "string" ||
-    (clockData && !clockData.current_state)
-  ) {
-    console.error(`Invalid clockData for metric ${metric.id}:`, clockData);
-    return (
-      <div className="alert alert-warning">
-        <strong>{metric.name}</strong> - Clock data error. Please refresh the
-        page.
-      </div>
-    );
-  }
+  }, [clockData]);
 
   // Update current time every second
   useEffect(() => {
@@ -66,6 +53,20 @@ function ClockButton({ metric, clockData, onClockToggle }: ClockButtonProps) {
       setSessionDuration(0);
     }
   }, [currentTime, safeClockData]);
+
+  // If clockData is malformed (like raw JSON string), don't render
+  if (
+    typeof clockData === "string" ||
+    (clockData && !clockData.current_state)
+  ) {
+    console.error(`Invalid clockData for metric ${metric.id}:`, clockData);
+    return (
+      <div className="alert alert-warning">
+        <strong>{metric.name}</strong> - Clock data error. Please refresh the
+        page.
+      </div>
+    );
+  }
 
   const handleClick = () => {
     const newState =

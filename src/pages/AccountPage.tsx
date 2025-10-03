@@ -183,8 +183,8 @@ function AccountPage() {
 
     try {
       // Call the save function from SettingsEdit component
-      if ((window as any).settingsSaveRef) {
-        await (window as any).settingsSaveRef();
+      if ((window as unknown as Record<string, unknown>).settingsSaveRef) {
+        await ((window as unknown as Record<string, unknown>).settingsSaveRef as () => Promise<void>)();
       }
       setIsEditingSettings(false);
       setSettingsSaveMessage({

@@ -93,7 +93,7 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
   const updateExercise = (
     exerciseIndex: number,
     field: keyof Exercise,
-    value: any
+    value: unknown
   ) => {
     setExercises((prev) =>
       prev.map((exercise, index) =>
@@ -122,7 +122,7 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
     exerciseIndex: number,
     setIndex: number,
     field: keyof ExerciseSet,
-    value: any
+    value: unknown
   ) => {
     setExercises((prev) =>
       prev.map((exercise, index) =>

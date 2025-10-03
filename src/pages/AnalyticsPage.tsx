@@ -6,7 +6,7 @@ import BubbleChartComponent from "../components/BubbleChartComponent";
 import type { Metric } from "../types/Metrics";
 import fetchMetrics from "../hooks/fetchMetrics";
 import type { DataItem } from "../types/chartData";
-// import { useAuth } from "../context"; // Commented out as not currently used
+// import { useAuth } from "../hooks/useAuth"; // Commented out as not currently used
 import fetchChartData from "../hooks/fetchChartData.ts";
 import fetchBooleanAnalytics from "../hooks/fetchBooleanAnalytics.ts";
 import Calendar from "../components/Calendar.tsx";
@@ -55,7 +55,7 @@ function AnalyticsPage() {
     switch (selectedChart) {
       case "pie":
         return <PieChartComponent data={data ? data : []} COLORS={COLORS} />;
-      case "line":
+      case "line": {
         const selectedMetric = metrics?.find(
           (metric) => metric.id === selectedData
         );
@@ -69,6 +69,7 @@ function AnalyticsPage() {
             }
           />
         );
+      }
       case "bar":
         return <BarChartComponent data={data ? data : []} />;
       case "bubble":
