@@ -8,8 +8,9 @@ import fetchMetrics from "../hooks/fetchMetrics";
 import type { DataItem } from "../types/chartData";
 // import { useAuth } from "../context"; // Commented out as not currently used
 import fetchChartData from "../hooks/fetchChartData.ts";
+import fetchBooleanAnalytics from "../hooks/fetchBooleanAnalytics.ts";
 import Calendar from "../components/Calendar.tsx";
-import DatePicker from "../components/DatePicker.tsx"
+import DatePicker from "../components/DatePicker.tsx";
 
 // Data for bubble chart (x, y, z coordinates)
 const bubbleData = [
@@ -33,6 +34,12 @@ function AnalyticsPage() {
   // const { authState } = useAuth(); // Commented out as not currently used
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
+  const [booleanStats, setBooleanStats] = useState<{
+    totalDays: number;
+    yesDays: number;
+    noDays: number;
+    percentage: number;
+  } | null>(null);
 
   const handleDataChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedData(Number(e.target.value));
@@ -74,8 +81,30 @@ function AnalyticsPage() {
   }, []);
 
   useEffect(() => {
+    if (selectedData === 0) {
+      setData([]);
+      return;
+    }
+
+    // Get the selected metric to determine its data type
+    const selectedMetric = metrics?.find(
+      (metric) => metric.id === selectedData
+    );
+
+    if (selectedMetric?.data_type === "boolean") {
+      // Use specialized boolean analytics for boolean metrics
+      fetchBooleanAnalytics(
+        setData,
+        1 as number,
+        selectedData,
+        setBooleanStats
+      );
+    } else {
+      // Use regular chart data for other metric types
+      setBooleanStats(null); // Clear boolean stats for non-boolean metrics
       fetchChartData(setData, 1 as number, selectedData);
-  }, [selectedData, startDate, endDate]);
+    }
+  }, [selectedData, startDate, endDate, metrics]);
 
   useEffect(() => {
     const dataTypeofSelectedData = metrics?.find(
@@ -99,57 +128,97 @@ function AnalyticsPage() {
   }, [metrics, selectedData]);
 
   return (
-      <div className="container mb-5">
-        <h1 className="text-center mb-4">Analytics Page</h1>
-        {/* Data Selector */}
-        <div className="row justify-content-center mb-4">
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
+    <div className="container mb-5">
+      <h1 className="text-center mb-4">Analytics Page</h1>
+      {/* Data Selector */}
+      <div className="row justify-content-center mb-4">
+        <div className="col-md-6">
+          <div className="card">
+            <div className="card-body">
               {/* <h3>Select Dates</h3> */}
-                <div className="d-flex gap-5 pb-4">
-                  <DatePicker title="Start Date" setTargetDate={setStartDate} targetDate={startDate} />
-                  <DatePicker title="End Date" setTargetDate={setEndDate} targetDate={endDate} />
-                </div>
-                <div>
-                  <label htmlFor="chart-select" className="form-label">
-                    <strong>Select Data:</strong>
-                  </label>
-                  <select
-                    id="data-select"
-                    className="form-select"
-                    value={selectedData}
-                    onChange={handleDataChange}
-                    >
-                    <option value={0}>Select a metric...</option>
-                    {metrics?.map((metric) => (
-                      <option key={metric.id} value={metric.id}>
-                        {metric.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              <div className="d-flex gap-5 pb-4">
+                <DatePicker
+                  title="Start Date"
+                  setTargetDate={setStartDate}
+                  targetDate={startDate}
+                />
+                <DatePicker
+                  title="End Date"
+                  setTargetDate={setEndDate}
+                  targetDate={endDate}
+                />
+              </div>
+              <div>
+                <label htmlFor="chart-select" className="form-label">
+                  <strong>Select Data:</strong>
+                </label>
+                <select
+                  id="data-select"
+                  className="form-select"
+                  value={selectedData}
+                  onChange={handleDataChange}
+                >
+                  <option value={0}>Select a metric...</option>
+                  {metrics?.map((metric) => (
+                    <option key={metric.id} value={metric.id}>
+                      {metric.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>
         </div>
-        {/* Selected Chart */}
-        <div className="row justify-content-center">
-          <div className="col-12">
-            <div className="card">
-              <div className="card-header">
-                <h3 className="text-center mb-0">{getChartTitle()}</h3>
-              </div>
-              <div className="card-body">
-                <div style={{ width: "100%", height: "400px" }}>
-                  {renderChart()}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <Calendar />
       </div>
+      {/* Selected Chart */}
+      <div className="row justify-content-center">
+        <div className="col-12">
+          <div className="card">
+            <div className="card-header">
+              <h3 className="text-center mb-0">{getChartTitle()}</h3>
+            </div>
+            <div className="card-body">
+              <div style={{ width: "100%", height: "400px" }}>
+                {renderChart()}
+              </div>
+              {/* Boolean Statistics */}
+              {booleanStats && (
+                <div className="mt-4">
+                  <h5>Boolean Metric Statistics</h5>
+                  <div className="row text-center">
+                    <div className="col-3">
+                      <div className="p-2">
+                        <div className="fw-bold text-primary">Total Days</div>
+                        <div>{booleanStats.totalDays}</div>
+                      </div>
+                    </div>
+                    <div className="col-3">
+                      <div className="p-2">
+                        <div className="fw-bold text-success">Yes Days</div>
+                        <div>{booleanStats.yesDays}</div>
+                      </div>
+                    </div>
+                    <div className="col-3">
+                      <div className="p-2">
+                        <div className="fw-bold text-danger">No/Null Days</div>
+                        <div>{booleanStats.noDays}</div>
+                      </div>
+                    </div>
+                    <div className="col-3">
+                      <div className="p-2">
+                        <div className="fw-bold text-info">Success Rate</div>
+                        <div>{booleanStats.percentage}%</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+      <Calendar />
+    </div>
   );
 }
 
