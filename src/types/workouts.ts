@@ -20,6 +20,7 @@ export interface Workout {
   workout_types: string[];
   notes?: string;
   exercises?: Exercise[];
+  deleted_at?: string;
 }
 
 export interface WorkoutCreate {

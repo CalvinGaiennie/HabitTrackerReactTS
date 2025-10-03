@@ -26,11 +26,14 @@ function WorkoutList() {
     if (!window.confirm("Delete this workout?")) return;
 
     try {
-      await deleteWorkout(workoutId);
+      console.log("Attempting to delete workout ID:", workoutId);
+      const result = await deleteWorkout(workoutId);
+      console.log("Delete result:", result);
       setWorkouts(workouts.filter((workout) => workout.id !== workoutId));
+      console.log("Workout removed from list");
     } catch (error) {
       console.error("Error deleting workout:", error);
-      alert("Failed to delete workout");
+      alert(`Failed to delete workout: ${error}`);
     }
   };
 
