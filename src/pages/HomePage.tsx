@@ -115,10 +115,10 @@ function HomePage() {
             return {
               metricId: metric.id,
               data: {
-                current_state: "clocked_out",
+                current_state: "clocked_out" as const,
                 sessions: [],
                 total_duration_minutes: 0,
-                last_updated: null,
+                last_updated: new Date().toISOString(),
               },
             };
           }

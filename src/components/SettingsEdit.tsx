@@ -50,6 +50,8 @@ function SettingsEdit() {
     // Ensure workoutTypes exists when canceling
     const settingsWithDefaults = {
       ...settings,
+      enabledPages: settings?.enabledPages || [],
+      homePageLayout: settings?.homePageLayout || [],
       workoutTypes: settings?.workoutTypes || [],
     };
     setEditableSettings(settingsWithDefaults);

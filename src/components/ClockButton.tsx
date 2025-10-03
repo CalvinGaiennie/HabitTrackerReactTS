@@ -18,6 +18,17 @@ function ClockButton({ metric, clockData, onClockToggle }: ClockButtonProps) {
   // Debug logging
   console.log(`ClockButton for metric ${metric.id}:`, { metric, clockData });
 
+  // Ensure clockData has proper structure
+  const safeClockData =
+    clockData && typeof clockData === "object" && "current_state" in clockData
+      ? clockData
+      : {
+          current_state: "clocked_out" as const,
+          sessions: [],
+          total_duration_minutes: 0,
+          last_updated: null,
+        };
+
   // If clockData is malformed (like raw JSON string), don't render
   if (
     typeof clockData === "string" ||
@@ -72,17 +83,6 @@ function ClockButton({ metric, clockData, onClockToggle }: ClockButtonProps) {
     const mins = minutes % 60;
     return `${hours}h ${mins}m`;
   };
-
-  // Ensure clockData has proper structure
-  const safeClockData =
-    clockData && typeof clockData === "object" && "current_state" in clockData
-      ? clockData
-      : {
-          current_state: "clocked_out",
-          sessions: [],
-          total_duration_minutes: 0,
-          last_updated: null,
-        };
 
   const isClockedIn = safeClockData.current_state === "clocked_in";
   const totalDuration = safeClockData.total_duration_minutes || 0;

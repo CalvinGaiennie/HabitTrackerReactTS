@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { createWorkout } from "../services/workouts";
 import { getUserSettings } from "../services/users";
 import type { UserSettings } from "../types/users";
-import type { WorkoutCreate, Exercise, ExerciseSet } from "../types/workouts";
+import type { Exercise, ExerciseSet } from "../types/workouts";
 
 interface WorkoutFormProps {
   onWorkoutCreated?: () => void;
