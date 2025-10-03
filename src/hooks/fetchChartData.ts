@@ -4,18 +4,46 @@ import type { DataItem } from "../types/chartData";
 export default function fetchChartData(
   setData: (data: DataItem[]) => void,
   user_id?: number,
-  selectedData?: number
+  selectedData?: number,
+  startDate?: Date,
+  endDate?: Date
 ) {
   const fetchChartData = async () => {
     try {
-      const data = await getDailyLogs( user_id?.toString());
+      // Format dates for API using local timezone
+      const startDateStr = startDate
+        ? `${startDate.getFullYear()}-${String(
+            startDate.getMonth() + 1
+          ).padStart(2, "0")}-${String(startDate.getDate()).padStart(2, "0")}`
+        : undefined;
+
+      // Add one day to end date to make it inclusive
+      const endDatePlusOne = endDate ? new Date(endDate) : undefined;
+      if (endDatePlusOne) {
+        endDatePlusOne.setDate(endDatePlusOne.getDate() + 1);
+      }
+
+      const endDateStr = endDatePlusOne
+        ? `${endDatePlusOne.getFullYear()}-${String(
+            endDatePlusOne.getMonth() + 1
+          ).padStart(2, "0")}-${String(endDatePlusOne.getDate()).padStart(
+            2,
+            "0"
+          )}`
+        : undefined;
+
+      const data = await getDailyLogs(
+        user_id?.toString(),
+        startDateStr,
+        endDateStr
+      );
       console.log("Raw API data:", data);
       console.log("Selected metric ID:", selectedData);
 
       // Filter by selected metric
       const filteredData = data
         .map((log) => ({
-          name: new Date(log.created_at).toLocaleDateString("en-US", {
+          name: new Date(log.log_date).toLocaleDateString("en-US", {
             month: "2-digit",
             day: "2-digit",
             year: "2-digit",
@@ -32,7 +60,7 @@ export default function fetchChartData(
             ? parseFloat(log.value_decimal)
             : 0,
           metricId: log.metric_id,
-          createdAt: log.created_at,
+          createdAt: log.log_date,
         }))
         .filter((item) => item.metricId === selectedData);
 

@@ -32,8 +32,12 @@ function AnalyticsPage() {
   const [metrics, setMetrics] = useState<Metric[]>();
   const [data, setData] = useState<DataItem[]>();
   // const { authState } = useAuth(); // Commented out as not currently used
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+  // Set default dates: September 1st, 2025 to current date
+  const today = new Date();
+  const septemberFirst2025 = new Date(2025, 8, 1); // Month is 0-indexed, so 8 = September
+
+  const [startDate, setStartDate] = useState(septemberFirst2025);
+  const [endDate, setEndDate] = useState(today);
   const [booleanStats, setBooleanStats] = useState<{
     totalDays: number;
     yesDays: number;
@@ -97,12 +101,14 @@ function AnalyticsPage() {
         setData,
         1 as number,
         selectedData,
-        setBooleanStats
+        setBooleanStats,
+        startDate,
+        endDate
       );
     } else {
       // Use regular chart data for other metric types
       setBooleanStats(null); // Clear boolean stats for non-boolean metrics
-      fetchChartData(setData, 1 as number, selectedData);
+      fetchChartData(setData, 1 as number, selectedData, startDate, endDate);
     }
   }, [selectedData, startDate, endDate, metrics]);
 

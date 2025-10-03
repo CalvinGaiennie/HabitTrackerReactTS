@@ -11,7 +11,9 @@ export default function fetchBooleanAnalytics(
     yesDays: number;
     noDays: number;
     percentage: number;
-  }) => void
+  }) => void,
+  startDate?: Date,
+  endDate?: Date
 ) {
   const fetchBooleanAnalytics = async () => {
     try {
@@ -27,8 +29,34 @@ export default function fetchBooleanAnalytics(
         return;
       }
 
-      // Get all daily logs
-      const dailyLogs = await getDailyLogs(user_id?.toString());
+      // Format dates for API using local timezone
+      const startDateStr = startDate
+        ? `${startDate.getFullYear()}-${String(
+            startDate.getMonth() + 1
+          ).padStart(2, "0")}-${String(startDate.getDate()).padStart(2, "0")}`
+        : undefined;
+
+      // Add one day to end date to make it inclusive
+      const endDatePlusOne = endDate ? new Date(endDate) : undefined;
+      if (endDatePlusOne) {
+        endDatePlusOne.setDate(endDatePlusOne.getDate() + 1);
+      }
+
+      const endDateStr = endDatePlusOne
+        ? `${endDatePlusOne.getFullYear()}-${String(
+            endDatePlusOne.getMonth() + 1
+          ).padStart(2, "0")}-${String(endDatePlusOne.getDate()).padStart(
+            2,
+            "0"
+          )}`
+        : undefined;
+
+      // Get daily logs with date filtering
+      const dailyLogs = await getDailyLogs(
+        user_id?.toString(),
+        startDateStr,
+        endDateStr
+      );
       console.log("Raw API data:", dailyLogs);
       console.log("Selected metric ID:", selectedMetricId);
 
@@ -37,15 +65,17 @@ export default function fetchBooleanAnalytics(
         (log) => log.metric_id === selectedMetricId
       );
 
-      // Calculate days since metric creation
-      const metricCreatedAt = new Date(selectedMetric.created_at);
-      const today = new Date();
-      const daysSinceCreation = Math.ceil(
-        (today.getTime() - metricCreatedAt.getTime()) / (1000 * 60 * 60 * 24)
-      );
+      // Calculate total days in the date range
+      const start = startDate || new Date();
+      const end = endDate || new Date();
+      const totalDays =
+        Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) +
+        1; // +1 to include both start and end dates
 
-      console.log(`Metric created: ${metricCreatedAt.toDateString()}`);
-      console.log(`Days since creation: ${daysSinceCreation}`);
+      console.log(
+        `Date range: ${start.toDateString()} to ${end.toDateString()}`
+      );
+      console.log(`Total days in range: ${totalDays}`);
 
       // Count "Yes" days (value_boolean = true)
       const yesDays = metricLogs.filter(
@@ -53,21 +83,19 @@ export default function fetchBooleanAnalytics(
       ).length;
 
       // Calculate "No" days (total days - yes days)
-      const noDays = daysSinceCreation - yesDays;
+      const noDays = totalDays - yesDays;
 
       console.log(`Yes days: ${yesDays}`);
       console.log(`No days: ${noDays}`);
 
       // Calculate percentage
       const percentage =
-        daysSinceCreation > 0
-          ? Math.round((yesDays / daysSinceCreation) * 100)
-          : 0;
+        totalDays > 0 ? Math.round((yesDays / totalDays) * 100) : 0;
 
       // Set statistics if callback provided
       if (setStats) {
         setStats({
-          totalDays: daysSinceCreation,
+          totalDays: totalDays,
           yesDays: yesDays,
           noDays: noDays,
           percentage: percentage,
