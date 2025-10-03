@@ -5,16 +5,23 @@ import fetchSettings from "../hooks/fetchSettings.ts";
 import { updateUserSettings } from "../services/users";
 import { getActiveMetrics } from "../services/metrics";
 
-function SettingsEdit() {
+interface SettingsEditProps {
+  isEditing?: boolean;
+  onSave?: () => void;
+  saveMessage?: {
+    type: "success" | "error";
+    text: string;
+  } | null;
+}
+
+function SettingsEdit({
+  isEditing = false,
+  onSave,
+  saveMessage = null,
+}: SettingsEditProps = {}) {
   const [settings, setSettings] = useState<UserSettings>();
   const [editableSettings, setEditableSettings] = useState<UserSettings>();
   const [metrics, setMetrics] = useState<Metric[]>([]);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
   const [newWorkoutType, setNewWorkoutType] = useState("");
 
   useEffect(() => {
@@ -41,45 +48,26 @@ function SettingsEdit() {
     fetchMetrics();
   }, []);
 
-  const handleEdit = () => {
-    setIsEditing(true);
-    setSaveMessage(null);
-  };
-
-  const handleCancel = () => {
-    // Ensure workoutTypes exists when canceling
-    const settingsWithDefaults = {
-      ...settings,
-      enabledPages: settings?.enabledPages || [],
-      homePageLayout: settings?.homePageLayout || [],
-      workoutTypes: settings?.workoutTypes || [],
-    };
-    setEditableSettings(settingsWithDefaults);
-    setIsEditing(false);
-    setSaveMessage(null);
-  };
-
   const handleSave = async () => {
     if (!editableSettings) return;
-
-    setIsSaving(true);
-    setSaveMessage(null);
 
     try {
       await updateUserSettings(1, editableSettings);
       setSettings(editableSettings);
-      setIsEditing(false);
-      setSaveMessage({ type: "success", text: "Settings saved successfully!" });
+      onSave?.();
     } catch (error) {
       console.error("Failed to save settings:", error);
-      setSaveMessage({
-        type: "error",
-        text: "Failed to save settings. Please try again.",
-      });
-    } finally {
-      setIsSaving(false);
+      throw error; // Let the parent handle the error display
     }
   };
+
+  // Expose the save method to parent component
+  useEffect(() => {
+    if (onSave) {
+      // Store the save function reference
+      (window as any).settingsSaveRef = handleSave;
+    }
+  }, [onSave, handleSave]);
 
   const updateSectionName = (sectionIndex: number, newName: string) => {
     if (!editableSettings) return;
@@ -194,31 +182,7 @@ function SettingsEdit() {
   };
 
   return (
-    <div className="card p-4 m-5">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h1>Settings</h1>
-        <div>
-          {!isEditing ? (
-            <button className="btn btn-primary" onClick={handleEdit}>
-              Edit Settings
-            </button>
-          ) : (
-            <div className="btn-group">
-              <button
-                className="btn btn-success"
-                onClick={handleSave}
-                disabled={isSaving}
-              >
-                {isSaving ? "Saving..." : "Save"}
-              </button>
-              <button className="btn btn-secondary" onClick={handleCancel}>
-                Cancel
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
+    <div>
       {saveMessage && (
         <div
           className={`alert alert-${
@@ -229,150 +193,152 @@ function SettingsEdit() {
         </div>
       )}
 
-      <div className="row">
-        {editableSettings?.homePageLayout?.map((section, sectionIndex) => (
-          <div
-            key={sectionIndex}
-            className="col-12 col-sm-6 col-md-6 col-lg-6 mb-3"
-          >
-            <div className="card h-100">
-              <div className="card-body">
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                  {isEditing ? (
-                    <input
-                      className="form-control"
-                      value={section.section}
-                      onChange={(e) =>
-                        updateSectionName(sectionIndex, e.target.value)
-                      }
-                      placeholder="Section name"
-                    />
-                  ) : (
-                    <h5 className="card-title mb-0">{section.section}</h5>
-                  )}
-                  {isEditing && (
-                    <button
-                      className="btn btn-outline-danger btn-sm ms-2"
-                      onClick={() => removeSection(sectionIndex)}
-                      title="Remove section"
-                    >
-                      ×
-                    </button>
-                  )}
-                </div>
+      <div className="card p-4">
+        <div className="row">
+          {editableSettings?.homePageLayout?.map((section, sectionIndex) => (
+            <div
+              key={sectionIndex}
+              className="col-12 col-sm-6 col-md-6 col-lg-6 mb-3"
+            >
+              <div className="card h-100">
+                <div className="card-body">
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    {isEditing ? (
+                      <input
+                        className="form-control"
+                        value={section.section}
+                        onChange={(e) =>
+                          updateSectionName(sectionIndex, e.target.value)
+                        }
+                        placeholder="Section name"
+                      />
+                    ) : (
+                      <h5 className="card-title mb-0">{section.section}</h5>
+                    )}
+                    {isEditing && (
+                      <button
+                        className="btn btn-outline-danger btn-sm ms-2"
+                        onClick={() => removeSection(sectionIndex)}
+                        title="Remove section"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
 
-                <div className="d-flex flex-column">
-                  {section.metricIds.map((metricId, metricIndex) => (
-                    <div key={metricIndex} className="d-flex mb-1">
-                      {isEditing ? (
-                        <>
-                          <div className="flex-grow-1 me-2">
-                            <input
-                              className="form-control"
-                              type="number"
-                              value={metricId}
-                              onChange={(e) =>
-                                updateMetricId(
-                                  sectionIndex,
-                                  metricIndex,
-                                  e.target.value
-                                )
+                  <div className="d-flex flex-column">
+                    {section.metricIds.map((metricId, metricIndex) => (
+                      <div key={metricIndex} className="d-flex mb-1">
+                        {isEditing ? (
+                          <>
+                            <div className="flex-grow-1 me-2">
+                              <input
+                                className="form-control"
+                                type="number"
+                                value={metricId}
+                                onChange={(e) =>
+                                  updateMetricId(
+                                    sectionIndex,
+                                    metricIndex,
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="Metric ID"
+                              />
+                              <small className="text-muted">
+                                {getMetricName(metricId)}
+                              </small>
+                            </div>
+                            <button
+                              className="btn btn-outline-danger btn-sm"
+                              onClick={() =>
+                                removeMetric(sectionIndex, metricIndex)
                               }
-                              placeholder="Metric ID"
-                            />
-                            <small className="text-muted">
-                              {getMetricName(metricId)}
-                            </small>
-                          </div>
-                          <button
-                            className="btn btn-outline-danger btn-sm"
-                            onClick={() =>
-                              removeMetric(sectionIndex, metricIndex)
-                            }
-                            title="Remove metric"
-                          >
-                            ×
-                          </button>
-                        </>
-                      ) : (
-                        <span className="form-control-plaintext">
-                          {metricId} - {getMetricName(metricId)}
-                        </span>
-                      )}
-                    </div>
-                  ))}
+                              title="Remove metric"
+                            >
+                              ×
+                            </button>
+                          </>
+                        ) : (
+                          <span className="form-control-plaintext">
+                            {metricId} - {getMetricName(metricId)}
+                          </span>
+                        )}
+                      </div>
+                    ))}
 
-                  {isEditing && (
-                    <button
-                      className="btn btn-outline-primary btn-sm mt-2"
-                      onClick={() => addMetric(sectionIndex)}
-                    >
-                      + Add Metric
-                    </button>
-                  )}
+                    {isEditing && (
+                      <button
+                        className="btn btn-outline-primary btn-sm mt-2"
+                        onClick={() => addMetric(sectionIndex)}
+                      >
+                        + Add Metric
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
-
-      {isEditing && (
-        <div className="mt-3">
-          <button className="btn btn-outline-success" onClick={addSection}>
-            + Add New Section
-          </button>
+          ))}
         </div>
-      )}
 
-      {/* Workout Types Section */}
-      <div className="mt-5">
-        <h3>Workout Types</h3>
-        <div className="card">
-          <div className="card-body">
-            {editableSettings?.workoutTypes &&
-            editableSettings.workoutTypes.length > 0 ? (
-              <div className="mb-3">
-                {editableSettings.workoutTypes.map((type, index) => (
-                  <div
-                    key={index}
-                    className="d-flex justify-content-between align-items-center mb-2"
-                  >
-                    {isEditing ? (
-                      <>
+        {isEditing && (
+          <div className="mt-3">
+            <button className="btn btn-outline-success" onClick={addSection}>
+              + Add New Section
+            </button>
+          </div>
+        )}
+
+        {/* Workout Types Section */}
+        <div className="mt-5">
+          <h3>Workout Types</h3>
+          <div className="card">
+            <div className="card-body">
+              {editableSettings?.workoutTypes &&
+              editableSettings.workoutTypes.length > 0 ? (
+                <div className="mb-3">
+                  {editableSettings.workoutTypes.map((type, index) => (
+                    <div
+                      key={index}
+                      className="d-flex justify-content-between align-items-center mb-2"
+                    >
+                      {isEditing ? (
+                        <>
+                          <span className="form-control-plaintext">{type}</span>
+                          <button
+                            className="btn btn-danger btn-sm"
+                            onClick={() => removeWorkoutType(index)}
+                          >
+                            Remove
+                          </button>
+                        </>
+                      ) : (
                         <span className="form-control-plaintext">{type}</span>
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={() => removeWorkoutType(index)}
-                        >
-                          Remove
-                        </button>
-                      </>
-                    ) : (
-                      <span className="form-control-plaintext">{type}</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-muted">No workout types defined</p>
-            )}
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted">No workout types defined</p>
+              )}
 
-            {isEditing && (
-              <div className="d-flex gap-2">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Add new workout type"
-                  value={newWorkoutType}
-                  onChange={(e) => setNewWorkoutType(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && addWorkoutType()}
-                />
-                <button className="btn btn-primary" onClick={addWorkoutType}>
-                  Add
-                </button>
-              </div>
-            )}
+              {isEditing && (
+                <div className="d-flex gap-2">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Add new workout type"
+                    value={newWorkoutType}
+                    onChange={(e) => setNewWorkoutType(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && addWorkoutType()}
+                  />
+                  <button className="btn btn-primary" onClick={addWorkoutType}>
+                    Add
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
