@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { getActiveMetrics } from "../services/metrics";
 import { saveDailyLog, getDailyLogs } from "../services/dailyLogs";
+import { clockIn, clockOut, getClockStatus } from "../services/clock";
 import type { Metric } from "../types/Metrics.ts";
 import type { DailyLog } from "../types/dailyLogs.ts";
+import type { ClockData } from "../types/dailyLogs";
 import { useDebounce } from "../hooks/useDebounce";
 import fetchSettings from "../hooks/fetchSettings.ts";
 import type { UserSettings } from "../types/users";
 import fetchLogs from "../hooks/fetchLogs.ts";
+import ClockButton from "../components/ClockButton";
 
 // IMPLEMENT auto no for empty days on booleans as an option
 function HomePage() {
@@ -14,6 +17,7 @@ function HomePage() {
   const [logValues, setLogValues] = useState<Record<number, string>>({});
   const [logs, setLogs] = useState<DailyLog[]>([]);
   const [settings, setSettings] = useState<UserSettings>();
+  const [clockData, setClockData] = useState<Record<number, ClockData>>({});
 
   const debouncedValues = useDebounce(logValues, 1000);
   const now = new Date();
@@ -32,6 +36,26 @@ function HomePage() {
       console.error("Error saving log:", err);
     }
   }
+
+  const handleClockToggle = async (
+    metricId: number,
+    newState: "clocked_in" | "clocked_out"
+  ) => {
+    try {
+      let updatedClockData: ClockData;
+      if (newState === "clocked_in") {
+        updatedClockData = await clockIn(metricId);
+      } else {
+        updatedClockData = await clockOut(metricId);
+      }
+      setClockData((prev) => ({
+        ...prev,
+        [metricId]: updatedClockData,
+      }));
+    } catch (error) {
+      console.error("Error toggling clock:", error);
+    }
+  };
 
   useEffect(() => {
     fetchSettings((fetchedSettings) => {
@@ -75,13 +99,46 @@ function HomePage() {
       try {
         const metrics = await getActiveMetrics();
         setActiveMetrics(metrics);
+
+        // Fetch clock data for clock metrics
+        const clockMetrics = metrics.filter((m) => m.data_type === "clock");
+        const clockDataPromises = clockMetrics.map(async (metric) => {
+          try {
+            const data = await getClockStatus(metric.id, today);
+            return { metricId: metric.id, data };
+          } catch (error) {
+            console.error(
+              `Failed to fetch clock data for metric ${metric.id}:`,
+              error
+            );
+            // If no clock data exists yet, create a default "clocked_out" state
+            return {
+              metricId: metric.id,
+              data: {
+                current_state: "clocked_out",
+                sessions: [],
+                total_duration_minutes: 0,
+                last_updated: null,
+              },
+            };
+          }
+        });
+
+        const clockResults = await Promise.all(clockDataPromises);
+        const clockDataMap: Record<number, ClockData> = {};
+        clockResults.forEach(({ metricId, data }) => {
+          if (data) {
+            clockDataMap[metricId] = data;
+          }
+        });
+        setClockData(clockDataMap);
       } catch (err) {
         console.error("Failed to fetch active metrics:", err);
       }
     };
 
     fetchMetrics();
-  }, []);
+  }, [today]);
 
   // Listen for log saved events from SpecificAdd component
   useEffect(() => {
@@ -179,7 +236,13 @@ function HomePage() {
                     <span className="badge bg-success ms-2">Today</span>
                   )}
                 </label>
-                {metric.data_type === "boolean" ? (
+                {metric.data_type === "clock" ? (
+                  <ClockButton
+                    metric={metric}
+                    clockData={clockData[metric.id]}
+                    onClockToggle={handleClockToggle}
+                  />
+                ) : metric.data_type === "boolean" ? (
                   <div>
                     <div className="form-check form-check-inline">
                       <input

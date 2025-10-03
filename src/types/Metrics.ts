@@ -10,7 +10,7 @@ export interface Metric {
   description?: string;
   parent_id?: number;
   is_required: boolean;
-  data_type: "int" | "boolean" | "text" | "scale" | "decimal";
+  data_type: "int" | "boolean" | "text" | "scale" | "decimal" | "clock";
   unit?: string;
   scale_min?: number;
   scale_max?: number;
@@ -18,17 +18,17 @@ export interface Metric {
   modifier_value?: string;
   notes_on: boolean;
   active: boolean;
-  created_at: string;   // ISO date string
-  updated_at: string;   // ISO date string
+  created_at: string; // ISO date string
+  updated_at: string; // ISO date string
 }
 
 export interface MetricCreate {
-    user_id: number;
-    name: string;
-    description?: string;
-    data_type: "int" | "boolean" | "text" | "scale" | "decimal";
-    scale_min?: number;
-    scale_max?: number;
-    unit?: string;
-    notes_on: boolean;
+  user_id: number;
+  name: string;
+  description?: string;
+  data_type: "int" | "boolean" | "text" | "scale" | "decimal" | "clock";
+  scale_min?: number;
+  scale_max?: number;
+  unit?: string;
+  notes_on: boolean;
 }

@@ -124,6 +124,7 @@ function AccountPage() {
             <option value="boolean">True/False</option>
             <option value="text">Text</option>
             <option value="scale">Scale (ex. 1-5)</option>
+            <option value="clock">Clock In/Out</option>
           </select>
         </div>
         {formData.data_type === "scale" && (
