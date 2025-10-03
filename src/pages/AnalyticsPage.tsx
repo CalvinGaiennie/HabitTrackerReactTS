@@ -25,6 +25,7 @@ const bubbleData = [
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28"];
 
 type ChartType = "pie" | "line" | "radar" | "bar" | "bubble";
+type AnalyticsTab = "charts" | "calendar";
 
 function AnalyticsPage() {
   const [selectedChart, setSelectedChart] = useState<ChartType>("pie");
@@ -44,6 +45,7 @@ function AnalyticsPage() {
     noDays: number;
     percentage: number;
   } | null>(null);
+  const [activeTab, setActiveTab] = useState<AnalyticsTab>("charts");
 
   const handleDataChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedData(Number(e.target.value));
@@ -148,94 +150,145 @@ function AnalyticsPage() {
   return (
     <div className="container mb-5">
       <h1 className="text-center mb-4">Analytics Page</h1>
-      {/* Data Selector */}
+
+      {/* Tab Navigation */}
       <div className="row justify-content-center mb-4">
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-body">
-              {/* <h3>Select Dates</h3> */}
-              <div className="d-flex gap-5 pb-4">
-                <DatePicker
-                  title="Start Date"
-                  setTargetDate={setStartDate}
-                  targetDate={startDate}
-                />
-                <DatePicker
-                  title="End Date"
-                  setTargetDate={setEndDate}
-                  targetDate={endDate}
-                />
-              </div>
-              <div>
-                <label htmlFor="chart-select" className="form-label">
-                  <strong>Select Data:</strong>
-                </label>
-                <select
-                  id="data-select"
-                  className="form-select"
-                  value={selectedData}
-                  onChange={handleDataChange}
-                >
-                  <option value={0}>Select a metric...</option>
-                  {metrics?.map((metric) => (
-                    <option key={metric.id} value={metric.id}>
-                      {metric.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
+        <div className="col-12">
+          <ul className="nav nav-tabs justify-content-center">
+            <li className="nav-item">
+              <button
+                className={`nav-link ${activeTab === "charts" ? "active" : ""}`}
+                onClick={() => setActiveTab("charts")}
+              >
+                Charts
+              </button>
+            </li>
+            <li className="nav-item">
+              <button
+                className={`nav-link ${
+                  activeTab === "calendar" ? "active" : ""
+                }`}
+                onClick={() => setActiveTab("calendar")}
+              >
+                Calendar
+              </button>
+            </li>
+          </ul>
         </div>
       </div>
-      {/* Selected Chart */}
-      <div className="row justify-content-center">
-        <div className="col-12">
-          <div className="card">
-            <div className="card-header">
-              <h3 className="text-center mb-0">{getChartTitle()}</h3>
-            </div>
-            <div className="card-body">
-              <div style={{ width: "100%", height: "400px" }}>
-                {renderChart()}
-              </div>
-              {/* Boolean Statistics */}
-              {booleanStats && (
-                <div className="mt-4">
-                  <h5>Boolean Metric Statistics</h5>
-                  <div className="row text-center">
-                    <div className="col-3">
-                      <div className="p-2">
-                        <div className="fw-bold text-primary">Total Days</div>
-                        <div>{booleanStats.totalDays}</div>
-                      </div>
-                    </div>
-                    <div className="col-3">
-                      <div className="p-2">
-                        <div className="fw-bold text-success">Yes Days</div>
-                        <div>{booleanStats.yesDays}</div>
-                      </div>
-                    </div>
-                    <div className="col-3">
-                      <div className="p-2">
-                        <div className="fw-bold text-danger">No/Null Days</div>
-                        <div>{booleanStats.noDays}</div>
-                      </div>
-                    </div>
-                    <div className="col-3">
-                      <div className="p-2">
-                        <div className="fw-bold text-info">Success Rate</div>
-                        <div>{booleanStats.percentage}%</div>
-                      </div>
-                    </div>
+
+      {/* Tab Content */}
+      {activeTab === "charts" && (
+        <>
+          {/* Data Selector */}
+          <div className="row justify-content-center mb-4">
+            <div className="col-md-8 col-lg-6">
+              <div className="card">
+                <div className="card-body">
+                  <div className="d-flex gap-4 pb-4">
+                    <DatePicker
+                      title="Start Date"
+                      setTargetDate={setStartDate}
+                      targetDate={startDate}
+                    />
+                    <DatePicker
+                      title="End Date"
+                      setTargetDate={setEndDate}
+                      targetDate={endDate}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="chart-select" className="form-label">
+                      <strong>Select Data:</strong>
+                    </label>
+                    <select
+                      id="data-select"
+                      className="form-select"
+                      value={selectedData}
+                      onChange={handleDataChange}
+                    >
+                      <option value={0}>Select a metric...</option>
+                      {metrics?.map((metric) => (
+                        <option key={metric.id} value={metric.id}>
+                          {metric.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
-              )}
+              </div>
+            </div>
+          </div>
+          {/* Selected Chart */}
+          <div className="row justify-content-center">
+            <div className="col-12">
+              <div className="card">
+                <div className="card-header">
+                  <h3 className="text-center mb-0">{getChartTitle()}</h3>
+                </div>
+                <div className="card-body">
+                  <div style={{ width: "100%", height: "400px" }}>
+                    {renderChart()}
+                  </div>
+                  {/* Boolean Statistics */}
+                  {booleanStats && (
+                    <div className="mt-4">
+                      <h5>Boolean Metric Statistics</h5>
+                      <div className="row text-center">
+                        <div className="col-3">
+                          <div className="p-2">
+                            <div className="fw-bold text-primary">
+                              Total Days
+                            </div>
+                            <div>{booleanStats.totalDays}</div>
+                          </div>
+                        </div>
+                        <div className="col-3">
+                          <div className="p-2">
+                            <div className="fw-bold text-success">Yes Days</div>
+                            <div>{booleanStats.yesDays}</div>
+                          </div>
+                        </div>
+                        <div className="col-3">
+                          <div className="p-2">
+                            <div className="fw-bold text-danger">
+                              No/Null Days
+                            </div>
+                            <div>{booleanStats.noDays}</div>
+                          </div>
+                        </div>
+                        <div className="col-3">
+                          <div className="p-2">
+                            <div className="fw-bold text-info">
+                              Success Rate
+                            </div>
+                            <div>{booleanStats.percentage}%</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {activeTab === "calendar" && (
+        <div className="row justify-content-center">
+          <div className="col-12">
+            <div className="card">
+              <div className="card-header">
+                <h3 className="text-center mb-0">Calendar View</h3>
+              </div>
+              <div className="card-body">
+                <Calendar metrics={metrics || []} />
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <Calendar />
+      )}
     </div>
   );
 }
