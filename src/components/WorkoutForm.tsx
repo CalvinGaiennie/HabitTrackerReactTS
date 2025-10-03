@@ -200,7 +200,7 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
   return (
     <div className="container">
       <div className="row justify-content-center">
-        <div className="col-md-6">
+        <div className="col-12">
           <div className="card">
             <div className="card-header">
               <h2 className="text-center mb-0">Create Workout</h2>

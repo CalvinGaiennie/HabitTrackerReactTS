@@ -98,6 +98,13 @@ function AnalyticsPage() {
     fetchMetrics(setMetrics);
   }, []);
 
+  // Auto-select first metric when metrics are loaded
+  useEffect(() => {
+    if (metrics && metrics.length > 0 && selectedData === 0) {
+      setSelectedData(metrics[0].id);
+    }
+  }, [metrics, selectedData]);
+
   useEffect(() => {
     if (selectedData === 0) {
       setData([]);
@@ -182,7 +189,7 @@ function AnalyticsPage() {
         <>
           {/* Data Selector */}
           <div className="row justify-content-center mb-4">
-            <div className="col-md-8 col-lg-6">
+            <div className="col-12">
               <div className="card">
                 <div className="card-body">
                   <div className="d-flex gap-4 pb-4">
@@ -280,7 +287,7 @@ function AnalyticsPage() {
           <div className="col-12">
             <div className="card">
               <div className="card-header">
-                <h3 className="text-center mb-0">Calendar View</h3>
+                <h3 className="text-center mb-0"> Boolean Calendar View</h3>
               </div>
               <div className="card-body">
                 <Calendar metrics={metrics || []} />

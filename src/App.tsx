@@ -11,19 +11,21 @@ import { AuthProvider } from "./context";
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <NavBar />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/Diet" element={<DietPage />} />
-          {/* <Route path="/Finance" element={<FinancePage/>} /> */}
-          <Route path="/Workout" element={<WorkoutPage />} />
-          <Route path="/Account" element={<AccountPage />} />
-          <Route path="/Analytics" element={<AnalyticsPage />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <div style={{ maxWidth: "700px", margin: "0 auto", marginBottom: "4rem" }}>
+      <AuthProvider>
+        <BrowserRouter>
+          <NavBar />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/Diet" element={<DietPage />} />
+            {/* <Route path="/Finance" element={<FinancePage/>} /> */}
+            <Route path="/Workout" element={<WorkoutPage />} />
+            <Route path="/Account" element={<AccountPage />} />
+            <Route path="/Analytics" element={<AnalyticsPage />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </div>
   );
 }
 

@@ -18,7 +18,7 @@ function WorkoutPage() {
   return (
     <div className="container">
       <div className="row justify-content-center mb-4">
-        <div className="col-md-8">
+        <div className="col-12">
           <h1 className="text-center mb-4">Workouts</h1>
 
           {/* Tab Navigation */}

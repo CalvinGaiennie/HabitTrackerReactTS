@@ -334,8 +334,6 @@ function AccountPage() {
                     </button>
                   )}
                 </form>
-                <hr />
-                <SpecificAdd />
               </div>
             )}
 
