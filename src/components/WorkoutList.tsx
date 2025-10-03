@@ -86,6 +86,50 @@ function WorkoutList() {
                     <strong>Notes:</strong> {workout.notes}
                   </div>
                 )}
+
+                {workout.exercises && workout.exercises.length > 0 && (
+                  <div className="mt-3">
+                    <strong>Exercises:</strong>
+                    {workout.exercises.map((exercise, exerciseIndex) => (
+                      <div
+                        key={exerciseIndex}
+                        className="mt-2 p-2 border rounded"
+                      >
+                        <div className="fw-bold">{exercise.name}</div>
+                        {exercise.sets && exercise.sets.length > 0 && (
+                          <div className="mt-1">
+                            <small className="text-muted">Sets:</small>
+                            {exercise.sets.map((set, setIndex) => (
+                              <div key={setIndex} className="ms-2 small">
+                                {set.reps && <span>Reps: {set.reps}</span>}
+                                {set.weight && (
+                                  <span className="ms-2">
+                                    Weight: {set.weight}lbs
+                                  </span>
+                                )}
+                                {set.rest_duration && (
+                                  <span className="ms-2">
+                                    Rest: {set.rest_duration}s
+                                  </span>
+                                )}
+                                {set.notes && (
+                                  <span className="ms-2">
+                                    Notes: {set.notes}
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {exercise.notes && (
+                          <div className="mt-1 small text-muted">
+                            Exercise notes: {exercise.notes}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

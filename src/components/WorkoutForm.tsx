@@ -17,10 +17,29 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
   const [successMessage, setSuccessMessage] = useState("");
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
     fetchUserSettings();
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest(".dropdown")) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   // Refresh settings when component becomes visible (e.g., after returning from settings)
   useEffect(() => {
@@ -227,33 +246,56 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="workout_types" className="form-label">
+                    <label className="form-label">
                       <strong>Workout Types</strong>
                     </label>
-                    <select
-                      id="workout_types"
-                      className="form-select"
-                      multiple
-                      size={Math.min(workoutTypes.length, 6)}
-                      value={selectedTypes}
-                      onChange={(e) => {
-                        const options = Array.from(
-                          e.target.selectedOptions,
-                          (option) => option.value
-                        );
-                        setSelectedTypes(options);
-                      }}
-                      required
-                    >
-                      {workoutTypes.map((type) => (
-                        <option key={type} value={type}>
-                          {type}
-                        </option>
-                      ))}
-                    </select>
-                    <small className="text-muted">
-                      Hold Ctrl/Cmd to select multiple types
-                    </small>
+                    <div className="dropdown">
+                      <button
+                        className="btn btn-outline-secondary dropdown-toggle w-100 text-start"
+                        type="button"
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        style={{ minHeight: "44px" }}
+                      >
+                        {selectedTypes.length === 0
+                          ? "Select workout types..."
+                          : selectedTypes.length === 1
+                          ? selectedTypes[0]
+                          : `${selectedTypes.length} types selected`}
+                      </button>
+                      {isDropdownOpen && (
+                        <ul
+                          className="dropdown-menu w-100 show"
+                          style={{ display: "block" }}
+                        >
+                          {workoutTypes.map((type) => (
+                            <li key={type}>
+                              <div className="dropdown-item-text">
+                                <div className="form-check">
+                                  <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    id={`type-${type}`}
+                                    checked={selectedTypes.includes(type)}
+                                    onChange={() => handleTypeToggle(type)}
+                                  />
+                                  <label
+                                    className="form-check-label w-100"
+                                    htmlFor={`type-${type}`}
+                                  >
+                                    {type}
+                                  </label>
+                                </div>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                    {selectedTypes.length === 0 && (
+                      <small className="text-muted">
+                        Select at least one workout type
+                      </small>
+                    )}
                   </div>
 
                   {/* Exercises Section */}
