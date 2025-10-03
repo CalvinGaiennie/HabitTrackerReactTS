@@ -54,7 +54,19 @@ function AnalyticsPage() {
       case "pie":
         return <PieChartComponent data={data ? data : []} COLORS={COLORS} />;
       case "line":
-        return <LineChartComponent data={data ? data : []} />;
+        const selectedMetric = metrics?.find(
+          (metric) => metric.id === selectedData
+        );
+        return (
+          <LineChartComponent
+            data={data ? data : []}
+            metric={
+              selectedMetric
+                ? { name: selectedMetric.name, unit: selectedMetric.unit }
+                : undefined
+            }
+          />
+        );
       case "bar":
         return <BarChartComponent data={data ? data : []} />;
       case "bubble":

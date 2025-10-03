@@ -11,8 +11,10 @@ import {
 
 function LineChartComponent({
   data,
+  metric,
 }: {
   data: { name: string; value: number }[];
+  metric?: { name: string; unit?: string };
 }) {
   const maxValue = Math.max(...data.map((item) => item.value));
   const minValue = Math.min(...data.map((item) => item.value));
@@ -151,7 +153,14 @@ function LineChartComponent({
           ticks={customTicks}
         />
         <Tooltip />
-        <Legend />
+        <Legend
+          formatter={(value, entry) => {
+            if (metric?.unit) {
+              return `${metric.name} (${metric.unit})`;
+            }
+            return metric?.name || "value";
+          }}
+        />
         <Line
           type="monotone"
           dataKey="value"
