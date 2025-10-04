@@ -20,7 +20,9 @@ function ClockButton({ metric, clockData, onClockToggle }: ClockButtonProps) {
 
   // Ensure clockData has proper structure
   const safeClockData = useMemo(() => {
-    return clockData && typeof clockData === "object" && "current_state" in clockData
+    return clockData &&
+      typeof clockData === "object" &&
+      "current_state" in clockData
       ? clockData
       : {
           current_state: "clocked_out" as const,
