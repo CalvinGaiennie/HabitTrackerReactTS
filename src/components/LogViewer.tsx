@@ -9,7 +9,12 @@ function LogViewer({ logs }: LogViewerProps) {
   // Get unique dates from logs
   const availableDates = Array.from(
     new Set(
-      logs.map((log) => new Date(log.log_date).toISOString().split("T")[0])
+      logs.map((log) => {
+        // Parse date string directly to avoid timezone issues
+        const [year, month, day] = log.log_date.split("-").map(Number);
+        const logDate = new Date(year, month - 1, day);
+        return logDate.toISOString().split("T")[0];
+      })
     )
   ).sort((a, b) => (a < b ? 1 : -1)); // Sort newest first
 
@@ -19,8 +24,10 @@ function LogViewer({ logs }: LogViewerProps) {
 
   // Filter logs by selected date
   const filteredLogs = logs.filter((log) => {
-    const logDate = new Date(log.log_date).toISOString().split("T")[0];
-    return logDate === selectedDate;
+    // Parse date string directly to avoid timezone issues
+    const [year, month, day] = log.log_date.split("-").map(Number);
+    const logDate = new Date(year, month - 1, day);
+    return logDate.toISOString().split("T")[0] === selectedDate;
   });
   function renderLogValue(log: DailyLog) {
     if (log.value_text !== null && log.value_text !== undefined) {

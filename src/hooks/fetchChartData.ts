@@ -42,26 +42,32 @@ export default function fetchChartData(
 
       // Filter by selected metric
       const filteredData = data
-        .map((log) => ({
-          name: new Date(log.log_date).toLocaleDateString("en-US", {
-            month: "2-digit",
-            day: "2-digit",
-            year: "2-digit",
-          }),
-          value: log.value_int
-            ? log.value_int
-            : log.value_boolean
-            ? log.value_boolean
-              ? 1
-              : 0
-            : log.value_text
-            ? log.value_text
-            : log.value_decimal
-            ? log.value_decimal
-            : 0,
-          metricId: log.metric_id,
-          createdAt: log.log_date,
-        }))
+        .map((log) => {
+          // Parse date string directly to avoid timezone issues
+          const [year, month, day] = log.log_date.split("-").map(Number);
+          const logDate = new Date(year, month - 1, day);
+
+          return {
+            name: logDate.toLocaleDateString("en-US", {
+              month: "2-digit",
+              day: "2-digit",
+              year: "2-digit",
+            }),
+            value: log.value_int
+              ? log.value_int
+              : log.value_boolean
+              ? log.value_boolean
+                ? 1
+                : 0
+              : log.value_text
+              ? log.value_text
+              : log.value_decimal
+              ? log.value_decimal
+              : 0,
+            metricId: log.metric_id,
+            createdAt: log.log_date,
+          };
+        })
         .filter((item) => item.metricId === selectedData);
 
       // Check if this is boolean data (only 0s and 1s)

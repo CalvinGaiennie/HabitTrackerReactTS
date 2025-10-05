@@ -275,12 +275,17 @@ function HomePage() {
                   const metric = activeMetrics.find((m) => m.id === metricId);
                   if (!metric) return null;
 
-                  const hasLogToday = logs.some(
-                    (log) =>
+                  const hasLogToday = logs.some((log) => {
+                    // Parse date string directly to avoid timezone issues
+                    const [year, month, day] = log.log_date
+                      .split("-")
+                      .map(Number);
+                    const logDate = new Date(year, month - 1, day);
+                    return (
                       log.metric_id === metric.id &&
-                      new Date(log.log_date).toISOString().split("T")[0] ===
-                        today
-                  );
+                      logDate.toISOString().split("T")[0] === today
+                    );
+                  });
 
                   return (
                     <div

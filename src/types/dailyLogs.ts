@@ -32,5 +32,6 @@ export interface DailyLog {
   value_decimal: number | null;
   note: string;
   created_at: string;
+  deleted_at: string | null;
   metric: MetricMini;
 }
