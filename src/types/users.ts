@@ -3,6 +3,15 @@ export interface User {
   settings: UserSettings;
 }
 
+export interface UserCreate {
+  username: string;
+  password: string;
+  email: string;
+  first_name: string;
+  last_name:string
+  settings: UserSettings;
+}
+
 export interface UserSettings {
   enabledPages: string[];
   homePageLayout: HomePageSection[];

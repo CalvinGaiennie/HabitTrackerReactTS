@@ -1,5 +1,17 @@
 import request from "./api";
-import type { User, UserSettings } from "../types/users.ts";
+import type { User, UserCreate, UserSettings } from "../types/users.ts";
+
+
+export async function createUser(userData: UserCreate): Promise<User> {
+  return request<UserCreate>(`/users/create`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(userData),
+  });
+}
+
 
 export async function getUserSettings(userId: number): Promise<User> {
   return request<User>(`/users/${userId}`);

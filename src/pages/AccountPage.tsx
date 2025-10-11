@@ -576,7 +576,8 @@ function AccountPage() {
       </ul>
 
       {/* Tab Content */}
-      <div className="tab-content">{renderTabContent()}</div>
+      <div className="tab-content mb-5">{renderTabContent()}</div>
+        <button>Logout</button>
     </div>
   );
 }

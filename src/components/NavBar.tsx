@@ -10,6 +10,11 @@ function NavBar() {
           </NavLink>
         </li>
         <li className="nav-item mb-md-0">
+          <NavLink className="nav-link fs-5 text-dark px-3" to="/notes">
+            Notes
+          </NavLink>
+        </li>
+        <li className="nav-item mb-md-0">
           <NavLink className="nav-link fs-5 text-dark px-3" to="/Diet">
             Diet
           </NavLink>
@@ -30,6 +35,17 @@ function NavBar() {
         <li className="nav-item mb-md-0">
           <NavLink className="nav-link fs-5 text-dark px-3" to="/Account">
             Account
+          </NavLink>
+        </li>
+        {/* conditionally render these if user is not logged in */}
+        <li className="nav-item mb-md-0">
+          <NavLink className="nav-link fs-5 text-dark px-3" to="/CreateAccount">
+            Create Account
+          </NavLink>
+        </li>
+        <li className="nav-item mb-md-0">
+          <NavLink className="nav-link fs-5 text-dark px-3" to="/Login">
+            Login
           </NavLink>
         </li>
       </ul>

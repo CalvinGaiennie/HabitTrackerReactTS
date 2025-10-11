@@ -7,7 +7,11 @@ import AccountPage from "./pages/AccountPage";
 import NavBar from "./components/NavBar.tsx";
 import "./App.css";
 import AnalyticsPage from "./pages/AnalyticsPage.tsx";
+import NotesPage from "./pages/NotesPage.tsx";
 import { AuthProvider } from "./context";
+import CreateAccountPage from "./pages/CreateAccountPage.tsx";
+import LoginPage from "./pages/LoginPage.tsx";
+
 
 function App() {
   return (
@@ -17,11 +21,14 @@ function App() {
           <NavBar />
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/notes" element={<NotesPage />} />
             <Route path="/Diet" element={<DietPage />} />
             {/* <Route path="/Finance" element={<FinancePage/>} /> */}
             <Route path="/Workout" element={<WorkoutPage />} />
             <Route path="/Account" element={<AccountPage />} />
             <Route path="/Analytics" element={<AnalyticsPage />} />
+            <Route path="/CreateAccount" element={<CreateAccountPage />} />
+            <Route path="/Login" element={<LoginPage />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
