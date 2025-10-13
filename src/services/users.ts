@@ -3,7 +3,7 @@ import type { User, UserCreate, UserSettings } from "../types/users.ts";
 
 
 export async function createUser(userData: UserCreate): Promise<User> {
-  return request<UserCreate>(`/users/create`, {
+  return request<User>(`/users/create`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

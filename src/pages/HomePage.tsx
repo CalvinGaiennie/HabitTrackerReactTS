@@ -228,6 +228,7 @@ function HomePage() {
           value_text: "",
           value_decimal: null,
           note: "",
+          deleted_at: null,
           metric: { id: Number(metricId), name: metric.name },
         };
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { Metric } from "../types/Metrics";
 import type { DailyLog } from "../types/dailyLogs";
 import { getDailyLogs } from "../services/dailyLogs";
@@ -15,34 +15,34 @@ interface CalendarMonthProps {
 
 const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-  const metricColors = [
-    "#0088FE",
-    "#00C49F",
-    "#FFBB28",
-    "#FF8042",
-    "#8884D8",
-    "#82CA9D",
-    "#FFC658",
-    "#8DD1E1",
-    "#FF6B6B",
-    "#4ECDC4",
-  ];
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+const metricColors = [
+  "#0088FE",
+  "#00C49F",
+  "#FFBB28",
+  "#FF8042",
+  "#8884D8",
+  "#82CA9D",
+  "#FFC658",
+  "#8DD1E1",
+  "#FF6B6B",
+  "#4ECDC4",
+];
 
-function CalendarMonth({year, month, metrics, numberOfMonths}: CalendarMonthProps) {
-  const [logs, setLogs] = useState<DailyLog[]>([])
+function CalendarMonth({ metrics }: CalendarMonthProps) {
+  const [logs, setLogs] = useState<DailyLog[]>([]);
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
   // Get the first day of the month and how many days it has
@@ -56,7 +56,7 @@ function CalendarMonth({year, month, metrics, numberOfMonths}: CalendarMonthProp
   // Get the number of days in the previous month for padding
   const daysInPreviousMonth = new Date(currentYear, currentMonth, 0).getDate();
 
-    const calendarDays: Array<{
+  const calendarDays: Array<{
     day: number;
     isCurrentMonth: boolean;
     isPreviousMonth: boolean;
@@ -99,19 +99,19 @@ function CalendarMonth({year, month, metrics, numberOfMonths}: CalendarMonthProp
   }
 
   const booleanMetrics = useMemo(() => {
-      // console.log("Calculating boolean metrics:", { logsLength: logs.length, metricsLength: metrics.length });
-      if (logs.length > 0 && metrics?.length > 0) {
-        const result = metrics?.filter((metric) => {
-          // Check if this metric has any logs with value_boolean
-          return logs.some(
-            (log) => log.metric_id === metric.id && log.value_boolean !== null
-          );
-        });
-        // console.log("Boolean metrics result:", result.length);
-        return result;
-      }
-      return [];
-    }, [logs, metrics]);
+    // console.log("Calculating boolean metrics:", { logsLength: logs.length, metricsLength: metrics.length });
+    if (logs.length > 0 && metrics && metrics.length > 0) {
+      const result = metrics.filter((metric) => {
+        // Check if this metric has any logs with value_boolean
+        return logs.some(
+          (log) => log.metric_id === metric.id && log.value_boolean !== null
+        );
+      });
+      // console.log("Boolean metrics result:", result.length);
+      return result;
+    }
+    return [];
+  }, [logs, metrics]);
 
   const metricsWithColors = booleanMetrics?.map((metric, index) => ({
     ...metric,
@@ -169,137 +169,130 @@ function CalendarMonth({year, month, metrics, numberOfMonths}: CalendarMonthProp
   };
 
   useEffect(() => {
-      const fetchLogs = async () => {
-        try {
-          // Fetch logs for a wider range to include previous and next month days
-          const startDate = new Date(currentYear, currentMonth - 1, 1); // Previous month
-          const endDate = new Date(currentYear, currentMonth + 2, 0); // Next month
-          const logsData = await getDailyLogs();
-  
-          // Filter logs for the expanded range
-          const monthLogs = logsData.filter((log) => {
-            const [yearStr, monthStr, dayStr] = log.log_date.split("-");
-            const logDate = new Date(
-              parseInt(yearStr),
-              parseInt(monthStr) - 1,
-              parseInt(dayStr)
-            );
-            return logDate >= startDate && logDate <= endDate;
-          });
-  
-          setLogs(monthLogs);
-        } catch (error) {
-          console.error("Failed to fetch logs:", error);
-        }
-      };
-  
-      fetchLogs();
-    }, [currentYear, currentMonth, metrics]);
+    const fetchLogs = async () => {
+      try {
+        // Fetch logs for a wider range to include previous and next month days
+        const startDate = new Date(currentYear, currentMonth - 1, 1); // Previous month
+        const endDate = new Date(currentYear, currentMonth + 2, 0); // Next month
+        const logsData = await getDailyLogs();
 
-    return (
-        <div className="calendar">
-          {/* Calendar grid */}
-          <h4 className="mb-3 text-center">{monthNames[currentMonth]}</h4>
-          <div className="calendar-grid">
-            {/* Day names header */}
-            <div className="calendar-weekdays d-flex">
-              {dayNames.map((dayName) => (
-                <div
-                  key={dayName}
-                  className="calendar-weekday text-center fw-bold"
-                >
-                  {dayName}
-                </div>
-              ))}
+        // Filter logs for the expanded range
+        const monthLogs = logsData.filter((log) => {
+          const [yearStr, monthStr, dayStr] = log.log_date.split("-");
+          const logDate = new Date(
+            parseInt(yearStr),
+            parseInt(monthStr) - 1,
+            parseInt(dayStr)
+          );
+          return logDate >= startDate && logDate <= endDate;
+        });
+
+        setLogs(monthLogs);
+      } catch (error) {
+        console.error("Failed to fetch logs:", error);
+      }
+    };
+
+    fetchLogs();
+  }, [currentYear, currentMonth, metrics]);
+
+  return (
+    <div className="calendar">
+      {/* Calendar grid */}
+      <h4 className="mb-3 text-center">{monthNames[currentMonth]}</h4>
+      <div className="calendar-grid">
+        {/* Day names header */}
+        <div className="calendar-weekdays d-flex">
+          {dayNames.map((dayName) => (
+            <div key={dayName} className="calendar-weekday text-center fw-bold">
+              {dayName}
             </div>
-
-            {/* Calendar days */}
-            <div className="calendar-days">
-              {Array.from({ length: 5 }, (_, weekIndex) => (
-                <div key={weekIndex} className="calendar-week d-flex">
-                  {Array.from({ length: 7 }, (_, dayIndex) => {
-                    const dayData = calendarDays[weekIndex * 7 + dayIndex];
-
-                    // Get logs for any visible day (current month, previous month, or next month)
-                    let dayLogs = [];
-                    if (dayData.isCurrentMonth) {
-                      dayLogs = getLogsForDay(dayData.day);
-                    } else if (dayData.isPreviousMonth) {
-                      // For previous month days, check the previous month
-                      const prevMonth = dayData.month;
-                      const prevYear = dayData.year;
-                      dayLogs = logs.filter((log) => {
-                        const [yearStr, monthStr, dayStr] =
-                          log.log_date.split("-");
-                        const logDate = new Date(
-                          parseInt(yearStr),
-                          parseInt(monthStr) - 1,
-                          parseInt(dayStr)
-                        );
-                        return (
-                          logDate.getDate() === dayData.day &&
-                          logDate.getMonth() === prevMonth &&
-                          logDate.getFullYear() === prevYear
-                        );
-                      });
-                    } else {
-                      // For next month days, check the next month
-                      const nextMonth = dayData.month;
-                      const nextYear = dayData.year;
-                      dayLogs = logs.filter((log) => {
-                        const [yearStr, monthStr, dayStr] =
-                          log.log_date.split("-");
-                        const logDate = new Date(
-                          parseInt(yearStr),
-                          parseInt(monthStr) - 1,
-                          parseInt(dayStr)
-                        );
-                        return (
-                          logDate.getDate() === dayData.day &&
-                          logDate.getMonth() === nextMonth &&
-                          logDate.getFullYear() === nextYear
-                        );
-                      });
-                    }
-
-                    // Get boolean logs with "yes" responses
-                    const yesLogs = dayLogs.filter(
-                      (log) => log.value_boolean === true
-                    );
-
-                    return (
-                      <div
-                        key={`${weekIndex}-${dayIndex}`}
-                        className={`calendar-day ${
-                          dayData.isCurrentMonth
-                            ? "calendar-day-current"
-                            : "calendar-day-previous"
-                        }`}
-                      >
-                        <div className="calendar-day-number">{dayData.day}</div>
-                        {yesLogs.length > 0 && (
-                          <div className="calendar-day-indicators">
-                            {yesLogs.map((log, logIndex) => (
-                              <div
-                                key={logIndex}
-                                className="calendar-day-indicator"
-                                style={{
-                                  backgroundColor: getMetricColor(
-                                    log.metric_id
-                                  ),
-                                }}
-                              ></div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          </div>
+          ))}
         </div>
-    );
+
+        {/* Calendar days */}
+        <div className="calendar-days">
+          {Array.from({ length: 5 }, (_, weekIndex) => (
+            <div key={weekIndex} className="calendar-week d-flex">
+              {Array.from({ length: 7 }, (_, dayIndex) => {
+                const dayData = calendarDays[weekIndex * 7 + dayIndex];
+
+                // Get logs for any visible day (current month, previous month, or next month)
+                let dayLogs = [];
+                if (dayData.isCurrentMonth) {
+                  dayLogs = getLogsForDay(dayData.day);
+                } else if (dayData.isPreviousMonth) {
+                  // For previous month days, check the previous month
+                  const prevMonth = dayData.month;
+                  const prevYear = dayData.year;
+                  dayLogs = logs.filter((log) => {
+                    const [yearStr, monthStr, dayStr] = log.log_date.split("-");
+                    const logDate = new Date(
+                      parseInt(yearStr),
+                      parseInt(monthStr) - 1,
+                      parseInt(dayStr)
+                    );
+                    return (
+                      logDate.getDate() === dayData.day &&
+                      logDate.getMonth() === prevMonth &&
+                      logDate.getFullYear() === prevYear
+                    );
+                  });
+                } else {
+                  // For next month days, check the next month
+                  const nextMonth = dayData.month;
+                  const nextYear = dayData.year;
+                  dayLogs = logs.filter((log) => {
+                    const [yearStr, monthStr, dayStr] = log.log_date.split("-");
+                    const logDate = new Date(
+                      parseInt(yearStr),
+                      parseInt(monthStr) - 1,
+                      parseInt(dayStr)
+                    );
+                    return (
+                      logDate.getDate() === dayData.day &&
+                      logDate.getMonth() === nextMonth &&
+                      logDate.getFullYear() === nextYear
+                    );
+                  });
+                }
+
+                // Get boolean logs with "yes" responses
+                const yesLogs = dayLogs.filter(
+                  (log) => log.value_boolean === true
+                );
+
+                return (
+                  <div
+                    key={`${weekIndex}-${dayIndex}`}
+                    className={`calendar-day ${
+                      dayData.isCurrentMonth
+                        ? "calendar-day-current"
+                        : "calendar-day-previous"
+                    }`}
+                  >
+                    <div className="calendar-day-number">{dayData.day}</div>
+                    {yesLogs.length > 0 && (
+                      <div className="calendar-day-indicators">
+                        {yesLogs.map((log, logIndex) => (
+                          <div
+                            key={logIndex}
+                            className="calendar-day-indicator"
+                            style={{
+                              backgroundColor: getMetricColor(log.metric_id),
+                            }}
+                          ></div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
-export default CalendarMonth
+export default CalendarMonth;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type { Metric } from "../types/Metrics.ts";
-import type { DailyLog, MetricMini } from "../types/dailyLogs.ts";
+import type { DailyLog } from "../types/dailyLogs.ts";
 import { getActiveMetrics } from "../services/metrics";
 import { saveDailyLog, getDailyLogs } from "../services/dailyLogs";
 
@@ -72,17 +72,7 @@ function SpecificAdd() {
     const inputValue = logValues[selectedMetric.id.toString()];
 
     // Initialize with default values for all fields, then only set the one that matches the data type
-    const logData: {
-      metric_id: number;
-      user_id: number;
-      log_date: string;
-      value_int: number;
-      value_decimal: number | null;
-      value_boolean: boolean;
-      value_text: string;
-      note: string;
-      metric: MetricMini;
-    } = {
+    const logData: Omit<DailyLog, "id" | "created_at"> = {
       metric_id: selectedMetricId,
       user_id: 1, // Replace with actual user ID
       log_date: selectedDate,
@@ -91,6 +81,7 @@ function SpecificAdd() {
       value_text: "",
       value_decimal: null,
       note: "",
+      deleted_at: null,
       metric: selectedMetric,
     };
 

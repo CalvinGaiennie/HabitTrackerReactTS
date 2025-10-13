@@ -1,11 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
 import type { Metric } from "../types/Metrics";
 import "./Calendar.css";
-import CalendarMonth
-from "./CalendarMonth";
+import CalendarMonth from "./CalendarMonth";
 import type { DailyLog } from "../types/dailyLogs";
 import { getDailyLogs } from "../services/dailyLogs";
-
 
 interface CalendarProps {
   year?: number;
@@ -14,11 +12,16 @@ interface CalendarProps {
   className?: string;
 }
 
-function Calendar({year = new Date().getFullYear(), month = new Date().getMonth(), metrics = [], className = ""}: CalendarProps) {
+function Calendar({
+  year = new Date().getFullYear(),
+  month = new Date().getMonth(),
+  metrics = [],
+  className = "",
+}: CalendarProps) {
   const [currentYear, setCurrentYear] = useState(year);
   const [currentMonth, setCurrentMonth] = useState(month);
-  const [numberOfMonths, setNumberOfMonths] = useState<number>(1)
-  const [allLogs, setAllLogs] = useState<DailyLog[]>([])
+  const [numberOfMonths, setNumberOfMonths] = useState<number>(1);
+  const [allLogs, setAllLogs] = useState<DailyLog[]>([]);
 
   // Navigation functions
   const goToPreviousMonth = () => {
@@ -44,8 +47,6 @@ function Calendar({year = new Date().getFullYear(), month = new Date().getMonth(
   //   setCurrentYear(today.getFullYear());
   //   setCurrentMonth(today.getMonth());
   // };
-
-
 
   // Get the first day of the month and how many days it has
   const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
@@ -73,9 +74,6 @@ function Calendar({year = new Date().getFullYear(), month = new Date().getMonth(
     "November",
     "December",
   ];
-
-  // Day names
-  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   // Colors for metrics
   const metricColors = [
@@ -111,12 +109,6 @@ function Calendar({year = new Date().getFullYear(), month = new Date().getMonth(
     ...metric,
     color: metricColors[index % metricColors.length],
   }));
-
-  // Get color for a metric
-  const getMetricColor = (metricId: number) => {
-    const metric = metricsWithColors.find((m) => m.id === metricId);
-    return metric?.color || "#000000";
-  };
 
   // Generate calendar grid
   const calendarDays: Array<{
@@ -165,13 +157,13 @@ function Calendar({year = new Date().getFullYear(), month = new Date().getMonth(
     const fetchLogs = async () => {
       try {
         const allNewLogs = await getDailyLogs();
-        setAllLogs(allNewLogs)
+        setAllLogs(allNewLogs);
       } catch (error) {
-        console.error("Failed to fetch logs.", error)
+        console.error("Failed to fetch logs.", error);
       }
-    }
+    };
     fetchLogs();
-  }, [])
+  }, []);
 
   return (
     <div className={`calendar-with-legend ${className}`}>
@@ -197,9 +189,12 @@ function Calendar({year = new Date().getFullYear(), month = new Date().getMonth(
           </button>
         </div>
         <div className="d-flex flex-row">
-          <h6># Of Months: </h6>
-          {" "}
-          <input value={numberOfMonths} onChange={(e) => setNumberOfMonths(Number(e.target.value))} type="number"/>
+          <h6># Of Months: </h6>{" "}
+          <input
+            value={numberOfMonths}
+            onChange={(e) => setNumberOfMonths(Number(e.target.value))}
+            type="number"
+          />
         </div>
         {/* <div className="mt-2">
           <button
@@ -230,10 +225,15 @@ function Calendar({year = new Date().getFullYear(), month = new Date().getMonth(
           </div>
         </div>
 
-        <CalendarMonth year={currentYear} month={currentMonth}metrics={metrics} numberOfMonths={numberOfMonths}/>
+        <CalendarMonth
+          year={currentYear}
+          month={currentMonth}
+          metrics={metrics}
+          numberOfMonths={numberOfMonths}
+        />
       </div>
     </div>
   );
-};
+}
 
 export default Calendar;
