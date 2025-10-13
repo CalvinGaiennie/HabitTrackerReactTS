@@ -57,7 +57,8 @@ function DietPage() {
         <div></div>
       )}
 
-      {activeTab === "workout-list" && <div></div>}
+      {activeTab === "days" && <div></div>}
+      {activeTab === "foods" && <div></div>}
 
       {activeTab === "settings" && 
       <div></div>
