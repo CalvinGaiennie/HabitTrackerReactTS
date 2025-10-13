@@ -10,11 +10,6 @@ function NavBar() {
           </NavLink>
         </li>
         <li className="nav-item mb-md-0">
-          <NavLink className="nav-link fs-5 text-dark px-3" to="/notes">
-            Notes
-          </NavLink>
-        </li>
-        <li className="nav-item mb-md-0">
           <NavLink className="nav-link fs-5 text-dark px-3" to="/Diet">
             Diet
           </NavLink>

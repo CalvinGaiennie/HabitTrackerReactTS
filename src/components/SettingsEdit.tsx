@@ -6,69 +6,92 @@ import { updateUserSettings } from "../services/users";
 import { getActiveMetrics } from "../services/metrics";
 
 interface SettingsEditProps {
-  isEditing?: boolean;
-  onSave?: () => void;
-  saveMessage?: {
-    type: "success" | "error";
-    text: string;
-  } | null;
+  settingsKeys: (keyof UserSettings)[]; // Array of settings keys to edit
 }
 
-function SettingsEdit({
-  isEditing = false,
-  onSave,
-  saveMessage = null,
-}: SettingsEditProps = {}) {
-  const [, setSettings] = useState<UserSettings>();
+function SettingsEdit({ settingsKeys }: SettingsEditProps) {
+  const [settings, setSettings] = useState<UserSettings>();
   const [editableSettings, setEditableSettings] = useState<UserSettings>();
   const [metrics, setMetrics] = useState<Metric[]>([]);
-  const [newWorkoutType, setNewWorkoutType] = useState("");
+  const [newListItem, setNewListItem] = useState<{ [key: string]: string }>({});
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchSettings((fetchedSettings) => {
       setSettings(fetchedSettings);
-      // Ensure workoutTypes exists as an empty array if not present
-      const settingsWithDefaults = {
+      const settingsWithDefaults: UserSettings = {
         ...fetchedSettings,
         workoutTypes: fetchedSettings.workoutTypes || [],
+        homePageLayout: fetchedSettings.homePageLayout || [],
+        enabledPages: fetchedSettings.enabledPages || [],
       };
       setEditableSettings(settingsWithDefaults);
     });
   }, []);
 
   useEffect(() => {
-    const fetchMetrics = async () => {
-      try {
-        const metricsData = await getActiveMetrics();
-        setMetrics(metricsData);
-      } catch (error) {
-        console.error("Failed to fetch metrics:", error);
-      }
-    };
-    fetchMetrics();
-  }, []);
+    if (settingsKeys.includes("homePageLayout")) {
+      const fetchMetrics = async () => {
+        try {
+          const metricsData = await getActiveMetrics();
+          setMetrics(metricsData);
+        } catch (error) {
+          console.error("Failed to fetch metrics:", error);
+        }
+      };
+      fetchMetrics();
+    }
+  }, [settingsKeys]);
 
   const handleSave = useCallback(async () => {
     if (!editableSettings) return;
 
+    setIsSaving(true);
+    setSaveMessage(null);
+
     try {
       await updateUserSettings(1, editableSettings);
       setSettings(editableSettings);
-      onSave?.();
+      setIsEditing(false);
+      setSaveMessage({
+        type: "success",
+        text: "Settings saved successfully!",
+      });
+      setTimeout(() => setSaveMessage(null), 3000); // Clear message after 3s
     } catch (error) {
       console.error("Failed to save settings:", error);
-      throw error; // Let the parent handle the error display
+      setSaveMessage({
+        type: "error",
+        text: "Failed to save settings. Please try again.",
+      });
+    } finally {
+      setIsSaving(false);
     }
-  }, [editableSettings, onSave]);
+  }, [editableSettings]);
 
-  // Expose the save method to parent component
-  useEffect(() => {
-    if (onSave) {
-      // Store the save function reference
-      (window as unknown as Record<string, unknown>).settingsSaveRef =
-        handleSave;
+  const handleEdit = () => {
+    setIsEditing(true);
+    setSaveMessage(null);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setSaveMessage(null);
+    // Reset editableSettings to original settings
+    if (settings) {
+      setEditableSettings({
+        ...settings,
+        workoutTypes: settings.workoutTypes || [],
+        homePageLayout: settings.homePageLayout || [],
+        enabledPages: settings.enabledPages || [],
+      });
     }
-  }, [onSave, handleSave]);
+  };
 
   const updateSectionName = (sectionIndex: number, newName: string) => {
     if (!editableSettings) return;
@@ -84,19 +107,19 @@ function SettingsEdit({
     });
   };
 
-  const updateMetricId = (
+  const updateSectionItemId = (
     sectionIndex: number,
-    metricIndex: number,
+    itemIndex: number,
     newValue: string
   ) => {
     if (!editableSettings) return;
 
     const updatedLayout = [...editableSettings.homePageLayout];
-    const updatedMetricIds = [...updatedLayout[sectionIndex].metricIds];
-    updatedMetricIds[metricIndex] = parseInt(newValue) || 0;
+    const updatedItemIds = [...updatedLayout[sectionIndex].metricIds];
+    updatedItemIds[itemIndex] = parseInt(newValue) || 0;
     updatedLayout[sectionIndex] = {
       ...updatedLayout[sectionIndex],
-      metricIds: updatedMetricIds,
+      metricIds: updatedItemIds,
     };
     setEditableSettings({
       ...editableSettings,
@@ -104,7 +127,7 @@ function SettingsEdit({
     });
   };
 
-  const addMetric = (sectionIndex: number) => {
+  const addSectionItem = (sectionIndex: number) => {
     if (!editableSettings) return;
 
     const updatedLayout = [...editableSettings.homePageLayout];
@@ -118,16 +141,16 @@ function SettingsEdit({
     });
   };
 
-  const removeMetric = (sectionIndex: number, metricIndex: number) => {
+  const removeSectionItem = (sectionIndex: number, itemIndex: number) => {
     if (!editableSettings) return;
 
     const updatedLayout = [...editableSettings.homePageLayout];
-    const updatedMetricIds = updatedLayout[sectionIndex].metricIds.filter(
-      (_, index) => index !== metricIndex
+    const updatedItemIds = updatedLayout[sectionIndex].metricIds.filter(
+      (_, index) => index !== itemIndex
     );
     updatedLayout[sectionIndex] = {
       ...updatedLayout[sectionIndex],
-      metricIds: updatedMetricIds,
+      metricIds: updatedItemIds,
     };
     setEditableSettings({
       ...editableSettings,
@@ -160,189 +183,244 @@ function SettingsEdit({
     });
   };
 
+  const addListItem = (key: keyof UserSettings) => {
+    if (!editableSettings || !newListItem[key]) return;
+
+    if (key === "workoutTypes") {
+      setEditableSettings({
+        ...editableSettings,
+        workoutTypes: [...(editableSettings.workoutTypes || []), newListItem[key]],
+      });
+    } else if (key === "enabledPages") {
+      setEditableSettings({
+        ...editableSettings,
+        enabledPages: [...(editableSettings.enabledPages || []), newListItem[key]],
+      });
+    }
+    setNewListItem((prev) => ({ ...prev, [key]: "" }));
+  };
+
+  const removeListItem = (key: keyof UserSettings, index: number) => {
+    if (!editableSettings) return;
+
+    if (key === "workoutTypes") {
+      const updatedItems = (editableSettings.workoutTypes || []).filter(
+        (_, i) => i !== index
+      );
+      setEditableSettings({
+        ...editableSettings,
+        workoutTypes: updatedItems,
+      });
+    } else if (key === "enabledPages") {
+      const updatedItems = (editableSettings.enabledPages || []).filter(
+        (_, i) => i !== index
+      );
+      setEditableSettings({
+        ...editableSettings,
+        enabledPages: updatedItems,
+      });
+    }
+  };
+
   const getMetricName = (metricId: number): string => {
     const metric = metrics.find((m) => m.id === metricId);
     return metric ? metric.name : `Metric ${metricId}`;
   };
 
-  const addWorkoutType = () => {
-    if (!newWorkoutType.trim()) return;
+  const renderSectionBasedSettings = () => (
+    <div className="row">
+      {editableSettings?.homePageLayout?.map((section, sectionIndex) => (
+        <div
+          key={sectionIndex}
+          className="col-12 col-sm-6 col-md-6 col-lg-6 mb-3"
+        >
+          <div className="card h-100">
+            <div className="card-body">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                {isEditing ? (
+                  <input
+                    className="form-control"
+                    value={section.section}
+                    onChange={(e) =>
+                      updateSectionName(sectionIndex, e.target.value)
+                    }
+                    placeholder="Section name"
+                  />
+                ) : (
+                  <h5 className="card-title mb-0">{section.section}</h5>
+                )}
+                {isEditing && (
+                  <button
+                    className="btn btn-outline-danger btn-sm ms-2"
+                    onClick={() => removeSection(sectionIndex)}
+                    title="Remove section"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+              <div className="d-flex flex-column">
+                {section.metricIds.map((metricId, metricIndex) => (
+                  <div key={metricIndex} className="d-flex mb-1">
+                    {isEditing ? (
+                      <>
+                        <div className="flex-grow-1 me-2">
+                          <input
+                            className="form-control"
+                            type="number"
+                            value={metricId}
+                            onChange={(e) =>
+                              updateSectionItemId(
+                                sectionIndex,
+                                metricIndex,
+                                e.target.value
+                              )
+                            }
+                            placeholder="Metric ID"
+                          />
+                          <small className="text-muted">
+                            {getMetricName(metricId)}
+                          </small>
+                        </div>
+                        <button
+                          className="btn btn-outline-danger btn-sm"
+                          onClick={() =>
+                            removeSectionItem(sectionIndex, metricIndex)
+                          }
+                          title="Remove metric"
+                        >
+                          ×
+                        </button>
+                      </>
+                    ) : (
+                      <span className="form-control-plaintext">
+                        {metricId} - {getMetricName(metricId)}
+                      </span>
+                    )}
+                  </div>
+                ))}
+                {isEditing && (
+                  <button
+                    className="btn btn-outline-primary btn-sm mt-2"
+                    onClick={() => addSectionItem(sectionIndex)}
+                  >
+                    + Add Metric
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+      {isEditing && (
+        <div className="mt-3">
+          <button className="btn btn-outline-success" onClick={addSection}>
+            + Add New Section
+          </button>
+        </div>
+      )}
+    </div>
+  );
 
-    setEditableSettings((prev) => ({
-      ...prev!,
-      workoutTypes: [...(prev?.workoutTypes || []), newWorkoutType.trim()],
-    }));
-    setNewWorkoutType("");
-  };
+  const renderListBasedSettings = (key: keyof UserSettings) => {
+    const items = key === "workoutTypes"
+      ? editableSettings?.workoutTypes || []
+      : editableSettings?.enabledPages || [];
 
-  const removeWorkoutType = (index: number) => {
-    setEditableSettings((prev) => ({
-      ...prev!,
-      workoutTypes: prev?.workoutTypes?.filter((_, i) => i !== index) || [],
-    }));
+    return (
+      <div className="mt-5">
+        <h3>{key === "workoutTypes" ? "Workout Types" : "Enabled Pages"}</h3>
+        <div className="card">
+          <div className="card-body">
+            {items.length > 0 ? (
+              <div className="mb-3">
+                {items.map((item, index) => (
+                  <div
+                    key={index}
+                    className="d-flex justify-content-between align-items-center mb-2"
+                  >
+                    {isEditing ? (
+                      <>
+                        <span className="form-control-plaintext">{item}</span>
+                        <button
+                          className="btn btn-danger btn-sm"
+                          onClick={() => removeListItem(key, index)}
+                        >
+                          Remove
+                        </button>
+                      </>
+                    ) : (
+                      <span className="form-control-plaintext">{item}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted">No {key === "workoutTypes" ? "workout types" : "enabled pages"} defined</p>
+            )}
+            {isEditing && (
+              <div className="d-flex gap-2">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder={`Add new ${key === "workoutTypes" ? "workout type" : "page"}`}
+                  value={newListItem[key] || ""}
+                  onChange={(e) =>
+                    setNewListItem((prev) => ({ ...prev, [key]: e.target.value }))
+                  }
+                  onKeyPress={(e) => e.key === "Enter" && addListItem(key)}
+                />
+                <button className="btn btn-primary" onClick={() => addListItem(key)}>
+                  Add
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
     <div>
-      <div>make this component reusable where you pass the name of the settings setction you want to edit so i can use the same component on the workout, account, diet, ect pages but with only their settings</div>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h2>Settings</h2>
+        <div>
+          {!isEditing ? (
+            <button className="btn btn-primary" onClick={handleEdit}>
+              Edit Settings
+            </button>
+          ) : (
+            <div className="btn-group">
+              <button
+                className="btn btn-success"
+                onClick={handleSave}
+                disabled={isSaving}
+              >
+                {isSaving ? "Saving..." : "Save"}
+              </button>
+              <button className="btn btn-secondary" onClick={handleCancel}>
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
       {saveMessage && (
         <div
-          className={`alert alert-${
-            saveMessage.type === "success" ? "success" : "danger"
-          } mb-3`}
+          className={`alert alert-${saveMessage.type === "success" ? "success" : "danger"} mb-3`}
         >
           {saveMessage.text}
         </div>
       )}
-
       <div className="card p-4">
-        <div className="row">
-          {editableSettings?.homePageLayout?.map((section, sectionIndex) => (
-            <div
-              key={sectionIndex}
-              className="col-12 col-sm-6 col-md-6 col-lg-6 mb-3"
-            >
-              <div className="card h-100">
-                <div className="card-body">
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    {isEditing ? (
-                      <input
-                        className="form-control"
-                        value={section.section}
-                        onChange={(e) =>
-                          updateSectionName(sectionIndex, e.target.value)
-                        }
-                        placeholder="Section name"
-                      />
-                    ) : (
-                      <h5 className="card-title mb-0">{section.section}</h5>
-                    )}
-                    {isEditing && (
-                      <button
-                        className="btn btn-outline-danger btn-sm ms-2"
-                        onClick={() => removeSection(sectionIndex)}
-                        title="Remove section"
-                      >
-                        ×
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="d-flex flex-column">
-                    {section.metricIds.map((metricId, metricIndex) => (
-                      <div key={metricIndex} className="d-flex mb-1">
-                        {isEditing ? (
-                          <>
-                            <div className="flex-grow-1 me-2">
-                              <input
-                                className="form-control"
-                                type="number"
-                                value={metricId}
-                                onChange={(e) =>
-                                  updateMetricId(
-                                    sectionIndex,
-                                    metricIndex,
-                                    e.target.value
-                                  )
-                                }
-                                placeholder="Metric ID"
-                              />
-                              <small className="text-muted">
-                                {getMetricName(metricId)}
-                              </small>
-                            </div>
-                            <button
-                              className="btn btn-outline-danger btn-sm"
-                              onClick={() =>
-                                removeMetric(sectionIndex, metricIndex)
-                              }
-                              title="Remove metric"
-                            >
-                              ×
-                            </button>
-                          </>
-                        ) : (
-                          <span className="form-control-plaintext">
-                            {metricId} - {getMetricName(metricId)}
-                          </span>
-                        )}
-                      </div>
-                    ))}
-
-                    {isEditing && (
-                      <button
-                        className="btn btn-outline-primary btn-sm mt-2"
-                        onClick={() => addMetric(sectionIndex)}
-                      >
-                        + Add Metric
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {isEditing && (
-          <div className="mt-3">
-            <button className="btn btn-outline-success" onClick={addSection}>
-              + Add New Section
-            </button>
-          </div>
+        {settingsKeys.map((key) =>
+          key === "homePageLayout" ? (
+            <div key={key}>{renderSectionBasedSettings()}</div>
+          ) : (
+            <div key={key}>{renderListBasedSettings(key)}</div>
+          )
         )}
-
-        {/* Workout Types Section */}
-        <div className="mt-5">
-          <h3>Workout Types</h3>
-          <div className="card">
-            <div className="card-body">
-              {editableSettings?.workoutTypes &&
-              editableSettings.workoutTypes.length > 0 ? (
-                <div className="mb-3">
-                  {editableSettings.workoutTypes.map((type, index) => (
-                    <div
-                      key={index}
-                      className="d-flex justify-content-between align-items-center mb-2"
-                    >
-                      {isEditing ? (
-                        <>
-                          <span className="form-control-plaintext">{type}</span>
-                          <button
-                            className="btn btn-danger btn-sm"
-                            onClick={() => removeWorkoutType(index)}
-                          >
-                            Remove
-                          </button>
-                        </>
-                      ) : (
-                        <span className="form-control-plaintext">{type}</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-muted">No workout types defined</p>
-              )}
-
-              {isEditing && (
-                <div className="d-flex gap-2">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Add new workout type"
-                    value={newWorkoutType}
-                    onChange={(e) => setNewWorkoutType(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && addWorkoutType()}
-                  />
-                  <button className="btn btn-primary" onClick={addWorkoutType}>
-                    Add
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

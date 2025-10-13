@@ -12,7 +12,7 @@ import fetchBooleanAnalytics from "../hooks/fetchBooleanAnalytics.ts";
 import Calendar from "../components/Calendar.tsx";
 import DatePicker from "../components/DatePicker.tsx";
 import CommitTracker from "../components/CommitTracker.tsx";
-import AnalyticsPageSettings from "../components/AnalyticsPageSettings.tsx";
+import SettingsEdit from "../components/SettingsEdit.tsx";
 
 // Data for bubble chart (x, y, z coordinates)
 const bubbleData = [
@@ -338,7 +338,8 @@ function AnalyticsPage() {
 
       {activeTab === "settings" && (
         <div className="row justify-content-center">
-          <AnalyticsPageSettings/>
+          {/* set this up to have enabled anyltics pages */}
+          <SettingsEdit settingsKeys={["enabledPages"]}/>
         </div>
       )}
     </div>
