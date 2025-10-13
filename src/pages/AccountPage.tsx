@@ -13,11 +13,11 @@ import SettingsEdit from "../components/SettingsEdit.tsx";
 import fetchLogs from "../hooks/fetchLogs.ts";
 import fetchMetrics from "../hooks/fetchMetrics.ts";
 
-type TabType = "metric" | "log" | "settings";
+type TabType = "goal" | "metric" | "log" | "settings";
 type ModeType = "add" | "edit" | "view";
 
 function AccountPage() {
-  const [activeTab, setActiveTab] = useState<TabType>("metric");
+  const [activeTab, setActiveTab] = useState<TabType>("goal");
   const [metricMode, setMetricMode] = useState<ModeType>("add");
   const [logMode, setLogMode] = useState<ModeType>("add");
   const [formData, setFormData] = useState<MetricCreate>({
@@ -162,6 +162,14 @@ function AccountPage() {
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case "goal":
+        return (
+          <div>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h1>Goals</h1>
+            </div>
+          </div>
+        )
       case "metric":
         return (
           <div>
@@ -468,6 +476,15 @@ function AccountPage() {
 
       {/* Tab Navigation */}
       <ul className="nav nav-tabs mb-4">
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "goal" ? "active" : ""}`}
+            onClick={() => setActiveTab("goal")}
+            type="button"
+          >
+            Goal
+          </button>
+        </li>
         <li className="nav-item">
           <button
             className={`nav-link ${activeTab === "metric" ? "active" : ""}`}
