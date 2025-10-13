@@ -1,9 +1,9 @@
 import { useState } from "react";
 import WorkoutForm from "../components/WorkoutForm";
 import WorkoutList from "../components/WorkoutList";
-
+import WorkoutPageSettings from "../components/WorkoutPageSettings";
 function WorkoutPage() {
-  const [activeTab, setActiveTab] = useState<"create" | "list">("create");
+  const [activeTab, setActiveTab] = useState<"create" | "list" | "settings">("create");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleWorkoutCreated = () => {
@@ -11,7 +11,7 @@ function WorkoutPage() {
     setTab("list");
   };
 
-  const setTab = (tab: "create" | "list") => {
+  const setTab = (tab: "create" | "list" | "settings") => {
     setActiveTab(tab);
   };
 
@@ -39,6 +39,14 @@ function WorkoutPage() {
                 Workout History
               </button>
             </li>
+            <li className="nav-item">
+              <button
+                className={`nav-link ${activeTab === "settings" ? "active" : ""}`}
+                onClick={() => setTab("settings")}
+              >
+                Settings
+              </button>
+            </li>
           </ul>
         </div>
       </div>
@@ -49,6 +57,8 @@ function WorkoutPage() {
       )}
 
       {activeTab === "list" && <WorkoutList key={refreshTrigger} />}
+
+      {activeTab === "settings" && <WorkoutPageSettings/>}
     </div>
   );
 }

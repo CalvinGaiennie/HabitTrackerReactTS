@@ -184,6 +184,7 @@ function SettingsEdit({
 
   return (
     <div>
+      <div>make this component reusable where you pass the name of the settings setction you want to edit so i can use the same component on the workout, account, diet, ect pages but with only their settings</div>
       {saveMessage && (
         <div
           className={`alert alert-${

@@ -12,6 +12,7 @@ import fetchBooleanAnalytics from "../hooks/fetchBooleanAnalytics.ts";
 import Calendar from "../components/Calendar.tsx";
 import DatePicker from "../components/DatePicker.tsx";
 import CommitTracker from "../components/CommitTracker.tsx";
+import AnalyticsPageSettings from "../components/AnalyticsPageSettings.tsx";
 
 // Data for bubble chart (x, y, z coordinates)
 const bubbleData = [
@@ -26,7 +27,7 @@ const bubbleData = [
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28"];
 
 type ChartType = "pie" | "line" | "radar" | "bar" | "bubble";
-type AnalyticsTab = "charts" | "calendar" | "commit-tracker";
+type AnalyticsTab = "charts" | "calendar" | "commit-tracker" | "time-line" | "settings";
 
 function AnalyticsPage() {
   const [selectedChart, setSelectedChart] = useState<ChartType>("pie");
@@ -192,6 +193,26 @@ function AnalyticsPage() {
                 Commit Tracker
               </button>
             </li>
+            <li className="nav-item">
+              <button
+                className={`nav-link ${
+                  activeTab === "time-line" ? "active" : ""
+                }`}
+                onClick={() => setActiveTab("time-line")}
+              >
+                Time Line
+              </button>
+            </li>
+            <li className="nav-item">
+              <button
+                className={`nav-link ${
+                  activeTab === "settings" ? "active" : ""
+                }`}
+                onClick={() => setActiveTab("settings")}
+              >
+                Settings
+              </button>
+            </li>
           </ul>
         </div>
       </div>
@@ -312,6 +333,12 @@ function AnalyticsPage() {
       {activeTab === "commit-tracker" && (
         <div className="row justify-content-center">
           <CommitTracker/>
+        </div>
+      )}
+
+      {activeTab === "settings" && (
+        <div className="row justify-content-center">
+          <AnalyticsPageSettings/>
         </div>
       )}
     </div>
