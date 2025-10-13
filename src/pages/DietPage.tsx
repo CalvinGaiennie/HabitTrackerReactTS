@@ -1,7 +1,7 @@
 import {useState} from "react";
 
 function DietPage() {
-    const [activeTab, setActiveTab] = useState<"today" | "days" | "foods" | "settings">("");
+    const [activeTab, setActiveTab] = useState<"today" | "days" | "foods" | "settings">("today");
 
 
   const setTab = (tab: "today" | "days"| "foods"| "settings") => {
