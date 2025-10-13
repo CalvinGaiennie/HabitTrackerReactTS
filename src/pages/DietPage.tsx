@@ -26,7 +26,7 @@ function DietPage() {
             </li>
             <li className="nav-item">
               <button
-                className={`nav-link ${activeTab === "workout-list" ? "active" : ""}`}
+                className={`nav-link ${activeTab === "days" ? "active" : ""}`}
                 onClick={() => setTab("days")}
               >
                 Previous Days
