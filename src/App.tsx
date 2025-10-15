@@ -1,7 +1,7 @@
 import { Routes, Route, BrowserRouter } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import DietPage from "./pages/DietPage";
-import WorkoutPage from "./pages/WorkoutPage";
+import WorkoutPage from "./pages/WorkoutPage/WorkoutPage.tsx";
 // import FinancePage from "./pages/FinancePage";
 import AccountPage from "./pages/AccountPage";
 import NavBar from "./components/NavBar.tsx";

@@ -1,7 +1,9 @@
 import { useState } from "react";
-import WorkoutForm from "../components/WorkoutForm";
-import WorkoutList from "../components/WorkoutList";
-import SettingsEdit from "../components/SettingsEdit";
+import WorkoutForm from "../../components/WorkoutForm";
+import WorkoutList from "../../components/WorkoutList";
+import SettingsEdit from "../../components/SettingsEdit";
+import ExercisePage from "./SubPages/ExercisePage";
+
 function WorkoutPage() {
   const [activeTab, setActiveTab] = useState<"create" | "workout-list" | "exercises" | "settings">("create");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -66,6 +68,8 @@ function WorkoutPage() {
 
       {activeTab === "workout-list" && <WorkoutList key={refreshTrigger} />}
 
+      {activeTab === "exercises" && <ExercisePage />
+      }
       {activeTab === "settings" && <SettingsEdit settingsKeys={["workoutTypes"]}/>}
     </div>
   );
