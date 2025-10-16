@@ -31,8 +31,8 @@ function LoginPage() {
     try {
       const user = await createUser(formData);
       setCreatedUser(user);
-    } catch (err: any) {
-      setError(err.message || "Something went wrong.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setIsSubmitting(false);
     }

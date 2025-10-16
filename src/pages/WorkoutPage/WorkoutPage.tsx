@@ -67,7 +67,6 @@ function WorkoutPage() {
       )}
 
       {activeTab === "workout-list" && <WorkoutList key={refreshTrigger} />}
-
       {activeTab === "exercises" && <ExercisePage />
       }
       {activeTab === "settings" && <SettingsEdit settingsKeys={["workoutTypes"]}/>}
