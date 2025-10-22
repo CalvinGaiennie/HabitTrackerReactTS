@@ -3,6 +3,8 @@ import { createWorkout } from "../services/workouts";
 import { getUserSettings } from "../services/users";
 import type { UserSettings } from "../types/users";
 import type { Exercise, ExerciseSet } from "../types/workouts";
+import type { ExerciseFull } from "../types/exercises"
+import fetchExercises from "../hooks/fetchExercises";
 
 interface WorkoutFormProps {
   onWorkoutCreated?: () => void;
@@ -18,6 +20,10 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [specificExercises, setSpecificExercises ] = useState<ExerciseFull[]>([])
+  useEffect(() => {
+    fetchExercises(setSpecificExercises);
+  }, []);
 
   useEffect(() => {
     fetchUserSettings();
@@ -75,8 +81,9 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
   };
 
   const addExercise = () => {
+    const firstExercise = specificExercises[0];
     const newExercise: Exercise = {
-      name: "",
+      name: firstExercise?.name ?? "",
       sets: [
         {
           reps: undefined,
@@ -314,7 +321,18 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
                     {exercises.map((exercise, exerciseIndex) => (
                       <div key={exerciseIndex} className="card mb-3">
                         <div className="card-header d-flex justify-content-between align-items-center">
-                          <input
+                          <select
+                          className="form-select"
+                          value={exercise.name}
+                          onChange={(e) => updateExercise(exerciseIndex, "name", e.target.value)}>
+                            {specificExercises.map((ex)=> (
+                              <option
+                              key={ex.id}
+                              value={ex.name}
+                              >{ex.name}</option>
+                            ))}
+                          </select>
+                          {/* <input
                             type="text"
                             className="form-control me-2"
                             placeholder="Exercise name"
@@ -326,7 +344,7 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
                                 e.target.value
                               )
                             }
-                          />
+                          /> */}
                           <button
                             type="button"
                             className="btn btn-danger btn-sm"
@@ -351,6 +369,7 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
 
                             {exercise.sets.map((set, setIndex) => (
                               <div key={setIndex} className="row mb-2">
+                                <h4>Set {setIndex + 1}</h4>
                                 <div className="col-md-3">
                                   <label className="form-label">Reps</label>
                                   <input

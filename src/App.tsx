@@ -14,7 +14,7 @@ import LoginPage from "./pages/LoginPage.tsx";
 
 function App() {
   return (
-    <div style={{ maxWidth: "700px", margin: "0 auto", marginBottom: "4rem" }}>
+    <div className="App" style={{ maxWidth: "700px", margin: "0 auto", marginBottom: "4rem" }}>
       <AuthProvider>
         <BrowserRouter>
           <NavBar />

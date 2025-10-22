@@ -1,0 +1,15 @@
+/* Prevent grey bars at top/bottom by ensuring full height coverage */
+.App {
+  min-height: 100svh;
+  background-color: #ffffff;
+}
+
+/* Ensure body and html also fill the viewport */
+body,
+html,
+#root {
+  margin: 0;
+  padding: 0;
+  background-color: #ffffff;
+  min-height: 100svh;
+}
