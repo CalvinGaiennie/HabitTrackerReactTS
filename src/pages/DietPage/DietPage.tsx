@@ -1,4 +1,6 @@
 import {useState} from "react";
+import FoodPage from "./SubPages/FoodPage";
+// import SettingsEdit from "../../components/SettingsEdit";
 
 function DietPage() {
     const [activeTab, setActiveTab] = useState<"today" | "days" | "foods" | "settings">("today");
@@ -58,11 +60,11 @@ function DietPage() {
       )}
 
       {activeTab === "days" && <div></div>}
-      {activeTab === "foods" && <div></div>}
+      {activeTab === "foods" && <FoodPage/>}
 
       {activeTab === "settings" && 
+      // <SettingsEdit settingsKeys={["DietSettings"]}/>
       <div></div>
-      // <SettingsEdit settingsKeys={["workoutTypes"]}/>
       }
     </div>
   );

@@ -50,7 +50,7 @@ function ExerciseList() {
                 )}
                 {exercise.tags && exercise.tags.length > 0 && (
                   <p className="mb-0">
-                    {exercise.tags.map((tag, idx) => (
+                    {exercise.tags.map((tag: string, idx: number) => (
                       <span key={idx} className="badge bg-secondary me-1">
                         {tag}
                       </span>

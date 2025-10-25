@@ -204,6 +204,9 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
 
   const workoutTypes = userSettings?.workoutTypes || [];
 
+  const toggleSuperset = (exerciseIndex: number) => {
+    return exerciseIndex
+  }
   return (
     <div className="container">
       <div className="row justify-content-center">
@@ -307,7 +310,7 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
 
                   {/* Exercises Section */}
                   <div className="mb-4">
-                    <div className="d-flex justify-content-between align-items-center mb-3">
+                    <div className="d-flex flex-column  justify-content-between align-items-left mb-3">
                       <h4>Exercises</h4>
                       <button
                         type="button"
@@ -320,9 +323,19 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
 
                     {exercises.map((exercise, exerciseIndex) => (
                       <div key={exerciseIndex} className="card mb-3">
-                        <div className="card-header d-flex justify-content-between align-items-center">
+                        <div className="d-flex justify-content-between align-items-center">
+                          <h3 className="m-3">Exercise {exerciseIndex + 1}</h3>
+                          <button
+                            type="button"
+                            className="btn btn-danger btn-sm me-3"
+                            onClick={() => removeExercise(exerciseIndex)}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                        <div className=" d-flex justify-content-between align-items-center mx-4">
                           <select
-                          className="form-select"
+                          className="form-select me-3"
                           value={exercise.name}
                           onChange={(e) => updateExercise(exerciseIndex, "name", e.target.value)}>
                             {specificExercises.map((ex)=> (
@@ -332,32 +345,13 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
                               >{ex.name}</option>
                             ))}
                           </select>
-                          {/* <input
-                            type="text"
-                            className="form-control me-2"
-                            placeholder="Exercise name"
-                            value={exercise.name}
-                            onChange={(e) =>
-                              updateExercise(
-                                exerciseIndex,
-                                "name",
-                                e.target.value
-                              )
-                            }
-                          /> */}
-                          <button
-                            type="button"
-                            className="btn btn-danger btn-sm"
-                            onClick={() => removeExercise(exerciseIndex)}
-                          >
-                            Remove
-                          </button>
+                          <button className='btn btn-outline-primary' onChange={() => toggleSuperset(exerciseIndex)}>Superset</button>
                         </div>
                         <div className="card-body">
                           {/* Sets */}
                           <div className="mb-3">
                             <div className="d-flex justify-content-between align-items-center mb-2">
-                              <h6>Sets</h6>
+                              <h3>Sets</h3>
                               <button
                                 type="button"
                                 className="btn btn-sm btn-outline-primary"
@@ -366,7 +360,6 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
                                 Add Set
                               </button>
                             </div>
-
                             {exercise.sets.map((set, setIndex) => (
                               <div key={setIndex} className="row mb-2">
                                 <h4>Set {setIndex + 1}</h4>
@@ -452,7 +445,7 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
                                 <div className="col-md-1 d-flex align-items-end">
                                   <button
                                     type="button"
-                                    className="btn btn-danger btn-sm"
+                                    className="mt-2 btn btn-danger btn-sm"
                                     onClick={() =>
                                       removeSet(exerciseIndex, setIndex)
                                     }

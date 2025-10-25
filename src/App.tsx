@@ -1,6 +1,6 @@
 import { Routes, Route, BrowserRouter } from "react-router-dom";
 import HomePage from "./pages/HomePage";
-import DietPage from "./pages/DietPage";
+import DietPage from "./pages/DietPage/DietPage.tsx";
 import WorkoutPage from "./pages/WorkoutPage/WorkoutPage.tsx";
 // import FinancePage from "./pages/FinancePage";
 import AccountPage from "./pages/AccountPage";

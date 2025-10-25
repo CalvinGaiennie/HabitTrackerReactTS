@@ -12,6 +12,8 @@ export interface ExerciseFull {
   injury_pain?: string;
 }
 
+export type Exercise = ExerciseFull;
+
 export interface ExerciseCreate {
   user_id: number;
   name: string;

@@ -1,8 +1,8 @@
 import { useState } from "react";
-import ExerciseList from "../../../components/ExerciseList";
-import CreateExerciseForm from "../../../components/CreateExerciseForm";
+import FoodList from "../../../components/FoodList";
+import CreateFoodForm from "../../../components/CreateFoodForm";
 
-function ExercisePage() {
+function FoodPage() {
     const [mode, setMode] = useState<"add" | "view">('add')
 
     const handleModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -16,13 +16,13 @@ function ExercisePage() {
                 <option value="add">Add</option>
             </select>
             {mode === "add" && (
-                <CreateExerciseForm/>
+                <CreateFoodForm/>
             )}
 
             {mode === "view" && (
-            <ExerciseList />
+            <FoodList />
             )}
         </div>
     )
 }
-export default ExercisePage
+export default FoodPage
