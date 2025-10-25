@@ -5,7 +5,7 @@ export async function getFoods(): Promise<Food[]> {
 }
 
 export async function createFood(data: FoodCreate): Promise<Food> {
-    return request<Exercise>("/foods/", {
+    return request<Food>("/foods/", {
         method: "POST",
         body: JSON.stringify(data),
     })
