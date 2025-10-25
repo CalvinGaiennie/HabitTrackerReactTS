@@ -40,9 +40,10 @@ function LoginPage() {
   return (
     <div>
       <form onSubmit={handleSubmit}>
-        <div>
+        <div className="mb-3">
           <label>Email:</label>
           <input
+            className="form-control"
             type="email"
             name="email"
             value={formData.email}
@@ -50,9 +51,10 @@ function LoginPage() {
             required
           />
         </div>
-        <div>
+        <div className="mb-3">
           <label className="form-label">Password:</label>
           <input
+            className="form-control"
             type="password"
             name="password"
             value={formData.password}

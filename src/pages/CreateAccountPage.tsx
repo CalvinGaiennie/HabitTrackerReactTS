@@ -46,9 +46,10 @@ function CreateAccountPage() {
   return (
     <div>
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>Email:</label>
+        <div className="mb-3">
+          <label>Email: </label>
           <input
+            className="form-control"
             type="email"
             name="email"
             value={formData.email}
@@ -56,9 +57,10 @@ function CreateAccountPage() {
             required
           />
         </div>
-        <div>
-          <label>First Name:</label>
+        <div className="mb-3">
+          <label>First Name: </label>
           <input
+            className="form-control"
             type="first_name"
             name="first_name"
             value={formData.first_name}
@@ -66,9 +68,10 @@ function CreateAccountPage() {
             required
           />
         </div>
-        <div>
-          <label>Last Name:</label>
+        <div className="mb-3">
+          <label>Last Name: </label>
           <input
+            className="form-control"
             type="last_name"
             name="last_name"
             value={formData.last_name}
@@ -76,9 +79,10 @@ function CreateAccountPage() {
             required
           />
         </div>
-        <div>
-          <label>Password:</label>
+        <div className="mb-3">
+          <label>Password: </label>
           <input
+            className="form-control"
             type="password"
             name="password"
             value={formData.password}
@@ -86,9 +90,10 @@ function CreateAccountPage() {
             required
           />
         </div>
-        <div>
-          <label className="form-label">Confirm Password:</label>
+        <div className="mb-3">
+          <label className="form-label">Confirm Password: </label>
           <input
+            className="form-control"
             type="password_confirmation"
             name="password_confirmation"
             value={passwordConfirmation}
