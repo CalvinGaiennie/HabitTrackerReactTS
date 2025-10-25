@@ -4,12 +4,14 @@ import type { Metric } from "../types/Metrics";
 import fetchSettings from "../hooks/fetchSettings.ts";
 import { updateUserSettings } from "../services/users";
 import { getActiveMetrics } from "../services/metrics";
+import { useUserId } from "../hooks/useAuth";
 
 interface SettingsEditProps {
   settingsKeys: (keyof UserSettings)[]; // Array of settings keys to edit
 }
 
 function SettingsEdit({ settingsKeys }: SettingsEditProps) {
+  const userId = useUserId(); // Get current user ID
   const [settings, setSettings] = useState<UserSettings>();
   const [editableSettings, setEditableSettings] = useState<UserSettings>();
   const [metrics, setMetrics] = useState<Metric[]>([]);
@@ -31,8 +33,8 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
         enabledPages: fetchedSettings.enabledPages || [],
       };
       setEditableSettings(settingsWithDefaults);
-    });
-  }, []);
+    }, userId);
+  }, [userId]);
 
   useEffect(() => {
     if (settingsKeys.includes("homePageLayout")) {
@@ -55,7 +57,11 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
     setSaveMessage(null);
 
     try {
-      await updateUserSettings(1, editableSettings);
+      await updateUserSettings(userId, editableSettings);
+      setSaveMessage({
+        type: "success",
+        text: "Settings updated successfully!",
+      });
       setSettings(editableSettings);
       setIsEditing(false);
       setSaveMessage({
@@ -94,7 +100,7 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
   };
 
   const updateSectionName = (sectionIndex: number, newName: string) => {
-    if (!editableSettings) return;
+    if (!editableSettings || !editableSettings.homePageLayout) return;
 
     const updatedLayout = [...editableSettings.homePageLayout];
     updatedLayout[sectionIndex] = {
@@ -112,7 +118,7 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
     itemIndex: number,
     newValue: string
   ) => {
-    if (!editableSettings) return;
+    if (!editableSettings || !editableSettings.homePageLayout) return;
 
     const updatedLayout = [...editableSettings.homePageLayout];
     const updatedItemIds = [...updatedLayout[sectionIndex].metricIds];
@@ -128,7 +134,7 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
   };
 
   const addSectionItem = (sectionIndex: number) => {
-    if (!editableSettings) return;
+    if (!editableSettings || !editableSettings.homePageLayout) return;
 
     const updatedLayout = [...editableSettings.homePageLayout];
     updatedLayout[sectionIndex] = {
@@ -142,11 +148,11 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
   };
 
   const removeSectionItem = (sectionIndex: number, itemIndex: number) => {
-    if (!editableSettings) return;
+    if (!editableSettings || !editableSettings.homePageLayout) return;
 
     const updatedLayout = [...editableSettings.homePageLayout];
     const updatedItemIds = updatedLayout[sectionIndex].metricIds.filter(
-      (_, index) => index !== itemIndex
+      (_: number, index: number) => index !== itemIndex
     );
     updatedLayout[sectionIndex] = {
       ...updatedLayout[sectionIndex],
@@ -165,17 +171,18 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
       section: "New Section",
       metricIds: [0],
     };
+    const currentLayout = editableSettings.homePageLayout || [];
     setEditableSettings({
       ...editableSettings,
-      homePageLayout: [...editableSettings.homePageLayout, newSection],
+      homePageLayout: [...currentLayout, newSection],
     });
   };
 
   const removeSection = (sectionIndex: number) => {
-    if (!editableSettings) return;
+    if (!editableSettings || !editableSettings.homePageLayout) return;
 
     const updatedLayout = editableSettings.homePageLayout.filter(
-      (_, index) => index !== sectionIndex
+      (_: any, index: number) => index !== sectionIndex
     );
     setEditableSettings({
       ...editableSettings,
@@ -189,12 +196,18 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
     if (key === "workoutTypes") {
       setEditableSettings({
         ...editableSettings,
-        workoutTypes: [...(editableSettings.workoutTypes || []), newListItem[key]],
+        workoutTypes: [
+          ...(editableSettings.workoutTypes || []),
+          newListItem[key],
+        ],
       });
     } else if (key === "enabledPages") {
       setEditableSettings({
         ...editableSettings,
-        enabledPages: [...(editableSettings.enabledPages || []), newListItem[key]],
+        enabledPages: [
+          ...(editableSettings.enabledPages || []),
+          newListItem[key],
+        ],
       });
     }
     setNewListItem((prev) => ({ ...prev, [key]: "" }));
@@ -323,9 +336,10 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
   );
 
   const renderListBasedSettings = (key: keyof UserSettings) => {
-    const items = key === "workoutTypes"
-      ? editableSettings?.workoutTypes || []
-      : editableSettings?.enabledPages || [];
+    const items =
+      key === "workoutTypes"
+        ? editableSettings?.workoutTypes || []
+        : editableSettings?.enabledPages || [];
 
     return (
       <div className="mt-5">
@@ -356,21 +370,32 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
                 ))}
               </div>
             ) : (
-              <p className="text-muted">No {key === "workoutTypes" ? "workout types" : "enabled pages"} defined</p>
+              <p className="text-muted">
+                No {key === "workoutTypes" ? "workout types" : "enabled pages"}{" "}
+                defined
+              </p>
             )}
             {isEditing && (
               <div className="d-flex gap-2">
                 <input
                   type="text"
                   className="form-control"
-                  placeholder={`Add new ${key === "workoutTypes" ? "workout type" : "page"}`}
+                  placeholder={`Add new ${
+                    key === "workoutTypes" ? "workout type" : "page"
+                  }`}
                   value={newListItem[key] || ""}
                   onChange={(e) =>
-                    setNewListItem((prev) => ({ ...prev, [key]: e.target.value }))
+                    setNewListItem((prev) => ({
+                      ...prev,
+                      [key]: e.target.value,
+                    }))
                   }
                   onKeyPress={(e) => e.key === "Enter" && addListItem(key)}
                 />
-                <button className="btn btn-primary" onClick={() => addListItem(key)}>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => addListItem(key)}
+                >
                   Add
                 </button>
               </div>
@@ -408,7 +433,9 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
       </div>
       {saveMessage && (
         <div
-          className={`alert alert-${saveMessage.type === "success" ? "success" : "danger"} mb-3`}
+          className={`alert alert-${
+            saveMessage.type === "success" ? "success" : "danger"
+          } mb-3`}
         >
           {saveMessage.text}
         </div>

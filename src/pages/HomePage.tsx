@@ -10,9 +10,11 @@ import fetchSettings from "../hooks/fetchSettings.ts";
 import type { UserSettings } from "../types/users";
 import fetchLogs from "../hooks/fetchLogs.ts";
 import ClockButton from "../components/ClockButton";
+import { useUserId } from "../hooks/useAuth";
 
 // IMPLEMENT auto no for empty days on booleans as an option
 function HomePage() {
+  const userId = useUserId(); // Get current user ID
   const [activeMetrics, setActiveMetrics] = useState<Metric[]>([]);
   const [logValues, setLogValues] = useState<Record<number, string>>({});
   const [logs, setLogs] = useState<DailyLog[]>([]);
@@ -61,12 +63,12 @@ function HomePage() {
     fetchSettings((fetchedSettings) => {
       console.log("Settings received in HomePage:", fetchedSettings);
       setSettings(fetchedSettings);
-    });
-  }, []);
+    }, userId);
+  }, [userId]);
 
   useEffect(() => {
-    fetchLogs(setLogs);
-  }, []);
+    fetchLogs(setLogs, undefined, undefined, undefined, userId);
+  }, [userId]);
 
   useEffect(() => {
     const fetchMetrics = async () => {
@@ -220,7 +222,7 @@ function HomePage() {
         if (!metric || rawValue === "") continue;
 
         const payload: Omit<DailyLog, "id" | "created_at"> = {
-          user_id: 1,
+          user_id: userId,
           metric_id: Number(metricId),
           log_date: today,
           value_int: 0,

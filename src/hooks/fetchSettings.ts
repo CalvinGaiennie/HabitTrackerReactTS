@@ -17,12 +17,13 @@ const defaultSettings: UserSettings = {
 };
 
 export default function fetchSettings(
-  setSettings: (settings: UserSettings) => void
+  setSettings: (settings: UserSettings) => void,
+  userId: number
 ) {
   const fetchSettings = async () => {
     try {
-      console.log("Fetching user settings...");
-      const user = await getUserSettings(1);
+      console.log(`Fetching user settings for user ${userId}...`);
+      const user = await getUserSettings(userId);
       console.log("User data received:", user);
       console.log("User settings:", user.settings);
 
@@ -34,7 +35,7 @@ export default function fetchSettings(
       ) {
         console.log("No settings found, initializing with defaults...");
         try {
-          await updateUserSettings(1, defaultSettings);
+          await updateUserSettings(userId, defaultSettings);
           setSettings(defaultSettings);
         } catch (updateErr) {
           console.error("Failed to initialize default settings:", updateErr);

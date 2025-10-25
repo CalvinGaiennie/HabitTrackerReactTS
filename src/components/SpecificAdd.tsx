@@ -3,8 +3,10 @@ import type { Metric } from "../types/Metrics.ts";
 import type { DailyLog } from "../types/dailyLogs.ts";
 import { getActiveMetrics } from "../services/metrics";
 import { saveDailyLog, getDailyLogs } from "../services/dailyLogs";
+import { useUserId } from "../hooks/useAuth";
 
 function SpecificAdd() {
+  const userId = useUserId(); // Get current user ID
   const [metrics, setMetrics] = useState<Metric[]>();
   const [selectedMetricId, setSelectedMetricId] = useState<
     number | undefined
@@ -74,7 +76,7 @@ function SpecificAdd() {
     // Initialize with default values for all fields, then only set the one that matches the data type
     const logData: Omit<DailyLog, "id" | "created_at"> = {
       metric_id: selectedMetricId,
-      user_id: 1, // Replace with actual user ID
+      user_id: userId, // Use logged-in user ID
       log_date: selectedDate,
       value_int: 0,
       value_boolean: false,

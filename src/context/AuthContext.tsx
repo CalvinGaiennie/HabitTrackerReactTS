@@ -6,10 +6,16 @@ interface AuthState {
   userId: number | null;
   username: string | null;
   settings: UserSettings | null;
+  token: string | null;
 }
 
 export const AuthContext = createContext<{
   authState: AuthState;
-  login: (userId: number, username: string, settings: UserSettings) => void;
+  login: (
+    userId: number,
+    username: string,
+    settings: UserSettings,
+    token: string
+  ) => void;
   logout: () => void;
 } | null>(null);

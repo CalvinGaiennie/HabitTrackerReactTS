@@ -1,11 +1,37 @@
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
+function getAuthToken(): string | null {
+  const authState = localStorage.getItem("authState");
+  if (authState) {
+    try {
+      const parsed = JSON.parse(authState);
+      return parsed.token || null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    const token = getAuthToken();
+    const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+    };
+
+    // Merge with any headers from options
+    if (options?.headers) {
+        Object.assign(headers, options.headers);
+    }
+
+    // Add Authorization header if token exists
+    if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+    }
+
     const res = await fetch(`${API_BASE}${endpoint}`, {
-        headers: {
-            "Content-Type": "application/json",
-        },
         ...options,
+        headers,
     });
 
     if (!res.ok) {

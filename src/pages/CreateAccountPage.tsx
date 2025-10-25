@@ -1,6 +1,8 @@
-import { useState } from "react";
-import type { UserCreate, User } from "../types/users";
+import { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import type { UserCreate } from "../types/users";
 import { createUser } from "../services/users";
+import { AuthContext } from "../context/AuthContext";
 
 function CreateAccountPage() {
   const [formData, setFormData] = useState<UserCreate>({
@@ -16,9 +18,17 @@ function CreateAccountPage() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [createdUser, setCreatedUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [passwordConfirmation, setPasswordConfirmation] = useState<string>("");
+
+  const authContext = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  if (!authContext) {
+    throw new Error("AuthContext not found");
+  }
+
+  const { login } = authContext;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -35,19 +45,39 @@ function CreateAccountPage() {
       return;
     }
     try {
-      const user = await createUser(formData);
-      setCreatedUser(user);
+      const response = await createUser(formData);
+      // Auto-login after successful registration
+      login(
+        response.user.id,
+        response.user.username,
+        response.user.settings,
+        response.access_token
+      );
+      navigate("/"); // Redirect to home page after successful registration
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setIsSubmitting(false);
     }
   };
+
   return (
-    <div>
+    <div className="container mt-5">
+      <h2>Create Account</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label>Email: </label>
+          <label className="form-label">Username:</label>
+          <input
+            className="form-control"
+            type="text"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label className="form-label">Email:</label>
           <input
             className="form-control"
             type="email"
@@ -58,29 +88,27 @@ function CreateAccountPage() {
           />
         </div>
         <div className="mb-3">
-          <label>First Name: </label>
+          <label className="form-label">First Name:</label>
           <input
             className="form-control"
-            type="first_name"
+            type="text"
             name="first_name"
             value={formData.first_name}
             onChange={handleChange}
-            required
           />
         </div>
         <div className="mb-3">
-          <label>Last Name: </label>
+          <label className="form-label">Last Name:</label>
           <input
             className="form-control"
-            type="last_name"
+            type="text"
             name="last_name"
             value={formData.last_name}
             onChange={handleChange}
-            required
           />
         </div>
         <div className="mb-3">
-          <label>Password: </label>
+          <label className="form-label">Password:</label>
           <input
             className="form-control"
             type="password"
@@ -91,30 +119,34 @@ function CreateAccountPage() {
           />
         </div>
         <div className="mb-3">
-          <label className="form-label">Confirm Password: </label>
+          <label className="form-label">Confirm Password:</label>
           <input
             className="form-control"
-            type="password_confirmation"
+            type="password"
             name="password_confirmation"
             value={passwordConfirmation}
             onChange={(e) => setPasswordConfirmation(e.target.value)}
             required
           />
         </div>
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Creating..." : "Create User"}
+        <button
+          className="btn btn-primary"
+          type="submit"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Creating..." : "Create Account"}
         </button>
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
-
-        {createdUser && (
-          <div>
-            <p>User create!</p>
-            <pre>{JSON.stringify(createdUser, null, 2)}</pre>
-          </div>
-        )}
+        {error && <p className="text-danger mt-3">{error}</p>}
       </form>
+
+      <div className="mt-3">
+        <p>
+          Already have an account? <a href="/Login">Login here</a>
+        </p>
+      </div>
     </div>
   );
 }
+
 export default CreateAccountPage;

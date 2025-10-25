@@ -1,9 +1,14 @@
 import request from "./api";
-import type { User, UserCreate, UserSettings } from "../types/users.ts";
+import type {
+  User,
+  UserCreate,
+  UserSettings,
+  UserLogin,
+  UserResponse,
+} from "../types/users.ts";
 
-
-export async function createUser(userData: UserCreate): Promise<User> {
-  return request<User>(`/users/create`, {
+export async function createUser(userData: UserCreate): Promise<UserResponse> {
+  return request<UserResponse>(`/users/create`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -12,9 +17,22 @@ export async function createUser(userData: UserCreate): Promise<User> {
   });
 }
 
+export async function loginUser(credentials: UserLogin): Promise<UserResponse> {
+  return request<UserResponse>(`/users/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(credentials),
+  });
+}
 
 export async function getUserSettings(userId: number): Promise<User> {
   return request<User>(`/users/${userId}`);
+}
+
+export async function getCurrentUser(): Promise<User> {
+  return request<User>(`/users/me`);
 }
 
 export async function updateUserSettings(
@@ -27,5 +45,21 @@ export async function updateUserSettings(
       "Content-Type": "application/json",
     },
     body: JSON.stringify(userSettings),
+  });
+}
+
+export async function changePassword(
+  oldPassword: string,
+  newPassword: string
+): Promise<{ message: string }> {
+  return request<{ message: string }>(`/users/change-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      old_password: oldPassword,
+      new_password: newPassword,
+    }),
   });
 }

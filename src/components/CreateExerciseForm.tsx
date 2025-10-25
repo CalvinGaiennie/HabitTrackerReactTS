@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { ExerciseCreate } from "../types/exercises";
 import { createExercise } from "../services/exercises";
+import { useUserId } from "../hooks/useAuth";
 
 // Helper function to convert comma-separated string to array
 const stringToArray = (str: string): string[] => {
@@ -11,9 +12,10 @@ const stringToArray = (str: string): string[] => {
 };
 
 function CreateExerciseForm() {
+  const userId = useUserId(); // Get current user ID
   // Use strings for easier form input handling
   const [formData, setFormData] = useState({
-    user_id: 1,
+    user_id: userId,
     name: "",
     description: "",
     exercise_type: "",
@@ -60,7 +62,7 @@ function CreateExerciseForm() {
 
       // Reset form
       setFormData({
-        user_id: 1,
+        user_id: userId,
         name: "",
         description: "",
         exercise_type: "",

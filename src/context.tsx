@@ -4,14 +4,15 @@ import { AuthContext } from "./context/AuthContext";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [authState, setAuthState] = useState(() => {
-    const savedAuth = localStorage.getItem("auth");
+    const savedAuth = localStorage.getItem("authState");
     return savedAuth
       ? JSON.parse(savedAuth)
       : {
-          status: "not logged in",
+          isAuthenticated: false,
           userId: null,
           username: null,
           settings: null,
+          token: null,
         };
   });
 
@@ -20,23 +21,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.setItem("authState", JSON.stringify(authState));
   }, [authState]);
 
-  const login = (userId: number, username: string, settings: UserSettings) => {
+  const login = (
+    userId: number,
+    username: string,
+    settings: UserSettings,
+    token: string
+  ) => {
     setAuthState({
-      status: "logged in",
+      isAuthenticated: true,
       userId,
       username,
       settings,
+      token,
     });
   };
 
   const logout = () => {
     setAuthState({
-      status: "not logged in",
+      isAuthenticated: false,
       userId: null,
       username: null,
       settings: null,
+      token: null,
     });
+    localStorage.removeItem("authState");
   };
+
   return (
     <AuthContext.Provider value={{ authState, login, logout }}>
       {children}

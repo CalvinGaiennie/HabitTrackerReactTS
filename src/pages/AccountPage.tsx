@@ -10,18 +10,21 @@ import { deleteDailyLog } from "../services/dailyLogs.ts";
 import SpecificAdd from "../components/SpecificAdd.tsx";
 import LogViewer from "../components/LogViewer.tsx";
 import SettingsEdit from "../components/SettingsEdit.tsx";
+import PasswordChangeForm from "../components/PasswordChangeForm.tsx";
 import fetchLogs from "../hooks/fetchLogs.ts";
 import fetchMetrics from "../hooks/fetchMetrics.ts";
+import { useUserId } from "../hooks/useAuth";
 
-type TabType = "goal" | "metric" | "log" | "settings";
+type TabType = "goal" | "metric" | "log" | "settings" | "password";
 type ModeType = "add" | "edit" | "view";
 
 function AccountPage() {
+  const userId = useUserId(); // Get current user ID
   const [activeTab, setActiveTab] = useState<TabType>("goal");
   const [metricMode, setMetricMode] = useState<ModeType>("add");
   const [logMode, setLogMode] = useState<ModeType>("add");
   const [formData, setFormData] = useState<MetricCreate>({
-    user_id: 1,
+    user_id: userId,
     name: "",
     description: "",
     data_type: "text",
@@ -36,9 +39,9 @@ function AccountPage() {
 
   // Fetch logs and metrics on component mount
   useEffect(() => {
-    fetchLogs(setLogs);
+    fetchLogs(setLogs, undefined, undefined, undefined, userId);
     fetchMetrics(setMetrics);
-  }, []);
+  }, [userId]);
 
   // Listen for log saved events from SpecificAdd component
   useEffect(() => {
@@ -100,7 +103,7 @@ function AccountPage() {
       }
       fetchMetrics(setMetrics);
       setFormData({
-        user_id: 1,
+        user_id: userId,
         name: "",
         description: "",
         data_type: "text",
@@ -169,7 +172,7 @@ function AccountPage() {
               <h1>Goals</h1>
             </div>
           </div>
-        )
+        );
       case "metric":
         return (
           <div>
@@ -287,7 +290,7 @@ function AccountPage() {
                       onClick={() => {
                         setEditingMetric(null);
                         setFormData({
-                          user_id: 1,
+                          user_id: userId,
                           name: "",
                           description: "",
                           data_type: "text",
@@ -465,6 +468,12 @@ function AccountPage() {
             <SettingsEdit settingsKeys={["homePageLayout", "enabledPages"]} />
           </div>
         );
+      case "password":
+        return (
+          <div>
+            <PasswordChangeForm />
+          </div>
+        );
       default:
         return null;
     }
@@ -510,6 +519,15 @@ function AccountPage() {
             type="button"
           >
             Settings
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "password" ? "active" : ""}`}
+            onClick={() => setActiveTab("password")}
+            type="button"
+          >
+            Change Password
           </button>
         </li>
       </ul>
