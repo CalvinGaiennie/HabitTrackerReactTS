@@ -24,7 +24,7 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
     []
   );
   const [isDraftLoaded, setIsDraftLoaded] = useState(false);
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     fetchExercises(setSpecificExercises);
@@ -36,26 +36,32 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
 
   // Load draft on mount
   useEffect(() => {
-    const loadDraft = async () => {
-      try {
-        const draft = await getDraft();
-        console.log("Draft loaded:", draft);
-        setTitle(draft.title || "");
-        setSelectedTypes(draft.workout_types || []);
-        setNotes(draft.notes || "");
-        setExercises(draft.exercises || []);
-      } catch (error: any) {
-        // 404 means no draft exists, which is fine
-        if (error?.status !== 404) {
+  const loadDraft = async () => {
+    try {
+      const draft = await getDraft();
+      console.log("Draft loaded:", draft);
+      setTitle(draft.title || "");
+      setSelectedTypes(draft.workout_types || []);
+      setNotes(draft.notes || "");
+      setExercises(draft.exercises || []);
+    } catch (error: unknown) {
+      // Type guard: check if error has a 'status' property
+      if (error && typeof error === 'object' && 'status' in error) {
+        const status = (error as { status?: number }).status;
+        if (status !== 404) {
           console.error("Error loading draft:", error);
         }
-      } finally {
-        setIsDraftLoaded(true);
+      } else {
+        // Non-HTTP errors (network, parsing, etc.)
+        console.error("Unexpected error loading draft:", error);
       }
-    };
+    } finally {
+      setIsDraftLoaded(true);
+    }
+  };
 
-    loadDraft();
-  }, []);
+  loadDraft();
+}, []);
 
   // Auto-save draft whenever form data changes (with debouncing)
   useEffect(() => {
@@ -545,12 +551,12 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
                             />
                           </div>
                           <button
-                                type="button"
-                                className="btn btn-primary mt-2 w-100"
-                                onClick={() => addSet(exerciseIndex)}
-                              >
-                                Add Set
-                              </button>
+                            type="button"
+                            className="btn btn-primary mt-2 w-100"
+                            onClick={() => addSet(exerciseIndex)}
+                          >
+                            Add Set
+                          </button>
                         </div>
                       </div>
                     ))}
