@@ -383,13 +383,6 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
                   <div className="mb-4">
                     <div className="d-flex flex-column  justify-content-between align-items-left mb-3">
                       <h4>Exercises</h4>
-                      <button
-                        type="button"
-                        className="btn btn-primary"
-                        onClick={addExercise}
-                      >
-                        Add Exercise
-                      </button>
                     </div>
 
                     {exercises.map((exercise, exerciseIndex) => (
@@ -434,13 +427,6 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
                           <div className="mb-3">
                             <div className="d-flex justify-content-between align-items-center mb-2">
                               <h3>Sets</h3>
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-outline-primary"
-                                onClick={() => addSet(exerciseIndex)}
-                              >
-                                Add Set
-                              </button>
                             </div>
                             {exercise.sets.map((set, setIndex) => (
                               <div key={setIndex} className="row mb-2">
@@ -558,11 +544,24 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
                               }
                             />
                           </div>
+                          <button
+                                type="button"
+                                className="btn btn-primary mt-2 w-100"
+                                onClick={() => addSet(exerciseIndex)}
+                              >
+                                Add Set
+                              </button>
                         </div>
                       </div>
                     ))}
                   </div>
-
+                  <button
+                    type="button"
+                    className="btn btn-primary w-100 mb-3"
+                    onClick={addExercise}
+                  >
+                    Add Exercise
+                  </button>
                   <div className="mb-3">
                     <label htmlFor="notes" className="form-label">
                       <strong>Workout Notes (Optional)</strong>

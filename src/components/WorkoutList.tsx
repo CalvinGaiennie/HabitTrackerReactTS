@@ -57,7 +57,7 @@ function WorkoutList() {
   return (
     <div className="container">
       <div className="row">
-        {[...workouts].reverse().map((workout) => (
+        {[...workouts].sort((a, b) => new Date(b.started_at).getTime() - new Date(a.started_at).getTime()).map((workout) => (
           <div key={workout.id} className="col-md-6 mb-3">
             <div className="card">
               <div className="card-header d-flex justify-content-between">
