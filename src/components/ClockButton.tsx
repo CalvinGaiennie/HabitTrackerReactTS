@@ -15,9 +15,6 @@ function ClockButton({ metric, clockData, onClockToggle }: ClockButtonProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [sessionDuration, setSessionDuration] = useState(0);
 
-  // Debug logging
-  console.log(`ClockButton for metric ${metric.id}:`, { metric, clockData });
-
   // Ensure clockData has proper structure
   const safeClockData = useMemo(() => {
     return clockData &&
