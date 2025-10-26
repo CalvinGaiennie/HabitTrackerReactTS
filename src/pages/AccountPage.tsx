@@ -547,7 +547,7 @@ function AccountPage() {
       {/* Tab Content */}
       <div className="tab-content mb-5">{renderTabContent()}</div>
       <button
-      className="btn"
+      className="btn btn-primary"
       onClick={handleLogout}
       style={{ textDecoration: "none" }}
     >
