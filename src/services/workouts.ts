@@ -37,3 +37,15 @@ export async function deleteWorkout(
     method: "DELETE",
   });
 }
+
+// Draft functions
+export async function getDraft(): Promise<Workout> {
+  return request<Workout>("/workouts/draft");
+}
+
+export async function saveDraft(data: WorkoutCreate): Promise<Workout> {
+  return request<Workout>("/workouts/draft", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}

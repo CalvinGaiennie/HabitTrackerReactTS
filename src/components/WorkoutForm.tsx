@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import { createWorkout } from "../services/workouts";
+import { useState, useEffect, useRef } from "react";
+import { createWorkout, getDraft, saveDraft } from "../services/workouts";
 import { getUserSettings } from "../services/users";
 import type { UserSettings } from "../types/users";
 import type { Exercise, ExerciseSet } from "../types/workouts";
-import type { ExerciseFull } from "../types/exercises"
+import type { ExerciseFull } from "../types/exercises";
 import fetchExercises from "../hooks/fetchExercises";
 
 interface WorkoutFormProps {
@@ -20,7 +20,12 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [specificExercises, setSpecificExercises ] = useState<ExerciseFull[]>([])
+  const [specificExercises, setSpecificExercises] = useState<ExerciseFull[]>(
+    []
+  );
+  const [isDraftLoaded, setIsDraftLoaded] = useState(false);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     fetchExercises(setSpecificExercises);
   }, []);
@@ -28,6 +33,72 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
   useEffect(() => {
     fetchUserSettings();
   }, []);
+
+  // Load draft on mount
+  useEffect(() => {
+    const loadDraft = async () => {
+      try {
+        const draft = await getDraft();
+        console.log("Draft loaded:", draft);
+        setTitle(draft.title || "");
+        setSelectedTypes(draft.workout_types || []);
+        setNotes(draft.notes || "");
+        setExercises(draft.exercises || []);
+      } catch (error: any) {
+        // 404 means no draft exists, which is fine
+        if (error?.status !== 404) {
+          console.error("Error loading draft:", error);
+        }
+      } finally {
+        setIsDraftLoaded(true);
+      }
+    };
+
+    loadDraft();
+  }, []);
+
+  // Auto-save draft whenever form data changes (with debouncing)
+  useEffect(() => {
+    // Don't save until initial draft is loaded
+    if (!isDraftLoaded) return;
+
+    // Don't save empty forms
+    if (
+      !title &&
+      selectedTypes.length === 0 &&
+      !notes &&
+      exercises.length === 0
+    ) {
+      return;
+    }
+
+    // Clear any existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Set new timeout to save after 1 second of inactivity
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        await saveDraft({
+          title: title || "",
+          workout_types: selectedTypes,
+          notes: notes || undefined,
+          exercises: exercises.length > 0 ? exercises : undefined,
+        });
+        console.log("Draft auto-saved");
+      } catch (error) {
+        console.error("Error auto-saving draft:", error);
+      }
+    }, 1000);
+
+    // Cleanup timeout on unmount or when dependencies change
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [title, selectedTypes, notes, exercises, isDraftLoaded]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -205,8 +276,8 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
   const workoutTypes = userSettings?.workoutTypes || [];
 
   const toggleSuperset = (exerciseIndex: number) => {
-    return exerciseIndex
-  }
+    return exerciseIndex;
+  };
   return (
     <div className="container">
       <div className="row justify-content-center">
@@ -335,17 +406,28 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
                         </div>
                         <div className=" d-flex justify-content-between align-items-center mx-4">
                           <select
-                          className="form-select me-3"
-                          value={exercise.name}
-                          onChange={(e) => updateExercise(exerciseIndex, "name", e.target.value)}>
-                            {specificExercises.map((ex)=> (
-                              <option
-                              key={ex.id}
-                              value={ex.name}
-                              >{ex.name}</option>
+                            className="form-select me-3"
+                            value={exercise.name}
+                            onChange={(e) =>
+                              updateExercise(
+                                exerciseIndex,
+                                "name",
+                                e.target.value
+                              )
+                            }
+                          >
+                            {specificExercises.map((ex) => (
+                              <option key={ex.id} value={ex.name}>
+                                {ex.name}
+                              </option>
                             ))}
                           </select>
-                          <button className='btn btn-outline-primary' onChange={() => toggleSuperset(exerciseIndex)}>Superset</button>
+                          <button
+                            className="btn btn-outline-primary"
+                            onChange={() => toggleSuperset(exerciseIndex)}
+                          >
+                            Superset
+                          </button>
                         </div>
                         <div className="card-body">
                           {/* Sets */}
