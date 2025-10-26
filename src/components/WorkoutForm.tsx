@@ -437,46 +437,49 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
                             {exercise.sets.map((set, setIndex) => (
                               <div key={setIndex} className="row mb-2">
                                 <h4>Set {setIndex + 1}</h4>
-                                <div className="col-md-3">
-                                  <label className="form-label">
-                                    Weight (lbs)
-                                  </label>
-                                  <input
-                                    type="number"
-                                    step="0.1"
-                                    className="form-control"
-                                    placeholder="Weight"
-                                    value={set.weight || ""}
-                                    onChange={(e) =>
-                                      updateSet(
-                                        exerciseIndex,
-                                        setIndex,
-                                        "weight",
-                                        e.target.value
+                                <div className="d-flex gap-3 align-items-center">
+                                  <div className="flex-fill">
+                                    <label className="form-label">
+                                      Weight (lbs)
+                                    </label>
+                                    <input
+                                      type="number"
+                                      step="0.1"
+                                      className="form-control"
+                                      placeholder="Weight"
+                                      value={set.weight || ""}
+                                      onChange={(e) =>
+                                        updateSet(
+                                          exerciseIndex,
+                                          setIndex,
+                                          "weight",
+                                          e.target.value
                                           ? parseFloat(e.target.value)
                                           : undefined
-                                      )
-                                    }
-                                  />
-                                </div>
-                                <div className="col-md-3">
-                                  <label className="form-label">Reps</label>
-                                  <input
-                                    type="number"
-                                    className="form-control"
-                                    placeholder="Reps"
-                                    value={set.reps || ""}
-                                    onChange={(e) =>
-                                      updateSet(
-                                        exerciseIndex,
-                                        setIndex,
-                                        "reps",
-                                        e.target.value
+                                        )
+                                      }
+                                      />
+                                  </div>
+                                  <span style={{ marginTop: '2rem'}}>x</span>
+                                  <div className="flex-fill">
+                                    <label className="form-label">Reps</label>
+                                    <input
+                                      type="number"
+                                      className="form-control"
+                                      placeholder="Reps"
+                                      value={set.reps || ""}
+                                      onChange={(e) =>
+                                        updateSet(
+                                          exerciseIndex,
+                                          setIndex,
+                                          "reps",
+                                          e.target.value
                                           ? parseInt(e.target.value)
                                           : undefined
-                                      )
-                                    }
-                                  />
+                                        )
+                                      }
+                                      />
+                                  </div>
                                 </div>
                                 <div className="col-md-3">
                                   <label className="form-label">
