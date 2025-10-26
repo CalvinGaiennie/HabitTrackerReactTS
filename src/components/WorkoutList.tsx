@@ -104,15 +104,15 @@ function WorkoutList() {
                             <small className="text-muted">Sets:</small>
                             {exercise.sets.map((set, setIndex) => (
                               <div key={setIndex} className="ms-2 small">
-                                {set.reps && <span>Reps: {set.reps}</span>}
                                 {set.weight && (
                                   <span className="ms-2">
-                                    Weight: {set.weight}lbs
+                                    <strong>Weight:</strong> {set.weight}lbs{"  "}
                                   </span>
                                 )}
+                                {set.reps && <span><strong>Reps: </strong> {set.reps}</span>}
                                 {set.rest_duration && (
                                   <span className="ms-2">
-                                    Rest: {set.rest_duration}s
+                                    <strong>Rest: </strong> {set.rest_duration}s
                                   </span>
                                 )}
                                 {set.notes && (
