@@ -14,6 +14,9 @@ import PasswordChangeForm from "../components/PasswordChangeForm.tsx";
 import fetchLogs from "../hooks/fetchLogs.ts";
 import fetchMetrics from "../hooks/fetchMetrics.ts";
 import { useUserId } from "../hooks/useAuth";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext.tsx";
+import { useNavigate } from "react-router-dom";
 
 type TabType = "goal" | "metric" | "log" | "settings" | "password";
 type ModeType = "add" | "edit" | "view";
@@ -34,6 +37,9 @@ function AccountPage() {
   const [logs, setLogs] = useState<DailyLog[]>([]);
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [editingMetric, setEditingMetric] = useState<Metric | null>(null);
+  const navigate = useNavigate();
+  const authContext = useContext(AuthContext) ?? { authState: null, logout: () => {}, user: null };
+  const logout = authContext.logout;
 
   const isSubmitting = useRef(false);
 
@@ -56,6 +62,12 @@ function AccountPage() {
     window.addEventListener("logSaved", handleLogSaved);
     return () => window.removeEventListener("logSaved", handleLogSaved);
   }, []);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/Login");
+  };
+
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -534,7 +546,13 @@ function AccountPage() {
 
       {/* Tab Content */}
       <div className="tab-content mb-5">{renderTabContent()}</div>
-      <button>Logout</button>
+      <button
+      className="btn btn-link nav-link fs-5 text-dark px-3"
+      onClick={handleLogout}
+      style={{ textDecoration: "none" }}
+    >
+      Logout
+    </button>
     </div>
   );
 }

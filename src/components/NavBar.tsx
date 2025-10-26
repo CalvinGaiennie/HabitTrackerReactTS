@@ -1,22 +1,16 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 
 function NavBar() {
   const authContext = useContext(AuthContext);
-  const navigate = useNavigate();
 
   if (!authContext) {
     throw new Error("AuthContext not found");
   }
 
-  const { authState, logout } = authContext;
-
-  const handleLogout = () => {
-    logout();
-    navigate("/Login");
-  };
-
+  const { authState } = authContext;
+  
   return (
     <nav className="nav py-3">
       <ul className="navbar d-flex justify-content-center w-100 list-unstyled gap-0 gap-md-2 gap-lg-4 gap-xl-5 mb-0">
@@ -46,15 +40,6 @@ function NavBar() {
               <NavLink className="nav-link fs-5 text-dark px-3" to="/Account">
                 Account
               </NavLink>
-            </li>
-            <li className="nav-item mb-md-0">
-              <button
-                className="btn btn-link nav-link fs-5 text-dark px-3"
-                onClick={handleLogout}
-                style={{ textDecoration: "none" }}
-              >
-                Logout
-              </button>
             </li>
           </>
         ) : (
