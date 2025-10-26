@@ -14,33 +14,37 @@ function getAuthToken(): string | null {
 }
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const token = getAuthToken();
-    const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-    };
+  const token = getAuthToken();
+  const headers: Record<string, string> = {};
 
-    // Merge with any headers from options
-    if (options?.headers) {
-        Object.assign(headers, options.headers);
-    }
+  // Only set Content-Type when we're actually sending a JSON body
+  const method = (options?.method || "GET").toUpperCase();
+  if (method !== "GET" && options?.body) {
+    headers["Content-Type"] = "application/json";
+  }
 
-    // Add Authorization header if token exists
-    if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-    }
+  // Merge with any headers from options
+  if (options?.headers) {
+    Object.assign(headers, options.headers);
+  }
 
-    const res = await fetch(`${API_BASE}${endpoint}`, {
-        ...options,
-        headers,
-    });
+  // Add Authorization header if token exists
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
 
-    if (!res.ok) {
-        const errorBody = await res.text();
-        throw new Error(`API error ${res.status}: ${errorBody}`);
-    }
+  const res = await fetch(`${API_BASE}${endpoint}`, {
+    ...options,
+    headers,
+  });
 
-    const data: T = await res.json();
-    return data;
+  if (!res.ok) {
+    const errorBody = await res.text();
+    throw new Error(`API error ${res.status}: ${errorBody}`);
+  }
+
+  const data: T = await res.json();
+  return data;
 }
 
 export default request;
