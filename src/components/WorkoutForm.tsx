@@ -394,18 +394,8 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
                     {exercises.map((exercise, exerciseIndex) => (
                       <div key={exerciseIndex} className="card mb-3">
                         <div className="d-flex justify-content-between align-items-center">
-                          <h3 className="m-3">Exercise {exerciseIndex + 1}</h3>
-                          <button
-                            type="button"
-                            className="btn btn-danger btn-sm me-3"
-                            onClick={() => removeExercise(exerciseIndex)}
-                          >
-                            Remove
-                          </button>
-                        </div>
-                        <div className=" d-flex justify-content-between align-items-center mx-4">
                           <select
-                            className="form-select me-3"
+                            className="form-select me-3 m-3"
                             value={exercise.name}
                             onChange={(e) =>
                               updateExercise(
@@ -416,11 +406,20 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
                             }
                           >
                             {specificExercises.map((ex) => (
-                              <option key={ex.id} value={ex.name}>
+                              <option key={ex.id} value={ex.name} className="font-weight-bold">
                                 {ex.name}
                               </option>
                             ))}
                           </select>
+                          <button
+                            type="button"
+                            className="btn btn-danger btn-sm me-3"
+                            onClick={() => removeExercise(exerciseIndex)}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                        <div className=" d-flex justify-content-between align-items-center mx-4">
                           <button
                             className="btn btn-outline-primary"
                             onChange={() => toggleSuperset(exerciseIndex)}
