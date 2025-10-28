@@ -37,6 +37,9 @@ function CreateExerciseForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (formData.name == "") {
+      return
+    };
     try {
       // Convert comma-separated strings to arrays
       const exerciseData: ExerciseCreate = {

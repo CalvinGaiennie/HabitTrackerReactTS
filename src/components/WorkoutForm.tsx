@@ -419,23 +419,22 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
                             Remove
                           </button>
                         </div>
+                        <button
+                        className="btn btn-outline-primary btn-sm mx-3"
+                        onChange={() => toggleSuperset(exerciseIndex)}
+                      >
+                        Superset
+                      </button>
                         <div className=" d-flex justify-content-between align-items-center mx-4">
-                          <button
-                            className="btn btn-outline-primary"
-                            onChange={() => toggleSuperset(exerciseIndex)}
-                          >
-                            Superset
-                          </button>
                         </div>
                         <div className="card-body">
                           {/* Sets */}
                           <div className="mb-3">
-                            <div className="d-flex justify-content-between align-items-center mb-2">
-                              <h3>Sets</h3>
-                            </div>
                             {exercise.sets.map((set, setIndex) => (
                               <div key={setIndex} className="row mb-2">
-                                <h4>Set {setIndex + 1}</h4>
+                                <div className='d-flex flex-row justify-content-between'>
+                                  <h4>Set {setIndex + 1}</h4>
+                                </div>
                                 <div className="d-flex gap-3 align-items-center">
                                   <div className="flex-fill">
                                     <label className="form-label">
@@ -521,16 +520,17 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
                                 <div className="col-md-1 d-flex align-items-end">
                                   <button
                                     type="button"
-                                    className="mt-2 btn btn-danger btn-sm"
+                                    className="mt-4 btn btn-danger btn-sm"
                                     onClick={() =>
                                       removeSet(exerciseIndex, setIndex)
                                     }
                                     disabled={exercise.sets.length === 1}
                                     title="Remove set"
                                   >
-                                    ×
+                                    Delete Set
                                   </button>
                                 </div>
+                                <hr className="mt-4"/>
                               </div>
                             ))}
                           </div>
