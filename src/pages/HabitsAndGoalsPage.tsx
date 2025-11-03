@@ -14,15 +14,11 @@ import PasswordChangeForm from "../components/PasswordChangeForm.tsx";
 import fetchLogs from "../hooks/fetchLogs.ts";
 import fetchMetrics from "../hooks/fetchMetrics.ts";
 import { useUserId } from "../hooks/useAuth";
-import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext.tsx";
-import { useNavigate } from "react-router-dom";
-import { createCheckoutSession, createPortalSession } from "../services/stripe";
 
 type TabType = "goal" | "metric" | "log" | "settings" | "password";
 type ModeType = "add" | "edit" | "view";
 
-function AccountPage() {
+function HabitsAndGoalsPage() {
   const userId = useUserId(); // Get current user ID
   const [activeTab, setActiveTab] = useState<TabType>("goal");
   const [metricMode, setMetricMode] = useState<ModeType>("add");
@@ -38,11 +34,6 @@ function AccountPage() {
   const [logs, setLogs] = useState<DailyLog[]>([]);
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [editingMetric, setEditingMetric] = useState<Metric | null>(null);
-  const navigate = useNavigate();
-  const authContext = useContext(AuthContext) ?? { authState: null, logout: () => {}, user: null };
-  const logout = authContext.logout;
-  const tier = authContext?.authState?.tier || "free";
-
   const isSubmitting = useRef(false);
 
   // Fetch logs and metrics on component mount
@@ -64,28 +55,6 @@ function AccountPage() {
     window.addEventListener("logSaved", handleLogSaved);
     return () => window.removeEventListener("logSaved", handleLogSaved);
   }, []);
-
-  const handleLogout = () => {
-    logout();
-    navigate("/Login");
-  };
-
-  const handleUpgrade = async (which: "monthly" | "annual") => {
-    try {
-      await createCheckoutSession(which);
-    } catch (e) {
-      alert((e as Error).message);
-    }
-  };
-
-  const handleManageBilling = async () => {
-    try {
-      await createPortalSession();
-    } catch (e) {
-      alert((e as Error).message);
-    }
-  };
-
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -495,7 +464,7 @@ function AccountPage() {
       case "settings":
         return (
           <div>
-            <SettingsEdit settingsKeys={["enabledPages"]} />
+            <SettingsEdit settingsKeys={["homePageLayout"]} />
           </div>
         );
       case "password":
@@ -511,65 +480,51 @@ function AccountPage() {
 
   return (
     <div className="container mt-4">
-      <h1>Account</h1>
-
-      {/* Subscription Section */}
-      <div className="card mb-4">
-        <div className="card-body d-flex flex-column flex-md-row align-items-md-center justify-content-between">
-          <div>
-            <h5 className="mb-1">Subscription</h5>
-            <div>
-              <span className={`badge ${tier !== "free" ? "bg-success" : "bg-secondary"}`}>
-                {tier !== "free" ? `Premium (${tier === "annual" ? "Annual" : "Monthly"})` : "Free"}
-              </span>
-            </div>
-          </div>
-          <div className="mt-3 mt-md-0">
-            {tier === "free" ? (
-              <div className="btn-group">
-                <button className="btn btn-primary" onClick={() => handleUpgrade("monthly")}>Upgrade Monthly</button>
-                <button className="btn btn-outline-primary" onClick={() => handleUpgrade("annual")}>Upgrade Annual</button>
-              </div>
-            ) : (
-              <button className="btn btn-outline-danger" onClick={handleManageBilling}>Manage Subscription</button>
-            )}
-          </div>
-        </div>
-      </div>
-
+      <h1>Habits and Goals</h1>
       {/* Tab Navigation */}
       <ul className="nav nav-tabs mb-4">
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "goal" ? "active" : ""}`}
+            onClick={() => setActiveTab("goal")}
+            type="button"
+          >
+            Goal
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "metric" ? "active" : ""}`}
+            onClick={() => setActiveTab("metric")}
+            type="button"
+          >
+            Habit Metric
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "log" ? "active" : ""}`}
+            onClick={() => setActiveTab("log")}
+            type="button"
+          >
+            Log
+          </button>
+        </li>
         <li className="nav-item">
           <button
             className={`nav-link ${activeTab === "settings" ? "active" : ""}`}
             onClick={() => setActiveTab("settings")}
             type="button"
           >
-            Settings
-          </button>
-        </li>
-        <li className="nav-item">
-          <button
-            className={`nav-link ${activeTab === "password" ? "active" : ""}`}
-            onClick={() => setActiveTab("password")}
-            type="button"
-          >
-            Change Password
+            Home Page Layout
           </button>
         </li>
       </ul>
 
       {/* Tab Content */}
       <div className="tab-content mb-5">{renderTabContent()}</div>
-      <button
-      className="btn btn-primary"
-      onClick={handleLogout}
-      style={{ textDecoration: "none" }}
-    >
-      Logout
-    </button>
     </div>
   );
 }
 
-export default AccountPage;
+export default HabitsAndGoalsPage;

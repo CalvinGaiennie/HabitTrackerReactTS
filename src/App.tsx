@@ -12,6 +12,7 @@ import CreateAccountPage from "./pages/CreateAccountPage.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
 import { ProtectedRoute } from "./components/ProtectedRoute.tsx";
 import { AuthRoute } from "./components/AuthRoute.tsx";
+import HabitsAndGoalsPage from "./pages/HabitsAndGoalsPage.tsx";
 
 function App() {
   return (
@@ -28,6 +29,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <HomePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/HabitsAndGoals"
+              element={
+                <ProtectedRoute>
+                  <HabitsAndGoalsPage />
                 </ProtectedRoute>
               }
             />

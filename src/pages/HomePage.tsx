@@ -12,9 +12,8 @@ import fetchLogs from "../hooks/fetchLogs.ts";
 import ClockButton from "../components/ClockButton";
 import { useUserId } from "../hooks/useAuth";
 
-// IMPLEMENT auto no for empty days on booleans as an option
 function HomePage() {
-  const userId = useUserId(); // Get current user ID
+  const userId = useUserId();
   const [activeMetrics, setActiveMetrics] = useState<Metric[]>([]);
   const [logValues, setLogValues] = useState<Record<number, string>>({});
   const [logs, setLogs] = useState<DailyLog[]>([]);
@@ -29,6 +28,7 @@ function HomePage() {
     String(now.getDate()).padStart(2, "0"),
   ].join("-");
 
+  // Save log
   async function handleSave(log: Omit<DailyLog, "id" | "created_at">) {
     try {
       await saveDailyLog(log);
@@ -39,6 +39,7 @@ function HomePage() {
     }
   }
 
+  // Clock toggle
   const handleClockToggle = async (
     metricId: number,
     newState: "clocked_in" | "clocked_out"
@@ -59,6 +60,7 @@ function HomePage() {
     }
   };
 
+  // Fetch settings
   useEffect(() => {
     fetchSettings((fetchedSettings) => {
       console.log("Settings received in HomePage:", fetchedSettings);
@@ -66,17 +68,18 @@ function HomePage() {
     }, userId);
   }, [userId]);
 
+  // Fetch logs
   useEffect(() => {
     fetchLogs(setLogs, undefined, undefined, undefined, userId);
   }, [userId]);
 
+  // Fetch metrics + clock data
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
         const metrics = await getActiveMetrics();
         setActiveMetrics(metrics);
 
-        // Fetch clock data for clock metrics
         const clockMetrics = metrics.filter((m) => m.data_type === "clock");
         const clockDataPromises = clockMetrics.map(async (metric) => {
           try {
@@ -87,7 +90,6 @@ function HomePage() {
               `Failed to fetch clock data for metric ${metric.id}:`,
               error
             );
-            // If no clock data exists yet, create a default "clocked_out" state
             return {
               metricId: metric.id,
               data: {
@@ -103,9 +105,7 @@ function HomePage() {
         const clockResults = await Promise.all(clockDataPromises);
         const clockDataMap: Record<number, ClockData> = {};
         clockResults.forEach(({ metricId, data }) => {
-          if (data) {
-            clockDataMap[metricId] = data;
-          }
+          if (data) clockDataMap[metricId] = data;
         });
         setClockData(clockDataMap);
       } catch (err) {
@@ -116,7 +116,7 @@ function HomePage() {
     fetchMetrics();
   }, [today]);
 
-  // Fetch today's logs after metrics are loaded
+  // Fetch today's logs
   useEffect(() => {
     if (activeMetrics.length === 0) return;
 
@@ -126,11 +126,9 @@ function HomePage() {
         const values: Record<number, string> = {};
 
         data.forEach((log) => {
-          // Find the metric to determine its data type
           const metric = activeMetrics.find((m) => m.id === log.metric_id);
           if (!metric) return;
 
-          // Set value based on metric's data type, not what's in the database
           switch (metric.data_type) {
             case "text":
               if (log.value_text !== null)
@@ -152,11 +150,7 @@ function HomePage() {
           }
         });
 
-        // Preserve existing user input that hasn't been saved yet
-        setLogValues((prevValues) => ({
-          ...prevValues,
-          ...values,
-        }));
+        setLogValues((prev) => ({ ...prev, ...values }));
       } catch (err) {
         console.error("Failed to fetch today's logs:", err);
       }
@@ -165,56 +159,7 @@ function HomePage() {
     fetchTodayLogs();
   }, [activeMetrics, today]);
 
-  // Listen for log saved events from SpecificAdd component
-  useEffect(() => {
-    const handleLogSaved = async () => {
-      try {
-        const data = await getDailyLogs();
-        setLogs(data);
-
-        // Also refresh today's logs for the form
-        const todayData = await getDailyLogs("1", undefined, undefined, today);
-        const values: Record<number, string> = {};
-        todayData.forEach((log) => {
-          // Find the metric to determine its data type
-          const metric = activeMetrics.find((m) => m.id === log.metric_id);
-          if (!metric) return;
-
-          // Set value based on metric's data type, not what's in the database
-          switch (metric.data_type) {
-            case "text":
-              if (log.value_text !== null)
-                values[log.metric_id] = log.value_text;
-              break;
-            case "int":
-              if (log.value_int !== null)
-                values[log.metric_id] = log.value_int.toString();
-              break;
-            case "decimal":
-            case "scale":
-              if (log.value_decimal !== null)
-                values[log.metric_id] = log.value_decimal.toString();
-              break;
-            case "boolean":
-              if (log.value_boolean !== null)
-                values[log.metric_id] = log.value_boolean ? "true" : "false";
-              break;
-          }
-        });
-        // Preserve existing user input that hasn't been saved yet
-        setLogValues((prevValues) => ({
-          ...prevValues,
-          ...values,
-        }));
-      } catch (err) {
-        console.error("Failed to refresh logs:", err);
-      }
-    };
-
-    window.addEventListener("logSaved", handleLogSaved);
-    return () => window.removeEventListener("logSaved", handleLogSaved);
-  }, [activeMetrics, today]);
-
+  // Save debounced values
   useEffect(() => {
     const saveLogs = async () => {
       for (const [metricId, rawValue] of Object.entries(debouncedValues)) {
@@ -258,8 +203,48 @@ function HomePage() {
     saveLogs();
   }, [debouncedValues, activeMetrics, today]);
 
-  console.log("HomePage render - settings:", settings);
-  console.log("HomePage render - activeMetrics:", activeMetrics);
+  // Log saved event
+  useEffect(() => {
+    const handleLogSaved = async () => {
+      try {
+        const data = await getDailyLogs();
+        setLogs(data);
+
+        const todayData = await getDailyLogs("1", undefined, undefined, today);
+        const values: Record<number, string> = {};
+        todayData.forEach((log) => {
+          const metric = activeMetrics.find((m) => m.id === log.metric_id);
+          if (!metric) return;
+
+          switch (metric.data_type) {
+            case "text":
+              if (log.value_text !== null)
+                values[log.metric_id] = log.value_text;
+              break;
+            case "int":
+              if (log.value_int !== null)
+                values[log.metric_id] = log.value_int.toString();
+              break;
+            case "decimal":
+            case "scale":
+              if (log.value_decimal !== null)
+                values[log.metric_id] = log.value_decimal.toString();
+              break;
+            case "boolean":
+              if (log.value_boolean !== null)
+                values[log.metric_id] = log.value_boolean ? "true" : "false";
+              break;
+          }
+        });
+        setLogValues((prev) => ({ ...prev, ...values }));
+      } catch (err) {
+        console.error("Failed to refresh logs:", err);
+      }
+    };
+
+    window.addEventListener("logSaved", handleLogSaved);
+    return () => window.removeEventListener("logSaved", handleLogSaved);
+  }, [activeMetrics, today]);
 
   return (
     <div className="container d-flex flex-column align-items-center">
@@ -268,112 +253,109 @@ function HomePage() {
       {settings && !settings.homePageLayout && (
         <div>No homePageLayout found</div>
       )}
+
       {settings?.homePageLayout?.map((section) => (
         <div key={section.section} className="mb-4 w-100">
           <h2>{section.section}</h2>
           <div className="row">
-            {section.metricIds.map((metricId: number) => (
-              <div key={metricId} className="col-12 col-md-6 col-lg-4 mb-3">
-                {(() => {
-                  const metric = activeMetrics.find((m) => m.id === metricId);
-                  if (!metric) return null;
+            {section.metricIds.map((metricId) => {
+              const metric = activeMetrics.find((m) => m.id === metricId);
+              if (!metric) return null;
 
-                  const hasLogToday = logs.some((log) => {
-                    // Parse date string directly to avoid timezone issues
-                    const [year, month, day] = log.log_date
-                      .split("-")
-                      .map(Number);
-                    const logDate = new Date(year, month - 1, day);
-                    return (
-                      log.metric_id === metric.id &&
-                      logDate.toISOString().split("T")[0] === today
-                    );
-                  });
+              const hasLogToday = logs.some((log) => {
+                const [year, month, day] = log.log_date.split("-").map(Number);
+                const logDate = new Date(year, month - 1, day);
+                return (
+                  log.metric_id === metric.id &&
+                  logDate.toISOString().split("T")[0] === today
+                );
+              });
 
-                  return (
-                    <div
-                      className="card"
-                      style={{ border: "none", boxShadow: "none" }}
-                    >
-                      <div className="card-body" style={{ padding: "0.5rem" }}>
-                        <label className="form-label">
-                          {metric.name}{" "}
-                          {hasLogToday && (
-                            <span className="badge bg-success ms-2">Today</span>
-                          )}
-                        </label>
-                        {metric.data_type === "clock" ? (
-                          <ClockButton
-                            metric={metric}
-                            clockData={clockData[metric.id]}
-                            onClockToggle={handleClockToggle}
-                          />
-                        ) : metric.data_type === "boolean" ? (
-                          <div>
-                            <div className="form-check form-check-inline">
-                              <input
-                                type="radio"
-                                id={`metric-${metric.id}-yes`}
-                                name={`metric-${metric.id}`}
-                                value="true"
-                                checked={logValues[metric.id] === "true"}
-                                onChange={(e) =>
-                                  setLogValues({
-                                    ...logValues,
-                                    [metric.id]: e.target.value,
-                                  })
-                                }
-                                className={"form-check-input"}
-                              />
-                              <label
-                                htmlFor={`metric-${metric.id}-yes`}
-                                className="form-check-label"
-                              >
-                                Yes
-                              </label>
-                            </div>
-                            <div className="form-check form-check-inline">
-                              <input
-                                type="radio"
-                                id={`metric-${metric.id}-no`}
-                                name={`metric-${metric.id}`} // group radios per metric
-                                value="false"
-                                checked={logValues[metric.id] === "false"}
-                                onChange={(e) =>
-                                  setLogValues({
-                                    ...logValues,
-                                    [metric.id]: e.target.value,
-                                  })
-                                }
-                                className="form-check-input"
-                              />
-                              <label
-                                htmlFor={`metric-${metric.id}-no`}
-                                className="form-check-label"
-                              >
-                                No
-                              </label>
-                            </div>
-                          </div>
-                        ) : (
-                          <input
-                            className="form-control"
-                            value={logValues[metric.id] ?? ""}
-                            onChange={(e) =>
-                              setLogValues({
-                                ...logValues,
-                                [metric.id]: e.target.value,
-                              })
-                            }
-                            placeholder={`Enter ${metric.data_type}`}
-                          />
+              return (
+                <div key={metricId} className="col-12 col-md-6 col-lg-4 mb-3">
+                  <div
+                    className="card"
+                    style={{ border: "none", boxShadow: "none" }}
+                  >
+                    <div className="card-body" style={{ padding: "0.5rem" }}>
+                      <label className="form-label">
+                        {metric.name}{" "}
+                        {hasLogToday && (
+                          <span className="badge bg-success ms-2">Today</span>
                         )}
-                      </div>
+                      </label>
+
+                      {metric.data_type === "clock" ? (
+                        <ClockButton
+                          metric={metric}
+                          clockData={clockData[metric.id]}
+                          onClockToggle={handleClockToggle}
+                        />
+                      ) : metric.data_type === "boolean" ? (
+                        <div>
+                          <div className="form-check form-check-inline">
+                            <input
+                              type="radio"
+                              id={`metric-${metric.id}-yes`}
+                              name={`metric-${metric.id}`}
+                              value="true"
+                              checked={logValues[metric.id] === "true"}
+                              onChange={(e) =>
+                                setLogValues({
+                                  ...logValues,
+                                  [metric.id]: e.target.value,
+                                })
+                              }
+                              className="form-check-input"
+                            />
+                            <label
+                              htmlFor={`metric-${metric.id}-yes`}
+                              className="form-check-label"
+                            >
+                              Yes
+                            </label>
+                          </div>
+                          <div className="form-check form-check-inline">
+                            <input
+                              type="radio"
+                              id={`metric-${metric.id}-no`}
+                              name={`metric-${metric.id}`}
+                              value="false"
+                              checked={logValues[metric.id] === "false"}
+                              onChange={(e) =>
+                                setLogValues({
+                                  ...logValues,
+                                  [metric.id]: e.target.value,
+                                })
+                              }
+                              className="form-check-input"
+                            />
+                            <label
+                              htmlFor={`metric-${metric.id}-no`}
+                              className="form-check-label"
+                            >
+                              No
+                            </label>
+                          </div>
+                        </div>
+                      ) : (
+                        <input
+                          className="form-control"
+                          value={logValues[metric.id] ?? ""}
+                          onChange={(e) =>
+                            setLogValues({
+                              ...logValues,
+                              [metric.id]: e.target.value,
+                            })
+                          }
+                          placeholder={`Enter ${metric.data_type}`}
+                        />
+                      )}
                     </div>
-                  );
-                })()}
-              </div>
-            ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       ))}

@@ -5,6 +5,7 @@ import type {
   UserSettings,
   UserLogin,
   UserResponse,
+  UserWithTier,
 } from "../types/users.ts";
 
 export async function createUser(userData: UserCreate): Promise<UserResponse> {
@@ -31,8 +32,8 @@ export async function getUserSettings(userId: number): Promise<User> {
   return request<User>(`/users/${userId}`);
 }
 
-export async function getCurrentUser(): Promise<User> {
-  return request<User>(`/users/me`);
+export async function getCurrentUser(): Promise<UserWithTier> {
+  return request<UserWithTier>(`/users/me`);
 }
 
 export async function updateUserSettings(

@@ -11,6 +11,12 @@ export interface User {
   is_verified?: boolean;
 }
 
+export type Tier = "free" | "monthly" | "annual";
+
+export interface UserWithTier extends User {
+  tier: Tier;
+}
+
 export interface UserCreate {
   username: string;
   password: string;

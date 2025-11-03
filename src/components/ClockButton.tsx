@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import type { Metric } from "../types/Metrics";
 import type { ClockData } from "../types/dailyLogs";
+import { useWeeklyClockTotal } from "../hooks/useWeeklyClockTotal";
 
 interface ClockButtonProps {
   metric: Metric;
@@ -14,6 +15,9 @@ interface ClockButtonProps {
 function ClockButton({ metric, clockData, onClockToggle }: ClockButtonProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [sessionDuration, setSessionDuration] = useState(0);
+  const { data: weekly, loading: weeklyLoading } = useWeeklyClockTotal(
+    metric.id
+  );
 
   // Ensure clockData has proper structure
   const safeClockData = useMemo(() => {
@@ -86,6 +90,7 @@ function ClockButton({ metric, clockData, onClockToggle }: ClockButtonProps) {
 
   const isClockedIn = safeClockData.current_state === "clocked_in";
   const totalDuration = safeClockData.total_duration_minutes || 0;
+  const weeklyTotal = weekly?.weekly_total_minutes ?? 0;
 
   return (
     <div className="clock-button-container mb-3">
@@ -119,6 +124,13 @@ function ClockButton({ metric, clockData, onClockToggle }: ClockButtonProps) {
           )}
         </div>
       </button>
+
+      <div className="mt-2 d-flex justify-content-between align-items-center">
+        <small className="text-muted">
+          This Week:{" "}
+          {weeklyLoading ? "Calculating..." : formatDuration(weeklyTotal)}
+        </small>
+      </div>
 
       {safeClockData.sessions && safeClockData.sessions.length > 0 && (
         <div className="mt-2">

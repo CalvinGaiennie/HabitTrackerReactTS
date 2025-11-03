@@ -78,7 +78,7 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
     } finally {
       setIsSaving(false);
     }
-  }, [editableSettings]);
+  }, [editableSettings, userId]);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -182,7 +182,7 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
     if (!editableSettings || !editableSettings.homePageLayout) return;
 
     const updatedLayout = editableSettings.homePageLayout.filter(
-      (_: any, index: number) => index !== sectionIndex
+      (_section: HomePageSection, index: number) => index !== sectionIndex
     );
     setEditableSettings({
       ...editableSettings,
