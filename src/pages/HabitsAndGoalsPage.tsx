@@ -14,15 +14,17 @@ import PasswordChangeForm from "../components/PasswordChangeForm.tsx";
 import fetchLogs from "../hooks/fetchLogs.ts";
 import fetchMetrics from "../hooks/fetchMetrics.ts";
 import { useUserId } from "../hooks/useAuth";
+import type { ModeType } from "../types/general";
+import SubPage from "../components/SubPage.tsx";
+
 
 type TabType = "goal" | "metric" | "log" | "settings" | "password";
-type ModeType = "add" | "edit" | "view";
-
 function HabitsAndGoalsPage() {
   const userId = useUserId(); // Get current user ID
   const [activeTab, setActiveTab] = useState<TabType>("goal");
-  const [metricMode, setMetricMode] = useState<ModeType>("add");
-  const [logMode, setLogMode] = useState<ModeType>("add");
+  const [metricMode, setMetricMode] = useState<ModeType>("view");
+  const [goalMode, setGoalMode ] = useState<ModeType>("view");
+  const [logMode, setLogMode] = useState<ModeType>("view");
   const [formData, setFormData] = useState<MetricCreate>({
     user_id: userId,
     name: "",
@@ -167,28 +169,14 @@ function HabitsAndGoalsPage() {
       case "goal":
         return (
           <div>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h1>Goals</h1>
-            </div>
+            <SubPage title="Goals" mode={goalMode} setMode={setGoalMode} />
           </div>
         );
       case "metric":
         return (
           <div>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h2>Metric</h2>
-              <select
-                value={metricMode}
-                onChange={(e) => setMetricMode(e.target.value as ModeType)}
-                className="form-select"
-                style={{ width: "auto" }}
-              >
-                <option value="add">Add</option>
-                <option value="edit">Edit</option>
-                <option value="view">View</option>
-              </select>
-            </div>
-
+            <SubPage title="Metrics" mode={metricMode} setMode={setMetricMode} />
+            
             {metricMode === "add" && (
               <div>
                 <h3>Add New Metric</h3>
@@ -385,16 +373,7 @@ function HabitsAndGoalsPage() {
           <div>
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h2>Log</h2>
-              <select
-                value={logMode}
-                onChange={(e) => setLogMode(e.target.value as ModeType)}
-                className="form-select"
-                style={{ width: "auto" }}
-              >
-                <option value="add">Add</option>
-                <option value="edit">Edit</option>
-                <option value="view">View</option>
-              </select>
+              <SubPage title="Logs" mode={logMode} setMode={setLogMode} />
             </div>
 
             {logMode === "add" && (
