@@ -371,11 +371,7 @@ function HabitsAndGoalsPage() {
       case "log":
         return (
           <div>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h2>Log</h2>
-              <SubPage title="Logs" mode={logMode} setMode={setLogMode} />
-            </div>
-
+            <SubPage title="Logs" mode={logMode} setMode={setLogMode} />
             {logMode === "add" && (
               <div>
                 <h3>Add Log</h3>
