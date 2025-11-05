@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import request from "../services/api";
 
 export interface WeeklyData {
     weekly_total_minutes: number;
@@ -12,14 +13,19 @@ export function useWeeklyClockTotal(metricId: number) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch(`/daily_logs/clock-status-for-week/${metricId}`)
-        .then(r => r.json())
-        .then(setData)
-        .catch( err => {
-            console.error("Failed to fetch weekly total:", err);
-            setData(null);
-        })
-        .finally(() => setLoading(false));
+        (async () => {
+            try {
+                const result = await request<WeeklyData>(
+                    `/daily_logs/clock-status-for-week/${metricId}`
+                );
+                setData(result);
+            } catch (err) {
+                console.error("Failed to fetch weekly total:", err);
+                setData(null);
+            } finally {
+                setLoading(false);
+            }
+        })();
     }, [metricId]);
 
     return { data, loading };
