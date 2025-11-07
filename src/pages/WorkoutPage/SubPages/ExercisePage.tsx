@@ -11,10 +11,12 @@ function ExercisePage() {
 
     return (
         <div>
-            <select onChange={handleModeChange} value={mode}>
-                <option value="view">View</option>
-                <option value="add">Add</option>
-            </select>
+            <div className="d-flex justify-content-end">
+                <select onChange={handleModeChange} value={mode}>
+                    <option value="view">View</option>
+                    <option value="add">Add</option>
+                </select>
+            </div>
             {mode === "add" && (
                 <CreateExerciseForm/>
             )}

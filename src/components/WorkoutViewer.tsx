@@ -1,46 +1,37 @@
-import { useState, useEffect } from "react";
-import { deleteWorkout } from "../services/workouts";
-import type { Workout } from "../types/workouts";
-import fetchWorkouts from "../hooks/fetchWorkouts"
-function WorkoutList() {
-  const [workouts, setWorkouts] = useState<Workout[]>([]);
-  useEffect(() => {
-    fetchWorkouts(setWorkouts);
-  }, []);
+function WorkoutViewer() {
 
-  const handleDelete = async (workoutId: number) => {
-    if (!window.confirm("Delete this workout?")) return;
-
-    try {
-      console.log("Attempting to delete workout ID:", workoutId);
-      const result = await deleteWorkout(workoutId);
-      console.log("Delete result:", result);
-      setWorkouts(workouts.filter((workout) => workout.id !== workoutId));
-      console.log("Workout removed from list");
-    } catch (error) {
-      console.error("Error deleting workout:", error);
-      alert(`Failed to delete workout: ${error}`);
+    const workout = {
+        id: 1,
+        user_id: 1,
+        started_at: new Date(),
+        ended_at: new Date(),
+        title: "Test Workout",
+        workout_types: ["lifting", "stretching"],
+        notes: "hmmm",
+        exercises: ['idk','hmmm'],
+        is_draft: false,
+        deleted_at: "",
     }
-  };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
-  };
 
-  if (workouts.length === 0) {
+      const handleDelete = async (workoutId: number) => {
+        if (!window.confirm("Delete this workout?")) return;
+    
+        try {
+          console.log("Attempting to delete workout ID:", workoutId);
+          const result = await deleteWorkout(workoutId);
+          console.log("Delete result:", result);
+          setWorkouts(workouts.filter((workout) => workout.id !== workoutId));
+          console.log("Workout removed from list");
+        } catch (error) {
+          console.error("Error deleting workout:", error);
+          alert(`Failed to delete workout: ${error}`);
+        }
+      };
+
+      
     return (
-      <div className="text-center py-5">
-        <h4>No workouts yet</h4>
-        <p className="text-muted">Create your first workout!</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container" onClick={()=> console.log("move to workout viewer")}>
-      <div className="row">
-        {[...workouts].sort((a, b) => new Date(b.started_at).getTime() - new Date(a.started_at).getTime()).map((workout) => (
-          <div key={workout.id} className="col-md-6 mb-3">
+        <div key={workout.id} className="col-md-6 mb-3">
             <div className="card">
               <div className="card-header d-flex justify-content-between">
                 <h5 className="mb-0">{workout.title}</h5>
@@ -117,11 +108,7 @@ function WorkoutList() {
                 )}
               </div>
             </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+        </div>
+)
 }
-
-export default WorkoutList;
+export default WorkoutViewer

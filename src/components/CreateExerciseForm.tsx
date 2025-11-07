@@ -83,7 +83,7 @@ function CreateExerciseForm() {
   };
 
   return (
-    <div className="container mt-5">
+    <div className="container">
       <h2 className="mb-4">Create an Exercise</h2>
       <form onSubmit={handleSubmit} className="needs-validation" noValidate>
         <div className="mb-3">

@@ -1,24 +1,15 @@
 import { useEffect, useState } from "react";
-import { getExercises } from "../services/exercises";
 import type { Exercise } from "../types/exercises";
-
+import fetchExercises from "../hooks/fetchExercises";
 function ExerciseList() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
 
   useEffect(() => {
-    const fetchExercises = async () => {
-      try {
-        const newExercises = await getExercises();
-        setExercises(newExercises);
-      } catch {
-        console.error("Error fetching exercises");
-      }
-    };
-    fetchExercises();
-  }, []);
+    fetchExercises(setExercises)
+  }, [])
 
   return (
-    <div className="container mt-4">
+    <div className="container">
       <h2 className="mb-4">Exercise Library</h2>
       <div className="row">
         {exercises.map((exercise) => (
