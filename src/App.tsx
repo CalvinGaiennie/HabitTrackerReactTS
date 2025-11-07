@@ -13,6 +13,7 @@ import LoginPage from "./pages/LoginPage.tsx";
 import { ProtectedRoute } from "./components/ProtectedRoute.tsx";
 import { AuthRoute } from "./components/AuthRoute.tsx";
 import HabitsAndGoalsPage from "./pages/HabitsAndGoalsPage.tsx";
+import WorkoutViewer from "./components/WorkoutViewer.tsx";
 
 function App() {
   return (
@@ -54,6 +55,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <WorkoutPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/WorkoutViewer/:id"
+              element={
+                <ProtectedRoute>
+                  <WorkoutViewer />
                 </ProtectedRoute>
               }
             />

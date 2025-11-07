@@ -2,8 +2,11 @@ import { useState, useEffect } from "react";
 import { deleteWorkout } from "../services/workouts";
 import type { Workout } from "../types/workouts";
 import fetchWorkouts from "../hooks/fetchWorkouts"
+import { useNavigate } from 'react-router-dom';
+
 function WorkoutList() {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
+  const navigate = useNavigate();
   useEffect(() => {
     fetchWorkouts(setWorkouts);
   }, []);
@@ -37,10 +40,10 @@ function WorkoutList() {
   }
 
   return (
-    <div className="container" onClick={()=> console.log("move to workout viewer")}>
+    <div className="container">
       <div className="row">
         {[...workouts].sort((a, b) => new Date(b.started_at).getTime() - new Date(a.started_at).getTime()).map((workout) => (
-          <div key={workout.id} className="col-md-6 mb-3">
+          <div key={workout.id} className="col-md-6 mb-3" onClick={()=> navigate(`/WorkoutViewer/${workout.id}`)}>
             <div className="card">
               <div className="card-header d-flex justify-content-between">
                 <h5 className="mb-0">{workout.title}</h5>
