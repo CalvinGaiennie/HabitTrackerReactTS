@@ -1,7 +1,7 @@
 export interface MetricMini {
   id: number;
   name: string;
-  initials: string;
+  initials?: string; // optional; may be derived client-side
 }
 
 export interface ClockEvent {

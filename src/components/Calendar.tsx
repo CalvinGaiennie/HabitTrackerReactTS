@@ -110,6 +110,14 @@ function Calendar({
     color: metricColors[index % metricColors.length],
   }));
 
+  const deriveInitials = (name: string): string => {
+    if (!name) return "";
+    const parts = name.trim().split(/\s+/);
+    const first = parts[0]?.[0] ?? "";
+    const second = parts[1]?.[0] ?? "";
+    return (first + second).toUpperCase();
+  };
+
   // Generate calendar grid
   const calendarDays: Array<{
     day: number;
@@ -226,7 +234,9 @@ function Calendar({
                   className="legend-dot"
                   style={{ backgroundColor: metric.color }}
                 ></div>
-                <span className="legend-label">{metric.name}({metric.initials.toUpperCase()})</span>
+                <span className="legend-label">
+                  {metric.name}({(metric.initials ?? deriveInitials(metric.name)).toUpperCase()})
+                </span>
               </div>
             ))}
           </div>

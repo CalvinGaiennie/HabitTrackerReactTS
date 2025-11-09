@@ -8,7 +8,7 @@ export interface Metric {
   subcategory?: string;
   name: string;
   description?: string;
-  initials: string;
+  initials?: string; // optional; derived on frontend from name when missing
   parent_id?: number;
   is_required: boolean;
   data_type: "int" | "boolean" | "text" | "scale" | "decimal" | "clock";
@@ -27,7 +27,7 @@ export interface MetricCreate {
   user_id: number;
   name: string;
   description?: string;
-  initials: string;
+  initials?: string; // optional input; compute from name if omitted
   data_type: "int" | "boolean" | "text" | "scale" | "decimal" | "clock";
   scale_min?: number;
   scale_max?: number;

@@ -283,7 +283,7 @@ function CalendarMonth({ metrics }: CalendarMonthProps) {
                             }}
                           >
                             <p style={{ fontSize: '0.5rem'}}>
-                              {log.metric.initials.toUpperCase()}
+                              {(log.metric.initials ?? (log.metric.name?.slice(0,1) || "")).toUpperCase()}
                             </p>
                           </div>
                         ))}
