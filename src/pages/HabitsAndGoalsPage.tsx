@@ -29,6 +29,7 @@ function HabitsAndGoalsPage() {
     user_id: userId,
     name: "",
     description: "",
+    initials: "",
     data_type: "text",
     unit: "",
     notes_on: false,
@@ -107,6 +108,7 @@ function HabitsAndGoalsPage() {
         user_id: userId,
         name: "",
         description: "",
+        initials: "",
         data_type: "text",
         unit: "",
         notes_on: false,
@@ -125,6 +127,7 @@ function HabitsAndGoalsPage() {
       user_id: metric.user_id,
       name: metric.name,
       description: metric.description || "",
+      initials:  metric.initials || "",
       data_type: metric.data_type,
       unit: metric.unit || "",
       notes_on: metric.notes_on,
@@ -204,6 +207,16 @@ function HabitsAndGoalsPage() {
                     />
                   </div>
                   <div className="mb-3">
+                    <label className="form-label">Initials:</label>
+                    <input
+                      name="initials"
+                      value={formData.initials}
+                      onChange={handleChange}
+                      className="form-control"
+                      maxLength={2}
+                    />
+                  </div>
+                  <div className="mb-3">
                     <label className="form-label">Type:</label>
                     <select
                       name="data_type"
@@ -280,6 +293,7 @@ function HabitsAndGoalsPage() {
                           user_id: userId,
                           name: "",
                           description: "",
+                          initials: "",
                           data_type: "text",
                           unit: "",
                           notes_on: false,

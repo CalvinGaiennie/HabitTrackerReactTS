@@ -176,7 +176,7 @@ function HomePage() {
           value_decimal: null,
           note: "",
           deleted_at: null,
-          metric: { id: Number(metricId), name: metric.name },
+          metric: { id: Number(metricId), name: metric.name, initials: metric.initials },
         };
 
         switch (metric.data_type) {
@@ -201,7 +201,7 @@ function HomePage() {
       }
     };
     saveLogs();
-  }, [debouncedValues, activeMetrics, today]);
+  }, [debouncedValues, activeMetrics, today, userId]);
 
   // Log saved event
   useEffect(() => {

@@ -281,7 +281,11 @@ function CalendarMonth({ metrics }: CalendarMonthProps) {
                             style={{
                               backgroundColor: getMetricColor(log.metric_id),
                             }}
-                          ></div>
+                          >
+                            <p style={{ fontSize: '0.5rem'}}>
+                              {log.metric.initials.toUpperCase()}
+                            </p>
+                          </div>
                         ))}
                       </div>
                     )}

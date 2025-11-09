@@ -165,6 +165,13 @@ function Calendar({
     fetchLogs();
   }, []);
 
+  useEffect(() => {
+    console.log("allLogs fetched:", allLogs)
+  }, [allLogs])
+  useEffect(() => {
+    console.log("metrics:", metrics);
+  }, [metrics]);
+
   return (
     <div className={`calendar-with-legend ${className}`}>
       {/* Header with month and year */}
@@ -219,7 +226,7 @@ function Calendar({
                   className="legend-dot"
                   style={{ backgroundColor: metric.color }}
                 ></div>
-                <span className="legend-label">{metric.name}</span>
+                <span className="legend-label">{metric.name}({metric.initials.toUpperCase()})</span>
               </div>
             ))}
           </div>

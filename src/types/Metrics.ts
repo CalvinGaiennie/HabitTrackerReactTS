@@ -8,6 +8,7 @@ export interface Metric {
   subcategory?: string;
   name: string;
   description?: string;
+  initials: string;
   parent_id?: number;
   is_required: boolean;
   data_type: "int" | "boolean" | "text" | "scale" | "decimal" | "clock";
@@ -26,6 +27,7 @@ export interface MetricCreate {
   user_id: number;
   name: string;
   description?: string;
+  initials: string;
   data_type: "int" | "boolean" | "text" | "scale" | "decimal" | "clock";
   scale_min?: number;
   scale_max?: number;
