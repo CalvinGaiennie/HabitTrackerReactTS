@@ -1,18 +1,20 @@
-import { useEffect, useState } from "react";
-import PieChartComponent from "../components/PieChartComponent";
-import LineChartComponent from "../components/LineChartComponent";
-import BarChartComponent from "../components/BarChartComponent";
-import BubbleChartComponent from "../components/BubbleChartComponent";
+import { useEffect, useState, useMemo } from "react";
 import type { Metric } from "../types/Metrics";
 import fetchMetrics from "../hooks/fetchMetrics";
 import type { DataItem } from "../types/chartData";
-// import { useAuth } from "../hooks/useAuth"; // Commented out as not currently used
 import fetchChartData from "../hooks/fetchChartData.ts";
 import fetchBooleanAnalytics from "../hooks/fetchBooleanAnalytics.ts";
 import Calendar from "../components/Calendar.tsx";
 import DatePicker from "../components/DatePicker.tsx";
 import CommitTracker from "../components/CommitTracker.tsx";
 import SettingsEdit from "../components/SettingsEdit.tsx";
+import ChartRenderer from "../components/ChartRenderer.tsx";
+import type { BooleanStats, ChartConfig } from "../types/chartConfig";
+
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28"];
+
+type ChartType = "pie" | "line" | "radar" | "bar" | "bubble";
+type AnalyticsTab = "charts" | "calendar" | "commit-tracker" | "time-line" | "settings";
 
 // Data for bubble chart (x, y, z coordinates)
 const bubbleData = [
@@ -24,61 +26,20 @@ const bubbleData = [
   { x: 110, y: 280, z: 200, name: "Group F" },
 ];
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28"];
-
-type ChartType = "pie" | "line" | "radar" | "bar" | "bubble";
-type AnalyticsTab = "charts" | "calendar" | "commit-tracker" | "time-line" | "settings";
-
 function AnalyticsPage() {
   const [selectedChart, setSelectedChart] = useState<ChartType>("pie");
   const [selectedData, setSelectedData] = useState<number>(0);
   const [metrics, setMetrics] = useState<Metric[]>();
   const [data, setData] = useState<DataItem[]>();
-  // const { authState } = useAuth(); // Commented out as not currently used
-  // Set default dates: September 1st, 2025 to current date
   const today = new Date();
-  const septemberFirst2025 = new Date(2025, 8, 1); // Month is 0-indexed, so 8 = September
-
+  const septemberFirst2025 = new Date(2025, 8, 1);
   const [startDate, setStartDate] = useState(septemberFirst2025);
   const [endDate, setEndDate] = useState(today);
-  const [booleanStats, setBooleanStats] = useState<{
-    totalDays: number;
-    yesDays: number;
-    noDays: number;
-    percentage: number;
-  } | null>(null);
+  const [booleanStats, setBooleanStats] = useState< BooleanStats | null>(null);
   const [activeTab, setActiveTab] = useState<AnalyticsTab>("charts");
 
   const handleDataChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedData(Number(e.target.value));
-  };
-
-  const renderChart = () => {
-    switch (selectedChart) {
-      case "pie":
-        return <PieChartComponent data={data ? data : []} COLORS={COLORS} />;
-      case "line": {
-        const selectedMetric = metrics?.find(
-          (metric) => metric.id === selectedData
-        );
-        return (
-          <LineChartComponent
-            data={data ? data : []}
-            metric={
-              selectedMetric
-                ? { name: selectedMetric.name, unit: selectedMetric.unit }
-                : undefined
-            }
-          />
-        );
-      }
-      case "bar":
-        return <BarChartComponent data={data ? data : []} />;
-      case "bubble":
-        return <BubbleChartComponent data={bubbleData} />;
-      default:
-        return <PieChartComponent data={data ? data : []} COLORS={COLORS} />;
-    }
   };
 
   const getChartTitle = () => {
@@ -114,13 +75,9 @@ function AnalyticsPage() {
       return;
     }
 
-    // Get the selected metric to determine its data type
-    const selectedMetric = metrics?.find(
-      (metric) => metric.id === selectedData
-    );
+    const selectedMetric = metrics?.find((metric) => metric.id === selectedData);
 
     if (selectedMetric?.data_type === "boolean") {
-      // Use specialized boolean analytics for boolean metrics
       fetchBooleanAnalytics(
         setData,
         1 as number,
@@ -130,8 +87,7 @@ function AnalyticsPage() {
         endDate
       );
     } else {
-      // Use regular chart data for other metric types
-      setBooleanStats(null); // Clear boolean stats for non-boolean metrics
+      setBooleanStats(null);
       fetchChartData(setData, 1 as number, selectedData, startDate, endDate);
     }
   }, [selectedData, startDate, endDate, metrics]);
@@ -156,6 +112,61 @@ function AnalyticsPage() {
         break;
     }
   }, [metrics, selectedData]);
+
+  useEffect(() => {
+    if (!metrics || selectedData == 0) return;
+
+    const selectedMetric = metrics.find(m => m.id === selectedData);
+    if (!selectedMetric?.created_at) return;
+
+    const metricCreatedDate = new Date(selectedMetric.created_at);
+    metricCreatedDate.setHours(0, 0, 0, 0);
+
+    if (metricCreatedDate < startDate) {
+      // Always set start date to the metric's creation date (or later if user manually chose later)
+      const newStartDate = new Date(Math.max(metricCreatedDate.getTime(), startDate.getTime()));
+      setStartDate(newStartDate);
+    }
+  }, [selectedData, metrics]);
+
+  // Build ChartConfig
+  const chartConfig = useMemo((): ChartConfig => {
+    const selectedMetric = metrics?.find((m) => m.id === selectedData);
+
+    switch (selectedChart) {
+      case "pie":
+        return {
+          type: "pie",
+          data: data || [],
+          COLORS,
+        };  
+      case "line":
+        return {
+          type: "line",
+          data: data || [],
+          metric:
+            selectedMetric?.name && selectedMetric?.unit
+              ? { name: selectedMetric.name, unit: selectedMetric.unit }
+              : undefined,
+        };
+      case "bar":
+        return {
+          type: "bar",
+          data: data || [],
+        };
+      case "bubble":
+        return {
+          type: "bubble",
+          data: bubbleData,
+        };
+      default:
+        return {
+          type: "pie",
+          data: data || [],
+          COLORS,
+        };
+    }
+  }, [selectedChart, data, metrics, selectedData]);
 
   return (
     <div className="container mb-5">
@@ -259,6 +270,7 @@ function AnalyticsPage() {
               </div>
             </div>
           </div>
+
           {/* Selected Chart */}
           <div className="row justify-content-center">
             <div className="col-12">
@@ -267,47 +279,10 @@ function AnalyticsPage() {
                   <h3 className="text-center mb-0">{getChartTitle()}</h3>
                 </div>
                 <div className="card-body">
-                  <div style={{ width: "100%", height: "400px" }}>
-                    {renderChart()}
-                  </div>
-                  {/* Boolean Statistics */}
-                  {booleanStats && (
-                    <div className="mt-4">
-                      <h5>Boolean Metric Statistics</h5>
-                      <div className="row text-center">
-                        <div className="col-3">
-                          <div className="p-2">
-                            <div className="fw-bold text-primary">
-                              Total Days
-                            </div>
-                            <div>{booleanStats.totalDays}</div>
-                          </div>
-                        </div>
-                        <div className="col-3">
-                          <div className="p-2">
-                            <div className="fw-bold text-success">Yes Days</div>
-                            <div>{booleanStats.yesDays}</div>
-                          </div>
-                        </div>
-                        <div className="col-3">
-                          <div className="p-2">
-                            <div className="fw-bold text-danger">
-                              No/Null Days
-                            </div>
-                            <div>{booleanStats.noDays}</div>
-                          </div>
-                        </div>
-                        <div className="col-3">
-                          <div className="p-2">
-                            <div className="fw-bold text-info">
-                              Success Rate
-                            </div>
-                            <div>{booleanStats.percentage}%</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  <ChartRenderer
+                    config={chartConfig}
+                    booleanStats={booleanStats}
+                  />
                 </div>
               </div>
             </div>
@@ -332,14 +307,13 @@ function AnalyticsPage() {
 
       {activeTab === "commit-tracker" && (
         <div className="row justify-content-center">
-          <CommitTracker/>
+          <CommitTracker />
         </div>
       )}
 
       {activeTab === "settings" && (
         <div className="row justify-content-center">
-          {/* set this up to have enabled anyltics pages */}
-          <SettingsEdit settingsKeys={["enabledPages"]}/>
+          <SettingsEdit settingsKeys={["enabledPages"]} />
         </div>
       )}
     </div>

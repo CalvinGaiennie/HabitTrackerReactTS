@@ -11,6 +11,7 @@ import type { UserSettings } from "../types/users";
 import fetchLogs from "../hooks/fetchLogs.ts";
 import ClockButton from "../components/ClockButton";
 import { useUserId } from "../hooks/useAuth";
+import ChartRenderer from "../components/ChartRenderer.tsx";
 
 function HomePage() {
   const userId = useUserId();
@@ -358,6 +359,9 @@ function HomePage() {
             })}
           </div>
         </div>
+      ))}
+      {settings?.homePageAnalytics?.map((chart) => (
+        <ChartRenderer config={chart.chartConfig} booleanStats={chart.booleanStats} />
       ))}
     </div>
   );

@@ -1,3 +1,4 @@
+import type { BooleanStats, ChartConfig } from "./chartConfig"; 
 export interface User {
   id: number;
   username: string;
@@ -39,6 +40,7 @@ export interface UserResponse {
 export interface UserSettings {
   enabledPages?: string[];
   homePageLayout?: HomePageSection[];
+  homePageAnalytics?: ChartDefinition[];
   workoutTypes?: string[];
 }
 
@@ -53,4 +55,9 @@ export interface EnabledPages {
   workoutPage: boolean;
   financePage: boolean;
   analyticsPage: boolean;
+}
+
+export interface ChartDefinition {
+  chartConfig: ChartConfig;
+  booleanStats: BooleanStats;
 }
