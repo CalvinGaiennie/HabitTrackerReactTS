@@ -438,27 +438,6 @@ function HomePage() {
         <div>No homePageLayout found</div>
       )}
 
-      {/* Date controls for homepage analytics (mirrors Analytics page) */}
-      {settings?.homePageAnalytics && settings.homePageAnalytics.length > 0 && (
-        <div className="w-100 mb-3">
-          <div className="card">
-            <div className="card-body">
-              <div className="d-flex gap-4">
-                <DatePicker
-                  title="Start Date"
-                  setTargetDate={setChartStartDate}
-                  targetDate={chartStartDate}
-                />
-                <DatePicker
-                  title="End Date"
-                  setTargetDate={setChartEndDate}
-                  targetDate={chartEndDate}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {settings?.homePageLayout?.map((section) => (
         <div key={section.section} className="mb-4 w-100">
@@ -467,7 +446,7 @@ function HomePage() {
             {section.metricIds.map((metricId) => {
               const metric = activeMetrics.find((m) => m.id === metricId);
               if (!metric) return null;
-
+              
               const hasLogToday = logs.some((log) => {
                 const [year, month, day] = log.log_date.split("-").map(Number);
                 const logDate = new Date(year, month - 1, day);
@@ -476,13 +455,13 @@ function HomePage() {
                   logDate.toISOString().split("T")[0] === today
                 );
               });
-
+              
               return (
                 <div key={metricId} className="col-12 col-md-6 col-lg-4 mb-3">
                   <div
                     className="card"
                     style={{ border: "none", boxShadow: "none" }}
-                  >
+                    >
                     <div className="card-body" style={{ padding: "0.5rem" }}>
                       <label className="form-label">
                         {metric.name}{" "}
@@ -493,9 +472,9 @@ function HomePage() {
 
                       {metric.data_type === "clock" ? (
                         <ClockButton
-                          metric={metric}
-                          clockData={clockData[metric.id]}
-                          onClockToggle={handleClockToggle}
+                        metric={metric}
+                        clockData={clockData[metric.id]}
+                        onClockToggle={handleClockToggle}
                         />
                       ) : metric.data_type === "boolean" ? (
                         <div>
@@ -513,11 +492,11 @@ function HomePage() {
                                 })
                               }
                               className="form-check-input"
-                            />
+                              />
                             <label
                               htmlFor={`metric-${metric.id}-yes`}
                               className="form-check-label"
-                            >
+                              >
                               Yes
                             </label>
                           </div>
@@ -535,26 +514,26 @@ function HomePage() {
                                 })
                               }
                               className="form-check-input"
-                            />
+                              />
                             <label
                               htmlFor={`metric-${metric.id}-no`}
                               className="form-check-label"
-                            >
+                              >
                               No
                             </label>
                           </div>
                         </div>
                       ) : (
                         <input
-                          className="form-control"
-                          value={logValues[metric.id] ?? ""}
-                          onChange={(e) =>
-                            setLogValues({
-                              ...logValues,
-                              [metric.id]: e.target.value,
-                            })
-                          }
-                          placeholder={`Enter ${metric.data_type}`}
+                        className="form-control"
+                        value={logValues[metric.id] ?? ""}
+                        onChange={(e) =>
+                          setLogValues({
+                            ...logValues,
+                            [metric.id]: e.target.value,
+                          })
+                        }
+                        placeholder={`Enter ${metric.data_type}`}
                         />
                       )}
                     </div>
@@ -569,12 +548,33 @@ function HomePage() {
         const def = settings?.homePageAnalytics?.[idx];
         const metric = activeMetrics.find((m) => m.id === (def?.metricId ?? 0));
         const chartName =
-          (def?.type ? `${def.type[0].toUpperCase()}${def.type.slice(1)} ` : "") +
-          "Chart";
+        (def?.type ? `${def.type[0].toUpperCase()}${def.type.slice(1)} ` : "") +
+        "Chart";
         const metricLabel = metric?.name || `Metric ${def?.metricId ?? ""}`;
-
+        
         return (
           <div key={idx} className="w-100 mb-3">
+            {/* Date controls for homepage analytics (mirrors Analytics page) */}
+            {settings?.homePageAnalytics && settings.homePageAnalytics.length > 0 && (
+              <div className="w-100 mb-3">
+                <div className="card">
+                  <div className="card-body">
+                    <div className="d-flex gap-4">
+                      <DatePicker
+                        title="Start Date"
+                        setTargetDate={setChartStartDate}
+                        targetDate={chartStartDate}
+                      />
+                      <DatePicker
+                        title="End Date"
+                        setTargetDate={setChartEndDate}
+                        targetDate={chartEndDate}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="card">
               <div className="card-header">
                 <h3 className="mb-0">
@@ -585,7 +585,7 @@ function HomePage() {
                 <ChartRenderer
                   config={c.chartConfig}
                   booleanStats={c.booleanStats}
-                />
+                  />
                 <div className="text-muted small mt-2">
                   {chartStartDate.toLocaleDateString()} - {chartEndDate.toLocaleDateString()}
                 </div>
