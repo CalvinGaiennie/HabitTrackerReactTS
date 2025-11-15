@@ -1,3 +1,4 @@
+// services/users.ts
 import request from "./api";
 import type {
   User,
@@ -5,15 +6,13 @@ import type {
   UserSettings,
   UserLogin,
   UserResponse,
-  UserWithTier,
+  UserWithSettings, // ← CHANGE THIS
 } from "../types/users.ts";
 
 export async function createUser(userData: UserCreate): Promise<UserResponse> {
   return request<UserResponse>(`/users/create`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(userData),
   });
 }
@@ -21,9 +20,7 @@ export async function createUser(userData: UserCreate): Promise<UserResponse> {
 export async function loginUser(credentials: UserLogin): Promise<UserResponse> {
   return request<UserResponse>(`/users/login`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(credentials),
   });
 }
@@ -32,19 +29,17 @@ export async function getUserSettings(userId: number): Promise<User> {
   return request<User>(`/users/${userId}`);
 }
 
-export async function getCurrentUser(): Promise<UserWithTier> {
-  return request<UserWithTier>(`/users/me`);
+export async function getCurrentUser(): Promise<UserWithSettings> {
+  return request<UserWithSettings>(`/users/me`); // ← NOW RETURNS FULL SETTINGS
 }
 
 export async function updateUserSettings(
   userId: number,
   userSettings: UserSettings
-): Promise<User> {
-  return request<User>(`/users/${userId}`, {
+): Promise<UserWithSettings> { // ← RETURN FULL USER WITH SETTINGS
+  return request<UserWithSettings>(`/users/${userId}`, {
     method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(userSettings),
   });
 }
@@ -55,9 +50,7 @@ export async function changePassword(
 ): Promise<{ message: string }> {
   return request<{ message: string }>(`/users/change-password`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       old_password: oldPassword,
       new_password: newPassword,

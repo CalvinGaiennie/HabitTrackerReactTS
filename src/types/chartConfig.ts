@@ -41,3 +41,9 @@ export type ChartConfig =
   | LineChartConfig
   | BarChartConfig
   | BubbleChartConfig;
+
+
+export type ChartDefinition = {
+  type: "line" | "bar" | "pie" | "bubble" | "";
+  metricId: number;
+}

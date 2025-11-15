@@ -143,7 +143,7 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
       console.log("Fetched user:", user);
       console.log("User settings:", user.settings);
       console.log("Workout types:", user.settings?.workoutTypes);
-      setUserSettings(user.settings);
+      setUserSettings(user.settings ?? null);
     } catch (error) {
       console.error("Error fetching user settings:", error);
     } finally {

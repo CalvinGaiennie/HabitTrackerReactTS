@@ -50,7 +50,7 @@ function CreateAccountPage() {
       login(
         response.user.id,
         response.user.username,
-        response.user.settings,
+        response.user.settings ?? {},
         response.access_token
       );
       navigate("/"); // Redirect to home page after successful registration

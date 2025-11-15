@@ -12,6 +12,8 @@ import fetchLogs from "../hooks/fetchLogs.ts";
 import ClockButton from "../components/ClockButton";
 import { useUserId } from "../hooks/useAuth";
 import ChartRenderer from "../components/ChartRenderer.tsx";
+import type { ChartConfig, BooleanStats } from "../types/chartConfig";
+import DatePicker from "../components/DatePicker.tsx";
 
 function HomePage() {
   const userId = useUserId();
@@ -20,6 +22,15 @@ function HomePage() {
   const [logs, setLogs] = useState<DailyLog[]>([]);
   const [settings, setSettings] = useState<UserSettings>();
   const [clockData, setClockData] = useState<Record<number, ClockData>>({});
+  const [homeCharts, setHomeCharts] = useState<
+    { chartConfig: ChartConfig; booleanStats?: BooleanStats | null }[]
+  >([]);
+  // Analytics-like date controls for homepage charts
+  const defaultEnd = new Date();
+  const defaultStart = new Date();
+  defaultStart.setDate(defaultEnd.getDate() - 30);
+  const [chartStartDate, setChartStartDate] = useState<Date>(defaultStart);
+  const [chartEndDate, setChartEndDate] = useState<Date>(defaultEnd);
 
   const debouncedValues = useDebounce(logValues, 1000);
   const now = new Date();
@@ -247,12 +258,206 @@ function HomePage() {
     return () => window.removeEventListener("logSaved", handleLogSaved);
   }, [activeMetrics, today]);
 
+  // Build Home Page Analytics charts from settings
+  useEffect(() => {
+    const COLORS = ["#0088FE", "#00C49F", "#FFBB28"];
+    const oneDayMs = 24 * 60 * 60 * 1000;
+
+    const formatDate = (d: Date) => {
+      return [
+        d.getFullYear(),
+        String(d.getMonth() + 1).padStart(2, "0"),
+        String(d.getDate()).padStart(2, "0"),
+      ].join("-");
+    };
+
+    const addOneDay = (d: Date) => {
+      const next = new Date(d);
+      next.setDate(next.getDate() + 1);
+      return next;
+    };
+
+    const buildCharts = async () => {
+      try {
+        if (!settings?.homePageAnalytics || activeMetrics.length === 0) {
+          setHomeCharts([]);
+          return;
+        }
+
+        const endDate = chartEndDate;
+        const startDate = chartStartDate;
+
+        const startDateStr = formatDate(startDate);
+        const endDatePlusOneStr = formatDate(addOneDay(endDate));
+
+        // Fetch all logs once for the window; we'll slice per metric
+        const allWindowLogs = await getDailyLogs(
+          userId?.toString(),
+          startDateStr,
+          endDatePlusOneStr
+        );
+
+        const results: { chartConfig: ChartConfig; booleanStats?: BooleanStats | null }[] =
+          [];
+
+        for (const def of settings.homePageAnalytics) {
+          const metric = activeMetrics.find((m) => m.id === def.metricId);
+          if (!metric) {
+            continue;
+          }
+
+          const metricLogs = allWindowLogs.filter(
+            (l) => l.metric_id === def.metricId
+          );
+
+          if (metric.data_type === "boolean") {
+            const startMid = new Date(
+              startDate.getFullYear(),
+              startDate.getMonth(),
+              startDate.getDate()
+            );
+            const endMid = new Date(
+              endDate.getFullYear(),
+              endDate.getMonth(),
+              endDate.getDate()
+            );
+            const totalDays =
+              Math.ceil((endMid.getTime() - startMid.getTime()) / oneDayMs) + 1;
+            const yesDays = metricLogs.filter((l) => l.value_boolean === true)
+              .length;
+            const noDays = Math.max(0, totalDays - yesDays);
+            const percentage =
+              totalDays > 0 ? Math.round((yesDays / totalDays) * 100) : 0;
+
+            const data = [
+              {
+                name: "Yes",
+                value: yesDays,
+                createdAt: "",
+                metricId: def.metricId,
+              },
+              {
+                name: "No",
+                value: noDays,
+                createdAt: "",
+                metricId: def.metricId,
+              },
+            ];
+
+            const defaultType = def.type || "pie";
+            const chartConfig: ChartConfig =
+              defaultType === "bar"
+                ? { type: "bar", data }
+                : { type: "pie", data, COLORS };
+
+            results.push({
+              chartConfig,
+              booleanStats: {
+                totalDays,
+                yesDays,
+                noDays,
+                percentage,
+              },
+            });
+          } else {
+            // Build time-series or categorical data points
+            const points = metricLogs
+              .map((log) => {
+                const [y, m, d] = log.log_date.split("-").map(Number);
+                const dateObj = new Date(y, m - 1, d);
+                const label = dateObj.toLocaleDateString("en-US", {
+                  month: "2-digit",
+                  day: "2-digit",
+                  year: "2-digit",
+                });
+
+                const value =
+                  metric.data_type === "int"
+                    ? log.value_int ?? 0
+                    : metric.data_type === "decimal" || metric.data_type === "scale"
+                    ? log.value_decimal ?? 0
+                    : 0;
+
+                return {
+                  name: label,
+                  value,
+                  createdAt: log.log_date,
+                  metricId: log.metric_id,
+                };
+              })
+              .sort(
+                (a, b) =>
+                  new Date(a.createdAt).getTime() -
+                  new Date(b.createdAt).getTime()
+              );
+
+            // Choose sensible default if type not set
+            const resolvedType = def.type
+              ? def.type
+              : metric.data_type === "decimal" || metric.data_type === "scale"
+              ? "line"
+              : "bar";
+
+            let chartConfig: ChartConfig;
+            if (resolvedType === "line") {
+              chartConfig = {
+                type: "line",
+                data: points,
+                metric:
+                  metric.name && metric.unit
+                    ? { name: metric.name, unit: metric.unit }
+                    : undefined,
+              };
+            } else if (resolvedType === "bar") {
+              chartConfig = { type: "bar", data: points };
+            } else if (resolvedType === "pie") {
+              chartConfig = { type: "pie", data: points, COLORS };
+            } else {
+              chartConfig = { type: "bar", data: points };
+            }
+
+            results.push({ chartConfig, booleanStats: null });
+          }
+        }
+
+        setHomeCharts(results);
+      } catch (e) {
+        console.error("Failed building home page charts:", e);
+        setHomeCharts([]);
+      }
+    };
+
+    buildCharts();
+  }, [settings?.homePageAnalytics, activeMetrics, userId, chartStartDate, chartEndDate]);
+
   return (
     <div className="container d-flex flex-column align-items-center">
       <h1>Habit Tracker</h1>
       {!settings && <div>Loading settings...</div>}
       {settings && !settings.homePageLayout && (
         <div>No homePageLayout found</div>
+      )}
+
+      {/* Date controls for homepage analytics (mirrors Analytics page) */}
+      {settings?.homePageAnalytics && settings.homePageAnalytics.length > 0 && (
+        <div className="w-100 mb-3">
+          <div className="card">
+            <div className="card-body">
+              <div className="d-flex gap-4">
+                <DatePicker
+                  title="Start Date"
+                  setTargetDate={setChartStartDate}
+                  targetDate={chartStartDate}
+                />
+                <DatePicker
+                  title="End Date"
+                  setTargetDate={setChartEndDate}
+                  targetDate={chartEndDate}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {settings?.homePageLayout?.map((section) => (
@@ -360,9 +565,35 @@ function HomePage() {
           </div>
         </div>
       ))}
-      {settings?.homePageAnalytics?.map((chart) => (
-        <ChartRenderer config={chart.chartConfig} booleanStats={chart.booleanStats} />
-      ))}
+      {homeCharts.map((c, idx) => {
+        const def = settings?.homePageAnalytics?.[idx];
+        const metric = activeMetrics.find((m) => m.id === (def?.metricId ?? 0));
+        const chartName =
+          (def?.type ? `${def.type[0].toUpperCase()}${def.type.slice(1)} ` : "") +
+          "Chart";
+        const metricLabel = metric?.name || `Metric ${def?.metricId ?? ""}`;
+
+        return (
+          <div key={idx} className="w-100 mb-3">
+            <div className="card">
+              <div className="card-header">
+                <h3 className="mb-0">
+                  {metricLabel} {metric?.unit ? `(${metric.unit})` : ""} - {chartName}
+                </h3>
+              </div>
+              <div className="card-body">
+                <ChartRenderer
+                  config={c.chartConfig}
+                  booleanStats={c.booleanStats}
+                />
+                <div className="text-muted small mt-2">
+                  {chartStartDate.toLocaleDateString()} - {chartEndDate.toLocaleDateString()}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
