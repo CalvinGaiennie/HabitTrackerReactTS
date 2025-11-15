@@ -28,7 +28,7 @@ function HomePage() {
   // Analytics-like date controls for homepage charts
   const defaultEnd = new Date();
   const defaultStart = new Date();
-  defaultStart.setDate(defaultEnd.getDate() - 30);
+  defaultStart.setDate(defaultEnd.getDate() - 365);
   const [chartStartDate, setChartStartDate] = useState<Date>(defaultStart);
   const [chartEndDate, setChartEndDate] = useState<Date>(defaultEnd);
 
