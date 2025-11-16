@@ -9,12 +9,13 @@ interface ClockButtonProps {
   onClockToggle: (
     metricId: number,
     newState: "clocked_in" | "clocked_out"
-  ) => void;
+  ) => Promise<void>;
 }
 
 function ClockButton({ metric, clockData, onClockToggle }: ClockButtonProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [sessionDuration, setSessionDuration] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   const { data: weekly, loading: weeklyLoading } = useWeeklyClockTotal(
     metric.id
   );
@@ -79,7 +80,13 @@ function ClockButton({ metric, clockData, onClockToggle }: ClockButtonProps) {
     console.log(
       `Clock button clicked - current state: ${safeClockData.current_state}, new state: ${newState}`
     );
-    onClockToggle(metric.id, newState);
+    setError(null);
+    onClockToggle(metric.id, newState).catch((e: any) => {
+      const msg =
+        (e && (e.detail || e.message)) ||
+        "Failed to toggle clock. Please try again.";
+      setError(typeof msg === "string" ? msg : JSON.stringify(msg));
+    });
   };
 
   const formatDuration = (minutes: number) => {
@@ -132,6 +139,12 @@ function ClockButton({ metric, clockData, onClockToggle }: ClockButtonProps) {
         </small>
       </div>
 
+      {error && (
+        <div className="alert alert-danger mt-2 py-1 px-2">
+          <small>{error}</small>
+        </div>
+      )}
+
       {safeClockData.sessions && safeClockData.sessions.length > 0 && (
         <div className="mt-2">
           <small className="text-muted">
@@ -139,6 +152,19 @@ function ClockButton({ metric, clockData, onClockToggle }: ClockButtonProps) {
           </small>
         </div>
       )}
+      {/* I need to un hardcode this. make it optional and make it possible to change the pay/ or pay type number and symbol */}
+      <div className="mt-2 d-flex justify-content-between align-items-center">
+        <small className="text-muted">
+          Total Pay:{" $"}
+          {weeklyLoading ? "Calculating..." : (weeklyTotal / 60 * 32).toFixed(2)}
+        </small>
+      </div>
+      <div className="mt-2 d-flex justify-content-between align-items-center">
+        <small className="text-muted">
+          Post Tax:{" $"}
+          {weeklyLoading ? "Calculating..." : (weeklyTotal / 60 * 32 * .75).toFixed(2)}
+        </small>
+      </div>
     </div>
   );
 }
