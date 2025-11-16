@@ -156,13 +156,17 @@ function ClockButton({ metric, clockData, onClockToggle }: ClockButtonProps) {
       <div className="mt-2 d-flex justify-content-between align-items-center">
         <small className="text-muted">
           Total Pay:{" $"}
-          {weeklyLoading ? "Calculating..." : (weeklyTotal / 60 * 32).toFixed(2)}
+          {weeklyLoading
+            ? "Calculating..."
+            : ((weeklyTotal / 60) * 32).toFixed(2)}
         </small>
       </div>
       <div className="mt-2 d-flex justify-content-between align-items-center">
         <small className="text-muted">
           Post Tax:{" $"}
-          {weeklyLoading ? "Calculating..." : (weeklyTotal / 60 * 32 * .75).toFixed(2)}
+          {weeklyLoading
+            ? "Calculating..."
+            : ((weeklyTotal / 60) * 32 * 0.75).toFixed(2)}
         </small>
       </div>
     </div>
