@@ -5,7 +5,7 @@ import type { FoodCreate } from "../types/foods.ts"
 function CreateFoodForm() {
     const [formData, setFormData] = useState({
         name: "",
-        serving_size_ammount: "",
+        serving_size_amount: "",
         serving_size_unit: "",
         calories: 0,
         protein_g: 0,
@@ -25,7 +25,7 @@ function CreateFoodForm() {
         try {
             const foodData: FoodCreate = {
                 name: formData.name,
-                serving_size_ammount: formData.serving_size_ammount,
+                serving_size_amount: formData.serving_size_amount,
                 serving_size_unit: formData.serving_size_unit,
                 calories: formData.calories,
                 protein_g: formData.protein_g,
@@ -39,7 +39,7 @@ function CreateFoodForm() {
             setFormData({
                 name: "",
                 serving_size_unit: "",
-                serving_size_ammount: "",
+                serving_size_amount: "",
                 calories: 0,
                 protein_g: 0,
                 carbs_g: 0,
@@ -58,6 +58,7 @@ function CreateFoodForm() {
                     </label>
                     <input 
                     id="name"
+                    name="name"
                     className="form-control" value={formData.name}
                     onChange={handleChange}/>
                 </div>
@@ -67,16 +68,20 @@ function CreateFoodForm() {
                     </label>
                     <input 
                     id="serving_size_unit"
-                    className="form-control" value={formData.serving_size_unit}
+                    name="serving_size_unit"
+                    className="form-control"
+                    value={formData.serving_size_unit}
                     onChange={handleChange}/>
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="serving_size_ammount">
-                        Serving Size Ammount (Example: 200)
+                    <label htmlFor="serving_size_amount">
+                        Serving Size amount (Example: 200)
                     </label>
                     <input 
-                    id="serving_size_ammount"
-                    className="form-control" value={formData.serving_size_ammount}
+                    id="serving_size_amount"
+                    name="serving_size_amount"
+                    className="form-control" 
+                    value={formData.serving_size_amount}
                     onChange={handleChange}/>
                 </div>
                 <div className="mb-3">
@@ -85,33 +90,38 @@ function CreateFoodForm() {
                     </label>
                     <input 
                     id="calories"
-                    className="form-control" value={formData.calories}
+                    name="calories"
+                    className="form-control" 
+                    value={formData.calories}
                     onChange={handleChange}/>
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="protein">
+                    <label htmlFor="protein_g">
                         Protein
                     </label>
                     <input 
-                    id="protein"
+                    id="protein_g"
+                    name="protein_g"
                     className="form-control" value={formData.protein_g}
                     onChange={handleChange}/>
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="carbs">
+                    <label htmlFor="carbs_g">
                         Carbs
                     </label>
                     <input 
-                    id="carbs"
+                    id="carbs_g"
+                    name="carbs_g"
                     className="form-control" value={formData.carbs_g}
                     onChange={handleChange}/>
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="fat">
+                    <label htmlFor="fat_g">
                         Fat
                     </label>
                     <input 
-                    id="fat"
+                    id="fat_g"
+                    name="fat_g"
                     className="form-control" value={formData.fat_g}
                     onChange={handleChange}/>
                 </div>
