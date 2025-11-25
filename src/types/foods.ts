@@ -1,7 +1,7 @@
 export interface Food {
     id: number;
     name: string;
-    serving_size_amount: string;
+    serving_size_amount: number;
     serving_size_unit: string;
     calories: number;
     protein_g: number;
@@ -11,7 +11,7 @@ export interface Food {
 
 export interface FoodCreate {
     name: string;
-    serving_size_amount: string;
+    serving_size_amount: number;
     serving_size_unit: string;
     calories: number;
     protein_g: number;
