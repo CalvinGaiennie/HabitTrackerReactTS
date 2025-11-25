@@ -17,7 +17,15 @@ function CreateFoodForm() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const numericFields = new Set([
+      "serving_size_amount",
+      "calories",
+      "protein_g",
+      "carbs_g",
+      "fat_g",
+    ]);
+    const nextValue = numericFields.has(name) ? Number(value) : value;
+    setFormData((prev) => ({ ...prev, [name]: nextValue }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,7 +48,7 @@ function CreateFoodForm() {
       setFormData({
         name: "",
         serving_size_unit: "",
-        serving_size_amount: "",
+        serving_size_amount: 0,
         calories: 0,
         protein_g: 0,
         carbs_g: 0,
