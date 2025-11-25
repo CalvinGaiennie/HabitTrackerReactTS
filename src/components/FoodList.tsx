@@ -12,7 +12,10 @@ function FoodList() {
         <div>
             food list
             {foods?.map((food) => (
-                <p>{JSON.stringify(food)}</p>
+                <div>
+                    <h3>{food.name}</h3>
+                    <p>{JSON.stringify(food)}</p>
+                </div>
             ))}
         </div>
     )

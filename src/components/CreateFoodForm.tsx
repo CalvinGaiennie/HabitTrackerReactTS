@@ -5,13 +5,15 @@ import type { FoodCreate } from "../types/foods.ts";
 function CreateFoodForm() {
   const [formData, setFormData] = useState({
     name: "",
-    serving_size_amount: 0,
-    serving_size_unit: "",
+    serving_size_amount: 100,
+    serving_size_unit: "g",
     calories: 0,
     protein_g: 0,
     carbs_g: 0,
     fat_g: 0,
   });
+
+  const allowedUnits = ["g", "ml", "piece", "cup", "tbsp", "tsp"] as const;
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -31,6 +33,24 @@ function CreateFoodForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // simple client-side validation to avoid server 500s
+      if (!allowedUnits.includes(formData.serving_size_unit as any)) {
+        throw new Error(
+          "Serving size unit must be one of: g, ml, piece, cup, tbsp, tsp"
+        );
+      }
+      if (
+        Number(formData.serving_size_amount) <= 0 ||
+        Number(formData.calories) < 0 ||
+        Number(formData.protein_g) < 0 ||
+        Number(formData.carbs_g) < 0 ||
+        Number(formData.fat_g) < 0
+      ) {
+        throw new Error(
+          "Amounts must be non-negative, and serving size amount must be > 0"
+        );
+      }
+
       const foodData: FoodCreate = {
         name: formData.name,
         // Convert to number; backend expects numeric type
@@ -47,8 +67,8 @@ function CreateFoodForm() {
 
       setFormData({
         name: "",
-        serving_size_unit: "",
-        serving_size_amount: 0,
+        serving_size_unit: "g",
+        serving_size_amount: 100,
         calories: 0,
         protein_g: 0,
         carbs_g: 0,
@@ -72,16 +92,25 @@ function CreateFoodForm() {
           />
         </div>
         <div className="mb-3">
-          <label htmlFor="serving_size_unit">
-            Serving Size Unit (Example: Grams)
-          </label>
-          <input
+          <label htmlFor="serving_size_unit">Serving Size Unit</label>
+          <select
             id="serving_size_unit"
             name="serving_size_unit"
             className="form-control"
             value={formData.serving_size_unit}
-            onChange={handleChange}
-          />
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                serving_size_unit: e.target.value,
+              }))
+            }
+          >
+            {allowedUnits.map((u) => (
+              <option key={u} value={u}>
+                {u}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="mb-3">
           <label htmlFor="serving_size_amount">
@@ -92,6 +121,7 @@ function CreateFoodForm() {
             name="serving_size_amount"
             type="number"
             step="any"
+            min={0.0000001}
             className="form-control"
             value={formData.serving_size_amount}
             onChange={handleChange}
@@ -104,6 +134,7 @@ function CreateFoodForm() {
             name="calories"
             type="number"
             step="any"
+            min={0}
             className="form-control"
             value={formData.calories}
             onChange={handleChange}
@@ -116,6 +147,7 @@ function CreateFoodForm() {
             name="protein_g"
             type="number"
             step="any"
+            min={0}
             className="form-control"
             value={formData.protein_g}
             onChange={handleChange}
@@ -128,6 +160,7 @@ function CreateFoodForm() {
             name="carbs_g"
             type="number"
             step="any"
+            min={0}
             className="form-control"
             value={formData.carbs_g}
             onChange={handleChange}
@@ -140,6 +173,7 @@ function CreateFoodForm() {
             name="fat_g"
             type="number"
             step="any"
+            min={0}
             className="form-control"
             value={formData.fat_g}
             onChange={handleChange}
