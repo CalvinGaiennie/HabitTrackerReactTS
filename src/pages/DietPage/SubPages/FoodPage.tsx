@@ -3,7 +3,7 @@ import FoodList from "../../../components/FoodList";
 import CreateFoodForm from "../../../components/CreateFoodForm";
 
 function FoodPage() {
-    const [mode, setMode] = useState<"add" | "view">('add')
+    const [mode, setMode] = useState<"add" | "view">('view')
 
     const handleModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setMode(e.target.value as "add" | "view");

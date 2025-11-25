@@ -14,10 +14,15 @@ function FoodList() {
             {foods?.map((food) => (
                 <div>
                     <h3>{food.name}</h3>
+                    <p>Calories: {food.calories}</p>
+                    <p>Protein: {food.protein_g}</p>
+                    <p>Carbs: {food.carbs_g}</p>
+                    <p>Fat: {food.fat_g}</p>
                     <p>{JSON.stringify(food)}</p>
                 </div>
             ))}
         </div>
     )
 }
+
 export default FoodList
