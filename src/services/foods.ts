@@ -10,3 +10,5 @@ export async function createFood(data: FoodCreate): Promise<Food> {
         body: JSON.stringify(data),
     })
 }
+
+// export async function getTodaysEntrys()

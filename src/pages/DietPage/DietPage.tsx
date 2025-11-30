@@ -1,5 +1,6 @@
 import {useState} from "react";
 import FoodPage from "./SubPages/FoodPage";
+import TodaysFoodPage from "./SubPages/TodaysFoodPage";
 // import SettingsEdit from "../../components/SettingsEdit";
 
 function DietPage() {
@@ -56,9 +57,8 @@ function DietPage() {
 
       {/* Tab Content */}
       {activeTab === "today" && (
-        <div></div>
+        <TodaysFoodPage />
       )}
-
       {activeTab === "days" && <div></div>}
       {activeTab === "foods" && <FoodPage/>}
 
