@@ -44,7 +44,7 @@ function HomePage() {
   async function handleSave(log: Omit<DailyLog, "id" | "created_at">) {
     try {
       await saveDailyLog(log);
-      const freshLogs = await getDailyLogs("1");
+      const freshLogs = await getDailyLogs(userId?.toString());
       setLogs(freshLogs);
     } catch (err) {
       console.error("Error saving log:", err);
@@ -134,7 +134,12 @@ function HomePage() {
 
     const fetchTodayLogs = async () => {
       try {
-        const data = await getDailyLogs("1", undefined, undefined, today);
+        const data = await getDailyLogs(
+          userId?.toString(),
+          undefined,
+          undefined,
+          today
+        );
         const values: Record<number, string> = {};
 
         data.forEach((log) => {
@@ -226,7 +231,12 @@ function HomePage() {
         const data = await getDailyLogs();
         setLogs(data);
 
-        const todayData = await getDailyLogs("1", undefined, undefined, today);
+        const todayData = await getDailyLogs(
+          userId?.toString(),
+          undefined,
+          undefined,
+          today
+        );
         const values: Record<number, string> = {};
         todayData.forEach((log) => {
           const metric = activeMetrics.find((m) => m.id === log.metric_id);

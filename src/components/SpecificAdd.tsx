@@ -35,7 +35,12 @@ function SpecificAdd() {
       return;
     }
     const fetchLog = async () => {
-      const logs = await getDailyLogs("1", undefined, undefined, selectedDate); // user_id, start_date, end_date, log_date
+      const logs = await getDailyLogs(
+        userId?.toString(),
+        undefined,
+        undefined,
+        selectedDate
+      ); // user_id, start_date, end_date, log_date
       console.log("Fetched logs:", logs); // Debug: Check returned logs
       const log = logs.find((l) => l.metric_id === selectedMetricId);
       setExistingLog(log || null);
