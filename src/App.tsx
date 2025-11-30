@@ -11,9 +11,11 @@ import { AuthProvider } from "./context";
 import CreateAccountPage from "./pages/CreateAccountPage.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
 import { ProtectedRoute } from "./components/ProtectedRoute.tsx";
+import PaidRoute from "./components/PaidRoute.tsx";
 import { AuthRoute } from "./components/AuthRoute.tsx";
 import HabitsAndGoalsPage from "./pages/HabitsAndGoalsPage.tsx";
 import WorkoutViewer from "./components/WorkoutViewer.tsx";
+import UserNameHeader from "./components/UserNameHeader";
 
 function App() {
   return (
@@ -23,6 +25,7 @@ function App() {
     >
       <AuthProvider>
         <BrowserRouter>
+          <UserNameHeader />
           <NavBar />
           <Routes>
             <Route
@@ -78,7 +81,9 @@ function App() {
               path="/Analytics"
               element={
                 <ProtectedRoute>
-                  <AnalyticsPage />
+                  <PaidRoute>
+                    <AnalyticsPage />
+                  </PaidRoute>
                 </ProtectedRoute>
               }
             />

@@ -29,14 +29,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     settings: UserSettings,
     token: string
   ) => {
-    setAuthState({
+    const nextState: AuthState = {
       isAuthenticated: true,
       userId,
       username,
       settings,
       token,
       tier: null,
-    });
+    };
+    // Persist immediately so API calls that read from localStorage have the token
+    localStorage.setItem("authState", JSON.stringify(nextState));
+    setAuthState(nextState);
   };
 
   const logout = () => {
