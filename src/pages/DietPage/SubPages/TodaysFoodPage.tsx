@@ -1,3 +1,6 @@
+import {useState, useEffect, useRef } from "react";
+// import fetchFoodEntries from "../../../hooks/fetchFoodEntries";
+import type { FoodEntryCreate } from "../../../types/foodEntries";
 type Entry = {
     food: string;
     time: string;
@@ -7,8 +10,7 @@ type Entry = {
     carbs: string
 }
 
-function TodaysFoodPage() {
-    const todaysEntries: Entry[] = [
+const todaysEntries: Entry[] = [
         {
             food: "Grilled Chicken Breast",
             time: "12:30",
@@ -67,6 +69,62 @@ function TodaysFoodPage() {
         }
     ];
 
+function TodaysFoodPage() {
+    // const [foodEntries, setFoodEntries] = useState<FoodEntry[] | null>(null)
+    const [formData, setFormData] = useState<FoodEntryCreate>({
+        food_id: 0,
+        log_date: "",
+        quantity: 0,
+        calories: 0,
+        protein_g: 0,
+        carbs_g: 0,
+        fat_g: 0,
+    })
+    // const [editingFoodEntry, setEditingFoodEntry] = useState<FoodEntry | null>(null);
+    const isSubmitting = useRef(false);
+      const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+      ) => {
+        const { name, value } = e.target;
+        setFormData((prev) => {
+          return { ...prev, [name]: value };
+        });
+      };
+    
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        console.log("Submitting food entry...");
+    
+        try {
+          // if (editingFoodEntry) {
+          //   await updateEntry(editingFoodEntry.id, formData);
+          //   alert("Metric updated successfully!");
+          //   setEditingFoodEntry(null);
+          // } else {
+          //   await createFoodEntry(formData);
+          //   alert("Metric created successfully!");
+          // }
+          // fetchFoodEntries(setFoodEntries);
+          setFormData({
+            food_id: 0,
+            log_date: "",
+            quantity: 0,
+            calories: 0,
+            protein_g: 0,
+            carbs_g: 0,
+            fat_g: 0,
+          });
+        } catch (err) {
+          console.error(err);
+          alert("Something went wrong with the metric operation.");
+        } finally {
+          isSubmitting.current = false;
+        }
+      };
+
+    useEffect(() => {
+        // fetchFoodEntries(setFoodEntries)
+    }, [])
     return (
         <div>
             {todaysEntries.map((entry) => (
@@ -84,6 +142,47 @@ function TodaysFoodPage() {
                     <br></br>
                 </div>
             ))}
+            <h3 className="mt-4">Add Food Entry</h3>
+            <form
+                onSubmit={handleSubmit}
+                className="w-100"
+                style={{ maxWidth: "500px" }}
+            >
+                <div className="mb-3">
+                    <label className="form-label">Food:</label>
+                    <input
+                      name="food"
+                      value={formData.food_id}
+                      onChange={handleChange}
+                      className="form-control"
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Quantity:</label>
+                    <input
+                      name="quantity"
+                      value={formData.quantity}
+                      onChange={handleChange}
+                      className="form-control"
+                    />
+                  </div>
+                <button
+                    type="button"
+                    className="btn btn-secondary ms-2"
+                    onClick={() => {
+                    // setEditingFoodEntry(null);
+                    setFormData({
+                        food_id: 0,
+                        log_date: "",
+                        quantity: 0,
+                        calories: 0,
+                        protein_g: 0,
+                        carbs_g: 0,
+                        fat_g: 0,
+                    });
+                    }}
+                >Create Entry</button>
+            </form>
         </div>
     )
 }

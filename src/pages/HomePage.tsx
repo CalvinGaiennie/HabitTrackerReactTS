@@ -456,14 +456,13 @@ function HomePage() {
 
   return (
     <div className="container d-flex flex-column align-items-center">
-      <h1>Habit Tracker</h1>
       {!settings && <div>Loading settings...</div>}
       {settings && !settings.homePageLayout && (
         <div>No homePageLayout found</div>
       )}
 
       {settings?.homePageLayout?.map((section) => (
-        <div key={section.section} className="mb-4 w-100">
+        <div key={section.section} className="mb-4 p-5 w-100 border">
           <h2>{section.section}</h2>
           <div className="row">
             {section.metricIds.map((metricId) => {
@@ -485,14 +484,13 @@ function HomePage() {
                     className="card"
                     style={{ border: "none", boxShadow: "none" }}
                   >
-                    <div className="card-body" style={{ padding: "0.5rem" }}>
+                    <div className={`card-body rounded ${hasLogToday ? "" : "bg-danger-subtle"}`} style={{ padding: "0.5rem" }}>
                       <label className="form-label">
                         {metric.name}{" "}
                         {hasLogToday && (
                           <span className="badge bg-success ms-2">Today</span>
                         )}
                       </label>
-
                       {metric.data_type === "clock" ? (
                         <ClockButton
                           metric={metric}
