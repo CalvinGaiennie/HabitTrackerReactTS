@@ -462,7 +462,7 @@ function HomePage() {
       )}
 
       {settings?.homePageLayout?.map((section) => (
-        <div key={section.section} className="mb-4 p-5 w-100 border">
+        <div key={section.section} className="mb-4 p-4 w-100 border">
           <h2>{section.section}</h2>
           <div className="row">
             {section.metricIds.map((metricId) => {
@@ -479,12 +479,12 @@ function HomePage() {
               });
 
               return (
-                <div key={metricId} className="col-12 col-md-6 col-lg-4 mb-3">
+                <div key={metricId} className="col-12 col-md-6 col-lg-4 mb-2">
                   <div
                     className="card"
                     style={{ border: "none", boxShadow: "none" }}
                   >
-                    <div className={`card-body rounded ${hasLogToday ? "" : "bg-danger-subtle"}`} style={{ padding: "0.5rem" }}>
+                    <div className={`card-body rounded p-3 ${hasLogToday ? "" : "bg-danger-subtle"}`}>
                       <label className="form-label">
                         {metric.name}{" "}
                         {hasLogToday && (
