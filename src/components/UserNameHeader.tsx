@@ -35,8 +35,17 @@ function UserNameHeader() {
   if (!authContext?.authState.isAuthenticated || !fullName) {
     return null;
   }
+  const now = new Date();
+const formatted = now.toLocaleDateString('en-US', {
+    month: 'long',    // "December"
+    day:   '2-digit', // "02"
+    year:  'numeric'  // "2025"
+  });
 
-  return <p className="pt-2 pb-0 mb-0 px-2">{fullName}</p>;
+  return <div className="d-flex justify-content-between">
+    <p className="pt-2 pb-0 mb-0 px-2">{fullName}</p>
+    <p className="pt-2 pb-0 mb-0 px-2">{formatted}</p>
+    </div>
 }
 
 export default UserNameHeader;
