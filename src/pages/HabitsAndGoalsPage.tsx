@@ -33,6 +33,7 @@ function HabitsAndGoalsPage() {
     data_type: "text",
     unit: "",
     notes_on: false,
+    time_type: "day"
   });
   const [logs, setLogs] = useState<DailyLog[]>([]);
   const [metrics, setMetrics] = useState<Metric[]>([]);
@@ -112,6 +113,7 @@ function HabitsAndGoalsPage() {
         data_type: "text",
         unit: "",
         notes_on: false,
+        time_type: "day"
       });
     } catch (err) {
       console.error(err);
@@ -133,6 +135,7 @@ function HabitsAndGoalsPage() {
       notes_on: metric.notes_on,
       scale_min: metric.scale_min,
       scale_max: metric.scale_max,
+      time_type: metric.time_type
     });
     setMetricMode("add"); // Switch to add mode to show the form
   };
@@ -231,6 +234,18 @@ function HabitsAndGoalsPage() {
                       <option value="clock">Clock In/Out</option>
                     </select>
                   </div>
+                  <div className="mb-3">
+                    <label className="form-label">Time Type:</label>
+                    <select
+                      name="data_type"
+                      value={formData.time_type}
+                      onChange={handleChange}
+                      className="form-select"
+                    >
+                      <option value="day">Day</option>
+                      <option value="week">Week</option>
+                    </select>
+                  </div>
                   {formData.data_type === "scale" && (
                     <div className="mb-3">
                       <label className="form-label">Scale Range</label>
@@ -297,6 +312,7 @@ function HabitsAndGoalsPage() {
                           data_type: "text",
                           unit: "",
                           notes_on: false,
+                          time_type: "day"
                         });
                       }}
                     >

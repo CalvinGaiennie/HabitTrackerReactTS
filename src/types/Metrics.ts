@@ -21,6 +21,7 @@ export interface Metric {
   active: boolean;
   created_at: string; // ISO date string
   updated_at: string; // ISO date string
+  time_type:  string;
 }
 
 export interface MetricCreate {
@@ -33,4 +34,5 @@ export interface MetricCreate {
   scale_max?: number;
   unit?: string;
   notes_on: boolean;
+  time_type: string;
 }

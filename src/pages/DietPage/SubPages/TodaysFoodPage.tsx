@@ -1,6 +1,8 @@
 import {useState, useEffect, useRef } from "react";
 // import fetchFoodEntries from "../../../hooks/fetchFoodEntries";
 import type { FoodEntryCreate } from "../../../types/foodEntries";
+import fetchFoods from "../../../hooks/fetchFoods";
+import type { Food } from "../../../types/foods";
 type Entry = {
     food: string;
     time: string;
@@ -73,22 +75,25 @@ function TodaysFoodPage() {
     // const [foodEntries, setFoodEntries] = useState<FoodEntry[] | null>(null)
     const [formData, setFormData] = useState<FoodEntryCreate>({
         food_id: 0,
-        log_date: "",
+        log_date: new Date().toISOString().split("T")[0],
         quantity: 0,
         calories: 0,
         protein_g: 0,
         carbs_g: 0,
         fat_g: 0,
     })
+    const [foods, setFoods] = useState<Food[] | null>(null)
+    
     // const [editingFoodEntry, setEditingFoodEntry] = useState<FoodEntry | null>(null);
-    const isSubmitting = useRef(false);
-      const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-      ) => {
+      const isSubmitting = useRef(false);
+      const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormData((prev) => {
-          return { ...prev, [name]: value };
-        });
+        setFormData((prev) => ({
+          ...prev,
+          [name]: name === "food_id" || name === "quantity" || name.includes("_g") || name === "calories"
+            ? Number(value)
+            : value,
+        }));
       };
     
     const handleSubmit = async (e: React.FormEvent) => {
@@ -122,9 +127,14 @@ function TodaysFoodPage() {
         }
       };
 
-    useEffect(() => {
-        // fetchFoodEntries(setFoodEntries)
-    }, [])
+       useEffect(() => {
+            fetchFoods(setFoods)
+        }, [])
+
+        useEffect(() => {
+            // fetchFoodEntries(setFoodEntries)
+        }, [])
+
     return (
         <div>
             {todaysEntries.map((entry) => (
@@ -150,12 +160,19 @@ function TodaysFoodPage() {
             >
                 <div className="mb-3">
                     <label className="form-label">Food:</label>
-                    <input
-                      name="food"
-                      value={formData.food_id}
-                      onChange={handleChange}
-                      className="form-control"
-                    />
+                    <select
+                    name="food_id"
+                    className="form-control"
+                    value={formData.food_id}
+                    onChange={handleChange}
+                    >
+                      <option value={0}> -- Select a food -- </option>
+                      {foods?.map((food) => (
+                        <option key={food.id} value={food.id}>
+                          {food.name}
+                        </option>
+                      )) ?? <option>Loading foods...</option>}
+                    </select>
                   </div>
                   <div className="mb-3">
                     <label className="form-label">Quantity:</label>
@@ -167,21 +184,12 @@ function TodaysFoodPage() {
                     />
                   </div>
                 <button
-                    type="button"
-                    className="btn btn-secondary ms-2"
-                    onClick={() => {
-                    // setEditingFoodEntry(null);
-                    setFormData({
-                        food_id: 0,
-                        log_date: "",
-                        quantity: 0,
-                        calories: 0,
-                        protein_g: 0,
-                        carbs_g: 0,
-                        fat_g: 0,
-                    });
-                    }}
-                >Create Entry</button>
+                  type="submit"
+                  className="btn btn-secondary ms-2"
+                  disabled={isSubmitting.current}
+                >
+                  Create Entry
+                </button>
             </form>
         </div>
     )

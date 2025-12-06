@@ -14,6 +14,7 @@ import { useUserId } from "../hooks/useAuth";
 import ChartRenderer from "../components/ChartRenderer.tsx";
 import type { ChartConfig, BooleanStats } from "../types/chartConfig";
 import DatePicker from "../components/DatePicker.tsx";
+import { getCurrentWeekRange } from "../utils/dateUtils.ts";
 
 function HomePage() {
   const userId = useUserId();
@@ -39,6 +40,10 @@ function HomePage() {
     String(now.getMonth() + 1).padStart(2, "0"),
     String(now.getDate()).padStart(2, "0"),
   ].join("-");
+
+  const week = getCurrentWeekRange();
+  const weekStart = week.start; // e.g., "2025-12-01"
+  const weekEnd = week.end;     // e.g., "2025-12-07"
 
   // Save log
   async function handleSave(log: Omit<DailyLog, "id" | "created_at">) {
@@ -128,53 +133,55 @@ function HomePage() {
     fetchMetrics();
   }, [today]);
 
-  // Fetch today's logs
+  // Load values for the correct period (day = today, week = any day this week)
   useEffect(() => {
-    if (activeMetrics.length === 0) return;
+    if (activeMetrics.length === 0 || !userId) return;
 
-    const fetchTodayLogs = async () => {
-      try {
-        const data = await getDailyLogs(
-          userId?.toString(),
-          undefined,
-          undefined,
-          today
-        );
-        const values: Record<number, string> = {};
+    const loadCurrentValues = async () => {
+      const values: Record<number, string> = {};
 
-        data.forEach((log) => {
-          const metric = activeMetrics.find((m) => m.id === log.metric_id);
-          if (!metric) return;
+      // Fetch once for the whole week — much faster + correct
+      const weekLogs = await getDailyLogs(userId.toString(), weekStart, weekEnd);
+      const todayLogs = await getDailyLogs(userId.toString(), today, today);
 
-          switch (metric.data_type) {
-            case "text":
-              if (log.value_text !== null)
-                values[log.metric_id] = log.value_text;
-              break;
-            case "int":
-              if (log.value_int !== null)
-                values[log.metric_id] = log.value_int.toString();
-              break;
-            case "decimal":
-            case "scale":
-              if (log.value_decimal !== null)
-                values[log.metric_id] = log.value_decimal.toString();
-              break;
-            case "boolean":
-              if (log.value_boolean !== null)
-                values[log.metric_id] = log.value_boolean ? "true" : "false";
-              break;
-          }
-        });
+      for (const metric of activeMetrics) {
+        let log: DailyLog | undefined;
 
-        setLogValues((prev) => ({ ...prev, ...values }));
-      } catch (err) {
-        console.error("Failed to fetch today's logs:", err);
+        if (metric.time_type === "week") {
+          // Weekly: load most recent log from this week
+          const candidates = weekLogs.filter(l => l.metric_id === metric.id);
+          log = candidates.sort((a, b) => b.log_date.localeCompare(a.log_date))[0];
+        } else {
+          // Daily (or unknown): only today's log
+          log = todayLogs.find(l => l.metric_id === metric.id);
+        }
+
+        if (!log) continue;
+
+        // Extract value
+        switch (metric.data_type) {
+          case "text":
+            if (log.value_text !== null) values[metric.id] = log.value_text;
+            break;
+          case "int":
+            if (log.value_int !== null) values[metric.id] = log.value_int.toString();
+            break;
+          case "decimal":
+          case "scale":
+            if (log.value_decimal !== null) values[metric.id] = log.value_decimal.toString();
+            break;
+          case "boolean":
+            if (log.value_boolean !== null)
+              values[metric.id] = log.value_boolean ? "true" : "false";
+            break;
+        }
       }
+
+      setLogValues(values);
     };
 
-    fetchTodayLogs();
-  }, [activeMetrics, today]);
+    loadCurrentValues();
+  }, [activeMetrics, userId, today, weekStart, weekEnd]);
 
   // Save debounced values
   useEffect(() => {
@@ -469,6 +476,10 @@ function HomePage() {
               const metric = activeMetrics.find((m) => m.id === metricId);
               if (!metric) return null;
 
+              console.log(
+                `DEBUG → "${metric.name}" | time_type: "${metric.time_type}" | today: "${today}" | week: ${weekStart} to ${weekEnd}`
+              );
+
               const hasLogToday = logs.some((log) => {
                 const [year, month, day] = log.log_date.split("-").map(Number);
                 const logDate = new Date(year, month - 1, day);
@@ -478,12 +489,22 @@ function HomePage() {
                 );
               });
 
+              const hasLogThisWeek = logs.some((log) => {
+                return (
+                  log.metric_id === metric.id &&
+                  log.log_date >= weekStart &&
+                  log.log_date <= weekEnd
+                )
+              })
+
               return (
                 <div key={metricId} className="col-12 col-md-6 col-lg-4 mb-2">
                   <div
                     className="card"
                     style={{ border: "none", boxShadow: "none" }}
                   >
+                    {metric.time_type === "day" ? 
+                    (
                     <div className={`card-body rounded p-3 ${hasLogToday ? "" : "bg-danger-subtle"}`}>
                       <label className="form-label">
                         {metric.name}{" "}
@@ -558,6 +579,85 @@ function HomePage() {
                         />
                       )}
                     </div>
+                    )
+                    :
+                    (
+                    <div className={`card-body rounded p-3 ${hasLogThisWeek ? "" : "bg-danger-subtle"}`}>
+                      <label className="form-label">
+                        {metric.name}{" "}
+                        {hasLogThisWeek && (
+                          <span className="badge bg-success ms-2">This Week</span>
+                        )}
+                      </label>
+                      {metric.data_type === "clock" ? (
+                        <ClockButton
+                          metric={metric}
+                          clockData={clockData[metric.id]}
+                          onClockToggle={handleClockToggle}
+                        />
+                      ) : metric.data_type === "boolean" ? (
+                        <div>
+                          <div className="form-check form-check-inline">
+                            <input
+                              type="radio"
+                              id={`metric-${metric.id}-yes`}
+                              name={`metric-${metric.id}`}
+                              value="true"
+                              checked={logValues[metric.id] === "true"}
+                              onChange={(e) =>
+                                setLogValues({
+                                  ...logValues,
+                                  [metric.id]: e.target.value,
+                                })
+                              }
+                              className="form-check-input"
+                            />
+                            <label
+                              htmlFor={`metric-${metric.id}-yes`}
+                              className="form-check-label"
+                            >
+                              Yes
+                            </label>
+                          </div>
+                          <div className="form-check form-check-inline">
+                            <input
+                              type="radio"
+                              id={`metric-${metric.id}-no`}
+                              name={`metric-${metric.id}`}
+                              value="false"
+                              checked={logValues[metric.id] === "false"}
+                              onChange={(e) =>
+                                setLogValues({
+                                  ...logValues,
+                                  [metric.id]: e.target.value,
+                                })
+                              }
+                              className="form-check-input"
+                            />
+                            <label
+                              htmlFor={`metric-${metric.id}-no`}
+                              className="form-check-label"
+                            >
+                              No
+                            </label>
+                          </div>
+                        </div>
+                      ) : (
+                        <input
+                          className="form-control"
+                          value={logValues[metric.id] ?? ""}
+                          onChange={(e) =>
+                            setLogValues({
+                              ...logValues,
+                              [metric.id]: e.target.value,
+                            })
+                          }
+                          placeholder={`Enter ${metric.data_type}`}
+                        />
+                      )}
+                    </div>
+                    )
+                    }
                   </div>
                 </div>
               );
@@ -568,6 +668,7 @@ function HomePage() {
       {homeCharts.map((c, idx) => {
         const def = settings?.homePageAnalytics?.[idx];
         const metric = activeMetrics.find((m) => m.id === (def?.metricId ?? 0));
+        
         const chartName =
           (def?.type
             ? `${def.type[0].toUpperCase()}${def.type.slice(1)} `
