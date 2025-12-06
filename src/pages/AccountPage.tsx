@@ -140,6 +140,7 @@ function AccountPage() {
         data_type: "text",
         unit: "",
         notes_on: false,
+        time_type: ""
       });
     } catch (err) {
       console.error(err);
@@ -160,6 +161,7 @@ function AccountPage() {
       notes_on: metric.notes_on,
       scale_min: metric.scale_min,
       scale_max: metric.scale_max,
+      time_type: metric.time_type
     });
     setMetricMode("add"); // Switch to add mode to show the form
   };
@@ -327,6 +329,7 @@ function AccountPage() {
                           data_type: "text",
                           unit: "",
                           notes_on: false,
+                          time_type: ""
                         });
                       }}
                     >
