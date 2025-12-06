@@ -17,13 +17,12 @@ import { useUserId } from "../hooks/useAuth";
 import type { ModeType } from "../types/general";
 import SubPage from "../components/SubPage.tsx";
 
-
 type TabType = "goal" | "metric" | "log" | "settings" | "password";
 function HabitsAndGoalsPage() {
   const userId = useUserId(); // Get current user ID
   const [activeTab, setActiveTab] = useState<TabType>("goal");
   const [metricMode, setMetricMode] = useState<ModeType>("view");
-  const [goalMode, setGoalMode ] = useState<ModeType>("view");
+  const [goalMode, setGoalMode] = useState<ModeType>("view");
   const [logMode, setLogMode] = useState<ModeType>("view");
   const [formData, setFormData] = useState<MetricCreate>({
     user_id: userId,
@@ -33,7 +32,7 @@ function HabitsAndGoalsPage() {
     data_type: "text",
     unit: "",
     notes_on: false,
-    time_type: "day"
+    time_type: "day",
   });
   const [logs, setLogs] = useState<DailyLog[]>([]);
   const [metrics, setMetrics] = useState<Metric[]>([]);
@@ -113,7 +112,7 @@ function HabitsAndGoalsPage() {
         data_type: "text",
         unit: "",
         notes_on: false,
-        time_type: "day"
+        time_type: "day",
       });
     } catch (err) {
       console.error(err);
@@ -129,13 +128,13 @@ function HabitsAndGoalsPage() {
       user_id: metric.user_id,
       name: metric.name,
       description: metric.description || "",
-      initials:  metric.initials || "",
+      initials: metric.initials || "",
       data_type: metric.data_type,
       unit: metric.unit || "",
       notes_on: metric.notes_on,
       scale_min: metric.scale_min,
       scale_max: metric.scale_max,
-      time_type: metric.time_type
+      time_type: metric.time_type,
     });
     setMetricMode("add"); // Switch to add mode to show the form
   };
@@ -181,8 +180,12 @@ function HabitsAndGoalsPage() {
       case "metric":
         return (
           <div>
-            <SubPage title="Metrics" mode={metricMode} setMode={setMetricMode} />
-            
+            <SubPage
+              title="Metrics"
+              mode={metricMode}
+              setMode={setMetricMode}
+            />
+
             {metricMode === "add" && (
               <div>
                 <h3>Add New Metric</h3>
@@ -237,7 +240,7 @@ function HabitsAndGoalsPage() {
                   <div className="mb-3">
                     <label className="form-label">Time Type:</label>
                     <select
-                      name="data_type"
+                      name="time_type"
                       value={formData.time_type}
                       onChange={handleChange}
                       className="form-select"
@@ -312,7 +315,7 @@ function HabitsAndGoalsPage() {
                           data_type: "text",
                           unit: "",
                           notes_on: false,
-                          time_type: "day"
+                          time_type: "day",
                         });
                       }}
                     >
