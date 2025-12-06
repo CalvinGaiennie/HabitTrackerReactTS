@@ -34,6 +34,7 @@ function AccountPage() {
     data_type: "text",
     unit: "",
     notes_on: false,
+    time_type: ""
   });
   const [logs, setLogs] = useState<DailyLog[]>([]);
   const [metrics, setMetrics] = useState<Metric[]>([]);
