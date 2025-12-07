@@ -36,11 +36,8 @@ function NavBar() {
               </NavLink>
             </li>
             <li className="nav-item mb-md-0">
-              <NavLink
-                className="nav-link fs-5 text-dark px-3"
-                to="/HabitsAndGoals"
-              >
-                HabitsAndGoals
+              <NavLink className="nav-link fs-5 text-dark px-3" to="/Workout">
+                Workout
               </NavLink>
             </li>
             <li className="nav-item mb-md-0">
@@ -49,8 +46,11 @@ function NavBar() {
               </NavLink>
             </li>
             <li className="nav-item mb-md-0">
-              <NavLink className="nav-link fs-5 text-dark px-3" to="/Workout">
-                Workout
+              <NavLink
+                className="nav-link fs-5 text-dark px-3"
+                to="/HabitsAndGoals"
+              >
+                HabitsAndGoals
               </NavLink>
             </li>
             {authState.tier && authState.tier !== "free" && (

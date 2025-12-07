@@ -8,7 +8,6 @@ import {
 } from "../services/metrics.ts";
 import { deleteDailyLog } from "../services/dailyLogs.ts";
 import SpecificAdd from "../components/SpecificAdd.tsx";
-import LogViewer from "../components/LogViewer.tsx";
 import SettingsEdit from "../components/SettingsEdit.tsx";
 import PasswordChangeForm from "../components/PasswordChangeForm.tsx";
 import fetchLogs from "../hooks/fetchLogs.ts";
@@ -22,9 +21,8 @@ import MetricForm from "../components/MetricForm.tsx";
 type TabType = "goal" | "metric" | "log" | "settings" | "password";
 function HabitsAndGoalsPage() {
   const userId = useUserId(); // Get current user ID
-  const [activeTab, setActiveTab] = useState<TabType>("goal");
+  const [activeTab, setActiveTab] = useState<TabType>("metric");
   const [goalMode, setGoalMode] = useState<ModeType>("view");
-  const [logMode, setLogMode] = useState<ModeType>("view");
   const [formData, setFormData] = useState<MetricCreate>({
     user_id: userId,
     name: "",
@@ -38,7 +36,8 @@ function HabitsAndGoalsPage() {
   const [logs, setLogs] = useState<DailyLog[]>([]);
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [editingMetric, setEditingMetric] = useState<Metric | null>(null);
-  const [showModal, setShowModal] = useState(false)
+  const [showMetricModal, setShowMetricModal] = useState(false)
+  const [showLogModal, setShowLogModal] = useState(false)
   const isSubmitting = useRef(false);
 
   // Fetch logs and metrics on component mount
@@ -103,7 +102,7 @@ function HabitsAndGoalsPage() {
       } else {
         await createMetric(formData);
       }
-      setShowModal(false);
+      setShowMetricModal(false);
       fetchMetrics(setMetrics);
       setFormData({
         user_id: userId,
@@ -187,11 +186,11 @@ function HabitsAndGoalsPage() {
              <div className="container mt-4">
                 <div className="d-flex gap-3 mb-3 justify-content-between">
                   <h3>Metrics</h3>
-                  <button className="btn btn-primary" onClick={() => {setEditingMetric(null); setShowModal(true)}}>Add Metric</button>
+                  <button className="btn btn-primary" onClick={() => {setEditingMetric(null); setShowMetricModal(true)}}>Add Metric</button>
                 </div>
                 <BootstrapModal
-                  show={showModal}
-                  onHide={() => setShowModal(false)}
+                  show={showMetricModal}
+                  onHide={() => setShowMetricModal(false)}
                   title={editingMetric ? "Edit Metric" : "Add New Metric"}
                 >
                   <MetricForm
@@ -211,7 +210,7 @@ function HabitsAndGoalsPage() {
                         notes_on: false,
                         time_type: "day",
                       });
-                      setShowModal(false)
+                      setShowMetricModal(false)
                     }}
                   />
                 </BootstrapModal>
@@ -233,7 +232,7 @@ function HabitsAndGoalsPage() {
                               className="btn btn-sm btn-outline-primary"
                               onClick={() => {
                                 handleEditMetric(metric);
-                                setShowModal(true)
+                                setShowMetricModal(true)
                               }}
                             >
                               Edit
@@ -256,18 +255,18 @@ function HabitsAndGoalsPage() {
       case "log":
         return (
           <div>
-            <SubPage title="Logs" mode={logMode} setMode={setLogMode} />
-            {logMode === "add" && (
               <div>
-                <h3>Add Log</h3>
-                <p>Add a new log entry for today.</p>
-                <SpecificAdd />
-              </div>
-            )}
-
-            {logMode === "edit" && (
-              <div>
-                <h3>Edit Log</h3>
+                <div className="d-flex gap-3 mb-3 justify-content-between">
+                  <h3>Logs</h3>
+                  <button className="btn btn-primary" onClick={() => {setShowLogModal(true)}}>Add Log</button>
+                </div>
+                <BootstrapModal
+                  show={showLogModal}
+                  onHide={() => setShowLogModal(false)}
+                  title="Add New Log"
+                >
+                  <SpecificAdd/>
+                </BootstrapModal>
                 <div className="row">
                   {logs.map((log) => (
                     <div key={log.id} className="col-md-6 col-lg-4 mb-3">
@@ -311,14 +310,6 @@ function HabitsAndGoalsPage() {
                   ))}
                 </div>
               </div>
-            )}
-
-            {logMode === "view" && (
-              <div>
-                <h3>View Logs</h3>
-                <LogViewer logs={logs} />
-              </div>
-            )}
           </div>
         );
       case "settings":
@@ -355,10 +346,10 @@ function HabitsAndGoalsPage() {
           }}
           onChange={(e) => handleActiveTab(e.target.value as TabType)}
         >
-          <option value="goal">Goal</option>
           <option value="metric">Metric</option>
           <option value="log">Log</option>
           <option value="settings">Home Page</option>
+          <option value="goal">Goal</option>
         </select>
       </div>
       {/* Tab Content */}

@@ -8,7 +8,6 @@ import {
 } from "../services/metrics.ts";
 import { deleteDailyLog } from "../services/dailyLogs.ts";
 import SpecificAdd from "../components/SpecificAdd.tsx";
-import LogViewer from "../components/LogViewer.tsx";
 import SettingsEdit from "../components/SettingsEdit.tsx";
 import PasswordChangeForm from "../components/PasswordChangeForm.tsx";
 import fetchLogs from "../hooks/fetchLogs.ts";
@@ -485,13 +484,6 @@ function AccountPage() {
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {logMode === "view" && (
-              <div>
-                <h3>View Logs</h3>
-                <LogViewer logs={logs} />
               </div>
             )}
           </div>
