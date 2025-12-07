@@ -268,46 +268,55 @@ function HabitsAndGoalsPage() {
                   <SpecificAdd/>
                 </BootstrapModal>
                 <div className="row">
-                  {logs.map((log) => (
-                    <div key={log.id} className="col-md-6 col-lg-4 mb-3">
-                      <div className="card">
-                        <div className="card-body">
-                          <h5 className="card-title">{log.metric.name}</h5>
-                          <p className="card-text">
-                            Date: {new Date(log.log_date).toLocaleDateString()}
-                          </p>
-                          <p className="card-text">
-                            Value:{" "}
-                            {log.value_text ||
-                              log.value_int ||
-                              log.value_decimal ||
-                              (log.value_boolean ? "Yes" : "No")}
-                          </p>
-                          {log.note && (
-                            <p className="card-text">
-                              <small className="text-muted">
-                                Note: {log.note}
-                              </small>
-                            </p>
-                          )}
-                          <div className="btn-group" role="group">
-                            <button
-                              className="btn btn-sm btn-outline-primary"
-                              onClick={() => handleEditLog()}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              className="btn btn-sm btn-outline-danger"
-                              onClick={() => handleDeleteLog(log.id)}
-                            >
-                              Delete
-                            </button>
-                          </div>
+                  {/* Group logs by date - newest first */}
+                  {Object.entries(
+                    logs.reduce((groups, log) => {
+                      const date = new Date(log.log_date).toDateString();
+                      if (!groups[date]) groups[date] = [];
+                      groups[date].push(log);
+                      return groups;
+                    }, {} as Record<string, DailyLog[]>)
+                  )
+                    .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
+                    .map(([date, dayLogs]) => (
+                      <div key={date} className="mb-5">
+                        <h5 className="fw-bold border-bottom pb-2 mb-3">
+                          {new Date(date).toLocaleDateString('en-US', { 
+                            weekday: 'long', month: 'long', day: 'numeric' 
+                          })}
+                        </h5>
+                        <div className="row">
+                          {dayLogs.map((log) => (
+                            <div key={log.id} className="col-md-6 col-lg-4 mb-3">
+                              <div className="card">
+                                <div className="card-body">
+                                  <h5 className="card-title">{log.metric.name}</h5>
+                                  <p className="card-text">
+                                    Date: {new Date(log.log_date).toLocaleDateString()}
+                                  </p>
+                                  <p className="card-text">
+                                    Value: {log.value_text || log.value_int || log.value_decimal || (log.value_boolean ? "Yes" : "No")}
+                                  </p>
+                                  {log.note && (
+                                    <p className="card-text">
+                                      <small className="text-muted">Note: {log.note}</small>
+                                    </p>
+                                  )}
+                                  <div className="btn-group" role="group">
+                                    <button className="btn btn-sm btn-outline-primary" onClick={() => handleEditLog()}>
+                                      Edit
+                                    </button>
+                                    <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeleteLog(log.id)}>
+                                      Delete
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               </div>
           </div>
