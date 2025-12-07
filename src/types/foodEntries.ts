@@ -1,6 +1,7 @@
 export interface FoodEntry {
   id: number;
   food_id: number;
+  food_name: string;
   log_date: string;
   quantity: number;
   calories: number;
@@ -11,6 +12,7 @@ export interface FoodEntry {
 
 export interface FoodEntryCreate {
   food_id: number;
+  food_name: string;
   log_date: string;
   quantity: number;
   calories: number;

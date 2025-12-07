@@ -1,80 +1,15 @@
 import {useState, useEffect, useRef } from "react";
-// import fetchFoodEntries from "../../../hooks/fetchFoodEntries";
-import type { FoodEntryCreate } from "../../../types/foodEntries";
+import fetchFoodEntries from "../../../hooks/fetchFoodEntries";
+import type { FoodEntryCreate, FoodEntry } from "../../../types/foodEntries";
+import { createFoodEntry } from "../../../services/foodEntries";
 import fetchFoods from "../../../hooks/fetchFoods";
 import type { Food } from "../../../types/foods";
-type Entry = {
-    food: string;
-    time: string;
-    ammount: string;
-    protein: string;
-    fat: string;
-    carbs: string
-}
-
-const todaysEntries: Entry[] = [
-        {
-            food: "Grilled Chicken Breast",
-            time: "12:30",
-            ammount: "200g",
-            protein: "62g",
-            fat: "7g",
-            carbs: "0g"
-        },
-        {
-            food: "Brown Rice",
-            time: "12:30",
-            ammount: "1 cup",
-            protein: "5g",
-            fat: "2g",
-            carbs: "45g"
-        },
-        {
-            food: "Broccoli",
-            time: "12:30",
-            ammount: "150g",
-            protein: "4g",
-            fat: "0.5g",
-            carbs: "10g"
-        },
-        {
-            food: "Oatmeal with Banana",
-            time: "08:00",
-            ammount: "60g oats + 1 banana",
-            protein: "12g",
-            fat: "5g",
-            carbs: "78g"
-        },
-        {
-            food: "Greek Yogurt",
-            time: "16:00",
-            ammount: "200g",
-            protein: "20g",
-            fat: "8g",
-            carbs: "9g"
-        },
-        {
-            food: "Salmon",
-            time: "19:30",
-            ammount: "180g",
-            protein: "40g",
-            fat: "24g",
-            carbs: "0g"
-        },
-        {
-            food: "Protein Bar",
-            time: "22:00",
-            ammount: "1 bar",
-            protein: "20g",
-            fat: "9g",
-            carbs: "22g"
-        }
-    ];
 
 function TodaysFoodPage() {
-    // const [foodEntries, setFoodEntries] = useState<FoodEntry[] | null>(null)
+    const [foodEntries, setFoodEntries] = useState<FoodEntry[] | null>(null)
     const [formData, setFormData] = useState<FoodEntryCreate>({
         food_id: 0,
+        food_name: "",
         log_date: new Date().toISOString().split("T")[0],
         quantity: 0,
         calories: 0,
@@ -82,12 +17,25 @@ function TodaysFoodPage() {
         carbs_g: 0,
         fat_g: 0,
     })
+
     const [foods, setFoods] = useState<Food[] | null>(null)
     
     // const [editingFoodEntry, setEditingFoodEntry] = useState<FoodEntry | null>(null);
       const isSubmitting = useRef(false);
       const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
+
+        // SPECIAL CASE: when the <select> for food changes
+        if (name === "food_id") {
+          const selectedFood = foods?.find(f => f.id === Number(value));
+          setFormData(prev => ({
+            ...prev,
+            food_id: Number(value),
+            food_name: selectedFood?.name || "",   // ← NEW: store the name
+          }));
+          return;
+        }
+
         setFormData((prev) => ({
           ...prev,
           [name]: name === "food_id" || name === "quantity" || name.includes("_g") || name === "calories"
@@ -97,65 +45,49 @@ function TodaysFoodPage() {
       };
     
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        console.log("Submitting food entry...");
-    
-        try {
-          // if (editingFoodEntry) {
-          //   await updateEntry(editingFoodEntry.id, formData);
-          //   alert("Metric updated successfully!");
-          //   setEditingFoodEntry(null);
-          // } else {
-          //   await createFoodEntry(formData);
-          //   alert("Metric created successfully!");
-          // }
-          // fetchFoodEntries(setFoodEntries);
-          setFormData({
-            food_id: 0,
-            log_date: "",
-            quantity: 0,
-            calories: 0,
-            protein_g: 0,
-            carbs_g: 0,
-            fat_g: 0,
-          });
-        } catch (err) {
-          console.error(err);
-          alert("Something went wrong with the metric operation.");
-        } finally {
-          isSubmitting.current = false;
-        }
-      };
+      e.preventDefault();
+      if (isSubmitting.current) return;
+      isSubmitting.current = true;
 
-       useEffect(() => {
-            fetchFoods(setFoods)
-        }, [])
+      try {
+        await createFoodEntry(formData);
+        
+        const today = new Date().toISOString().split("T")[0];
+        await fetchFoodEntries(setFoodEntries, today);
 
-        useEffect(() => {
-            // fetchFoodEntries(setFoodEntries)
-        }, [])
+        // Reset form
+        setFormData({
+          food_id: 0,
+          food_name: "",
+          log_date: new Date().toISOString().split("T")[0],
+          quantity: 0,
+          calories: 0,
+          protein_g: 0,
+          carbs_g: 0,
+          fat_g: 0,
+        });
+      } catch (err) {
+        console.error("Submit error:", err);
+        alert("Failed to save food entry");
+      } finally {
+        isSubmitting.current = false;
+      }
+    };
+
+    useEffect(() => {
+        fetchFoods(setFoods)
+    }, [])
+
+    useEffect(() => {
+        fetchFoodEntries(setFoodEntries)
+    }, [])
 
     return (
         <div>
-            {todaysEntries.map((entry) => (
-                <div className="br-white rounded-lg shadow p-5 border border-gray-200 hover:shadow-md transition">
-                    <div className="d-flex flex-row gap-2"> 
-                        <p>{entry.time}</p>
-                        <p>{entry.food}</p>
-                        <p>{entry.ammount}</p>
-                    </div>
-                    <div className="d-flex flex-row gap-2"> 
-                        <p>Protein: {entry.protein}</p>
-                        <p>Fat: {entry.fat}</p>
-                        <p>Carbs: {entry.carbs}</p>
-                    </div>
-                    <br></br>
-                </div>
-            ))}
-            <h3 className="mt-4">Add Food Entry</h3>
+           <h3 className="mt-4">Add Food Entry</h3>
             <form
                 onSubmit={handleSubmit}
-                className="w-100"
+                className="w-100 mb-3"
                 style={{ maxWidth: "500px" }}
             >
                 <div className="mb-3">
@@ -181,6 +113,9 @@ function TodaysFoodPage() {
                       value={formData.quantity}
                       onChange={handleChange}
                       className="form-control"
+                      type="number"
+                      min="0"
+                      step=".1"
                     />
                   </div>
                 <button
@@ -191,6 +126,21 @@ function TodaysFoodPage() {
                   Create Entry
                 </button>
             </form>
+            {foodEntries?.map((entry, index) => (
+                <div key={index} className="br-white rounded-lg shadow p-5 border border-gray-200 hover:shadow-md transition">
+                    <div className="d-flex flex-row gap-2"> 
+                        <p>{entry.log_date}</p>
+                        <p>{entry.food_name}</p>
+                        <p>Quantity: {entry.quantity}</p>
+                    </div>
+                    <div className="d-flex flex-row gap-2"> 
+                        <p>Protein: {entry.protein_g}</p>
+                        <p>Fat: {entry.fat_g}</p>
+                        <p>Carbs: {entry.carbs_g}</p>
+                    </div>
+                    <br></br>
+                </div>
+            ))}
         </div>
     )
 }
