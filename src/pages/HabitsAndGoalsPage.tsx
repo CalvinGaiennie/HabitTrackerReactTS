@@ -357,14 +357,14 @@ function HabitsAndGoalsPage() {
             Logs
           </button>
         </li>
-        <li className="nav-item">
+        {/* <li className="nav-item">
           <button
             className={`nav-link ${activeTab === "goal" ? "active" : ""}`}
             onClick={() => setActiveTab("goal")}
           >
             Goals
           </button>
-        </li>
+        </li> */}
         <li className="nav-item">
           <button
             className={`nav-link ${activeTab === "settings" ? "active" : ""}`}
