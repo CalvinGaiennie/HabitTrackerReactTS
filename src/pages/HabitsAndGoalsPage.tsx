@@ -122,10 +122,6 @@ function HabitsAndGoalsPage() {
     }
   };
 
-  const handleActiveTab = (tab: TabType) => {
-    setActiveTab(tab)
-  }
-
   const handleEditMetric = (metric: Metric) => {
     setEditingMetric(metric);
     setFormData({
@@ -340,27 +336,46 @@ function HabitsAndGoalsPage() {
 
   return (
     <div className="container mt-4">
-      <div className="d-flex gap-3 mb-3 justify-content-between">
-        <h1>Habits and Goals</h1>
-        <select
-          name="activeTab"
-          value={activeTab}
-          className="form-select form-select-sm"
-          style={{
-            padding: "0.25rem 0.5rem",
-            fontSize: "0.875rem",
-            height: "38px",
-            width: "auto",
-            minWidth: "140px"
-          }}
-          onChange={(e) => handleActiveTab(e.target.value as TabType)}
-        >
-          <option value="metric">Metric</option>
-          <option value="log">Log</option>
-          <option value="settings">Home Page</option>
-          <option value="goal">Goal</option>
-        </select>
-      </div>
+      <div className="row justify-content-center mb-4">
+    <div className="col-12">
+      <h1 className="text-center mb-4">Habits and Goals</h1>
+
+      <ul className="nav nav-tabs justify-content-center">
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "metric" ? "active" : ""}`}
+            onClick={() => setActiveTab("metric")}
+          >
+            Metrics
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "log" ? "active" : ""}`}
+            onClick={() => setActiveTab("log")}
+          >
+            Logs
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "goal" ? "active" : ""}`}
+            onClick={() => setActiveTab("goal")}
+          >
+            Goals
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "settings" ? "active" : ""}`}
+            onClick={() => setActiveTab("settings")}
+          >
+            Settings
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
       {/* Tab Content */}
       <div className="tab-content mb-5">{renderTabContent()}</div>
     </div>
