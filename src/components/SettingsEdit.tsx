@@ -266,16 +266,18 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
                     {isEditing ? (
                       <>
                         <div className="flex-grow-1 me-2">
-                          <input
-                            className="form-control"
-                            type="number"
+                          <select
+                            name="activeTab"
                             value={metricId}
                             onChange={(e) =>
                               updateSectionItemId(sectionIndex, metricIndex, e.target.value)
                             }
-                            placeholder="Metric ID"
-                          />
-                          <small className="text-muted">{getMetricName(metricId)}</small>
+                            className="form-select"
+                          >
+                            {metrics.map((metric) => (
+                              <option key={metric.id} value={metric.id}>{metric.name}</option>
+                            ))}
+                          </select>
                         </div>
                         <button
                           className="btn btn-outline-danger btn-sm"
@@ -286,8 +288,8 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
                         </button>
                       </>
                     ) : (
-                      <span className="form-control-plaintext">
-                        {metricId} - {getMetricName(metricId)}
+                      <span className="form-control">
+                        {getMetricName(metricId)}
                       </span>
                     )}
                   </div>
@@ -352,7 +354,7 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
                   </>
                 ) : (
                   <span className="form-control-plaintext">
-                    {chart.metricId} - {getMetricName(chart.metricId)}
+                    {getMetricName(chart.metricId)}
                   </span>
                 )}
               </div>

@@ -16,12 +16,13 @@ import fetchMetrics from "../hooks/fetchMetrics.ts";
 import { useUserId } from "../hooks/useAuth";
 import type { ModeType } from "../types/general";
 import SubPage from "../components/SubPage.tsx";
+import BootstrapModal from "../components/BootstrapModal.tsx";
+import MetricForm from "../components/MetricForm.tsx";
 
 type TabType = "goal" | "metric" | "log" | "settings" | "password";
 function HabitsAndGoalsPage() {
   const userId = useUserId(); // Get current user ID
   const [activeTab, setActiveTab] = useState<TabType>("goal");
-  const [metricMode, setMetricMode] = useState<ModeType>("view");
   const [goalMode, setGoalMode] = useState<ModeType>("view");
   const [logMode, setLogMode] = useState<ModeType>("view");
   const [formData, setFormData] = useState<MetricCreate>({
@@ -37,6 +38,7 @@ function HabitsAndGoalsPage() {
   const [logs, setLogs] = useState<DailyLog[]>([]);
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [editingMetric, setEditingMetric] = useState<Metric | null>(null);
+  const [showModal, setShowModal] = useState(false)
   const isSubmitting = useRef(false);
 
   // Fetch logs and metrics on component mount
@@ -97,12 +99,11 @@ function HabitsAndGoalsPage() {
     try {
       if (editingMetric) {
         await updateMetric(editingMetric.id, formData);
-        alert("Metric updated successfully!");
         setEditingMetric(null);
       } else {
         await createMetric(formData);
-        alert("Metric created successfully!");
       }
+      setShowModal(false);
       fetchMetrics(setMetrics);
       setFormData({
         user_id: userId,
@@ -122,6 +123,10 @@ function HabitsAndGoalsPage() {
     }
   };
 
+  const handleActiveTab = (tab: TabType) => {
+    setActiveTab(tab)
+  }
+
   const handleEditMetric = (metric: Metric) => {
     setEditingMetric(metric);
     setFormData({
@@ -136,7 +141,6 @@ function HabitsAndGoalsPage() {
       scale_max: metric.scale_max,
       time_type: metric.time_type,
     });
-    setMetricMode("add"); // Switch to add mode to show the form
   };
 
   const handleDeleteMetric = async (metricId: number) => {
@@ -180,157 +184,39 @@ function HabitsAndGoalsPage() {
       case "metric":
         return (
           <div>
-            <SubPage
-              title="Metrics"
-              mode={metricMode}
-              setMode={setMetricMode}
-            />
-
-            {metricMode === "add" && (
-              <div>
-                <h3>Add New Metric</h3>
-                <form
-                  onSubmit={handleSubmit}
-                  className="w-100"
-                  style={{ maxWidth: "500px" }}
+             <div className="container mt-4">
+                <div className="d-flex gap-3 mb-3 justify-content-between">
+                  <h3>Metrics</h3>
+                  <button className="btn btn-primary" onClick={() => {setEditingMetric(null); setShowModal(true)}}>Add Metric</button>
+                </div>
+                <BootstrapModal
+                  show={showModal}
+                  onHide={() => setShowModal(false)}
+                  title={editingMetric ? "Edit Metric" : "Add New Metric"}
                 >
-                  <div className="mb-3">
-                    <label className="form-label">Name:</label>
-                    <input
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      className="form-control"
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Description:</label>
-                    <input
-                      name="description"
-                      value={formData.description}
-                      onChange={handleChange}
-                      className="form-control"
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Initials:</label>
-                    <input
-                      name="initials"
-                      value={formData.initials}
-                      onChange={handleChange}
-                      className="form-control"
-                      maxLength={2}
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Type:</label>
-                    <select
-                      name="data_type"
-                      value={formData.data_type}
-                      onChange={handleChange}
-                      className="form-select"
-                    >
-                      <option value="decimal">Number</option>
-                      <option value="boolean">True/False</option>
-                      <option value="text">Text</option>
-                      <option value="scale">Scale (ex. 1-5)</option>
-                      <option value="clock">Clock In/Out</option>
-                    </select>
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Time Type:</label>
-                    <select
-                      name="time_type"
-                      value={formData.time_type}
-                      onChange={handleChange}
-                      className="form-select"
-                    >
-                      <option value="day">Day</option>
-                      <option value="week">Week</option>
-                    </select>
-                  </div>
-                  {formData.data_type === "scale" && (
-                    <div className="mb-3">
-                      <label className="form-label">Scale Range</label>
-                      <div className="row">
-                        <div className="col-6">
-                          <input
-                            name="scale_min"
-                            value={formData.scale_min ?? ""}
-                            onChange={handleChange}
-                            className="form-control"
-                            placeholder="Min (e.g., 1)"
-                          />
-                        </div>
-                        <div className="col-6">
-                          <input
-                            name="scale_max"
-                            value={formData.scale_max ?? ""}
-                            onChange={handleChange}
-                            className="form-control"
-                            placeholder="Max (e.g., 5)"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  <div className="mb-3">
-                    <label className="form-label">Unit</label>
-                    <input
-                      name="unit"
-                      value={formData.unit}
-                      onChange={handleChange}
-                      className="form-control"
-                      placeholder="e.g., minutes, hours, reps"
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">
-                      Do you want to include a notes section?
-                    </label>
-                    <select
-                      name="notes_on"
-                      value={String(formData.notes_on)}
-                      onChange={handleChange}
-                      className="form-select"
-                    >
-                      <option value="true">Yes</option>
-                      <option value="false">No</option>
-                    </select>
-                  </div>
-                  <button type="submit" className="btn btn-primary">
-                    {editingMetric ? "Update Metric" : "Save Metric"}
-                  </button>
-                  {editingMetric && (
-                    <button
-                      type="button"
-                      className="btn btn-secondary ms-2"
-                      onClick={() => {
-                        setEditingMetric(null);
-                        setFormData({
-                          user_id: userId,
-                          name: "",
-                          description: "",
-                          initials: "",
-                          data_type: "text",
-                          unit: "",
-                          notes_on: false,
-                          time_type: "day",
-                        });
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  )}
-                </form>
-              </div>
-            )}
-
-            {metricMode === "edit" && (
-              <div>
-                <h3>Edit Metric</h3>
+                  <MetricForm
+                    formData={formData}
+                    editingMetric={!!editingMetric}
+                    onChange={handleChange}
+                    onSubmit={handleSubmit}
+                    onCancelEdit={() => {
+                      setEditingMetric(null);
+                      setFormData({
+                        user_id: userId,
+                        name: "",
+                        description: "",
+                        initials: "",
+                        data_type: "text",
+                        unit: "",
+                        notes_on: false,
+                        time_type: "day",
+                      });
+                      setShowModal(false)
+                    }}
+                  />
+                </BootstrapModal>
                 <div className="row">
-                  {metrics.map((metric) => (
+                  {metrics.sort((a, b) => b.id - a.id).map((metric) => (
                     <div key={metric.id} className="col-md-6 col-lg-4 mb-3">
                       <div className="card">
                         <div className="card-body">
@@ -345,7 +231,10 @@ function HabitsAndGoalsPage() {
                           <div className="btn-group" role="group">
                             <button
                               className="btn btn-sm btn-outline-primary"
-                              onClick={() => handleEditMetric(metric)}
+                              onClick={() => {
+                                handleEditMetric(metric);
+                                setShowModal(true)
+                              }}
                             >
                               Edit
                             </button>
@@ -362,43 +251,6 @@ function HabitsAndGoalsPage() {
                   ))}
                 </div>
               </div>
-            )}
-
-            {metricMode === "view" && (
-              <div>
-                <h3>View Metrics</h3>
-                <div className="row">
-                  {metrics.map((metric) => (
-                    <div key={metric.id} className="col-md-6 col-lg-4 mb-3">
-                      <div className="card">
-                        <div className="card-body">
-                          <h5 className="card-title">{metric.name}</h5>
-                          <p className="card-text">{metric.description}</p>
-                          <p className="card-text">
-                            <small className="text-muted">
-                              Type: {metric.data_type} | Unit:{" "}
-                              {metric.unit || "N/A"}
-                            </small>
-                          </p>
-                          {metric.data_type === "scale" && (
-                            <p className="card-text">
-                              <small className="text-muted">
-                                Scale: {metric.scale_min} - {metric.scale_max}
-                              </small>
-                            </p>
-                          )}
-                          <p className="card-text">
-                            <small className="text-muted">
-                              Notes: {metric.notes_on ? "Enabled" : "Disabled"}
-                            </small>
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         );
       case "log":
@@ -488,47 +340,27 @@ function HabitsAndGoalsPage() {
 
   return (
     <div className="container mt-4">
-      <h1>Habits and Goals</h1>
-      {/* Tab Navigation */}
-      <ul className="nav nav-tabs mb-4">
-        <li className="nav-item">
-          <button
-            className={`nav-link ${activeTab === "goal" ? "active" : ""}`}
-            onClick={() => setActiveTab("goal")}
-            type="button"
-          >
-            Goal
-          </button>
-        </li>
-        <li className="nav-item">
-          <button
-            className={`nav-link ${activeTab === "metric" ? "active" : ""}`}
-            onClick={() => setActiveTab("metric")}
-            type="button"
-          >
-            Habit Metric
-          </button>
-        </li>
-        <li className="nav-item">
-          <button
-            className={`nav-link ${activeTab === "log" ? "active" : ""}`}
-            onClick={() => setActiveTab("log")}
-            type="button"
-          >
-            Log
-          </button>
-        </li>
-        <li className="nav-item">
-          <button
-            className={`nav-link ${activeTab === "settings" ? "active" : ""}`}
-            onClick={() => setActiveTab("settings")}
-            type="button"
-          >
-            Home Page Layout
-          </button>
-        </li>
-      </ul>
-
+      <div className="d-flex gap-3 mb-3 justify-content-between">
+        <h1>Habits and Goals</h1>
+        <select
+          name="activeTab"
+          value={activeTab}
+          className="form-select form-select-sm"
+          style={{
+            padding: "0.25rem 0.5rem",
+            fontSize: "0.875rem",
+            height: "38px",
+            width: "auto",
+            minWidth: "140px"
+          }}
+          onChange={(e) => handleActiveTab(e.target.value as TabType)}
+        >
+          <option value="goal">Goal</option>
+          <option value="metric">Metric</option>
+          <option value="log">Log</option>
+          <option value="settings">Home Page</option>
+        </select>
+      </div>
       {/* Tab Content */}
       <div className="tab-content mb-5">{renderTabContent()}</div>
     </div>
