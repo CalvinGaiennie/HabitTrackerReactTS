@@ -15,18 +15,16 @@ import PaidRoute from "./components/PaidRoute.tsx";
 import { AuthRoute } from "./components/AuthRoute.tsx";
 import HabitsAndGoalsPage from "./pages/HabitsAndGoalsPage.tsx";
 import WorkoutViewer from "./components/WorkoutViewer.tsx";
-import UserNameHeader from "./components/UserNameHeader";
 
 function App() {
   return (
     <div
       className="App"
-      style={{ maxWidth: "700px", margin: "0 auto", marginBottom: "4rem" }}
+      style={{ maxWidth: "700px", margin: "0 auto", marginBottom: "5rem", marginTop: "2rem"}}
     >
       <AuthProvider>
         <BrowserRouter>
-          <UserNameHeader />
-          <NavBar />
+          {/* <UserNameHeader /> */}
           <Routes>
             <Route
               path="/"
@@ -104,6 +102,7 @@ function App() {
               }
             />
           </Routes>
+          <NavBar />
         </BrowserRouter>
       </AuthProvider>
     </div>

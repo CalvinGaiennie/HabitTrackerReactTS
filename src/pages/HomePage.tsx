@@ -463,6 +463,7 @@ function HomePage() {
 
   return (
     <div className="container d-flex flex-column align-items-center">
+      <h1 className="pb-3">Home Page</h1>
       {!settings && <div>Loading settings...</div>}
       {settings && !settings.homePageLayout && (
         <div>No homePageLayout found</div>

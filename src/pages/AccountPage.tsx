@@ -507,8 +507,7 @@ function AccountPage() {
 
   return (
     <div className="container mt-4">
-      <h1>Account</h1>
-
+      <h1 className="text-center mb-4">Account</h1>
       {/* Subscription Section */}
       <div className="card mb-4">
         <div className="card-body d-flex flex-column flex-md-row align-items-md-center justify-content-between">
