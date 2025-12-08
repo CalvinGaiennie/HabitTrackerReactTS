@@ -504,34 +504,112 @@ function AccountPage() {
         return null;
     }
   };
-
-  return (
+return (
     <div className="container mt-4">
-      <h1 className="text-center mb-4">Account</h1>
-      {/* Subscription Section */}
+      <h1 className="justify mb-4">Account</h1>
+
+      {/* Improved Subscription Section – replace your old one with this */}
       <div className="card mb-4">
-        <div className="card-body d-flex flex-column flex-md-row align-items-md-center justify-content-between">
-          <div>
-            <h5 className="mb-1">Subscription</h5>
-            <div>
-              <span className={`badge ${tier !== "free" ? "bg-success" : "bg-secondary"}`}>
-                {tier !== "free" ? `Premium (${tier === "annual" ? "Annual" : "Monthly"})` : "Free"}
-              </span>
-            </div>
-          </div>
-          <div className="mt-3 mt-md-0">
-            {tier === "free" ? (
-              <div className="btn-group">
-                <button className="btn btn-primary" onClick={() => handleUpgrade("monthly")}>Upgrade Monthly</button>
-                <button className="btn btn-outline-primary" onClick={() => handleUpgrade("annual")}>Upgrade Annual</button>
+        <div className="card-body">
+          <h5 className="card-title mb-4">Your Subscription</h5>
+
+          {tier === "free" ? (
+            <div className="row g-4">
+              {/* Free Plan */}
+              <div className="col-md-4">
+                <div className="border rounded-3 p-4 text-center h-100 d-flex flex-column">
+                  <div className="mb-3">
+                    <h6 className="fw-bold">Free</h6>
+                    <div className="d-flex align-items-baseline justify-content-center">
+                      <span className="display-6 fw-bold">$0</span>
+                      <span className="text-muted ms-2">/ month</span>
+                    </div>
+                  </div>
+                  <div className="flex-grow-1 small text-muted">
+                    <ul className="list-unstyled mb-0">
+                      <li>Basic tracking</li>
+                      <li>Limited metrics</li>
+                    </ul>
+                  </div>
+                  <button className="btn btn-outline-secondary mt-3" disabled>
+                    Current Plan
+                  </button>
+                </div>
               </div>
-            ) : (
-              <button className="btn btn-outline-danger" onClick={handleManageBilling}>Manage Subscription</button>
-            )}
-          </div>
+
+              {/* Monthly Plan */}
+              <div className="col-md-4">
+                <div className="border rounded-3 p-4 text-center h-100 d-flex flex-column shadow-sm">
+                  <div className="mb-3">
+                    <h6 className="fw-bold">Premium Monthly</h6>
+                    <div className="d-flex align-items-baseline justify-content-center">
+                      <span className="display-6 fw-bold">$14.99</span>
+                      <span className="text-muted ms-2">/ month</span>
+                    </div>
+                  </div>
+                  <div className="flex-grow-1 small">
+                    <ul className="list-unstyled mb-0">
+                      <li>Unlimited metrics</li>
+                      <li>Advanced features</li>
+                      <li>Priority support</li>
+                    </ul>
+                  </div>
+                  <button
+                    className="btn btn-primary mt-3"
+                    onClick={() => handleUpgrade("monthly")}
+                  >
+                    Upgrade Monthly
+                  </button>
+                </div>
+              </div>
+
+              {/* Annual Plan – Best Value */}
+              <div className="col-md-4">
+                <div className="border border-primary rounded-3 p-4 text-center h-100 d-flex flex-column position-relative shadow">
+                  <div className="position-absolute top-0 end-0 bg-success text-white px-2 py-1 rounded-bottom-start small">
+                    Save ~33%
+                  </div>
+                  <div className="mb-3">
+                    <h6 className="fw-bold">Premium Annual</h6>
+                    <div className="d-flex align-items-baseline justify-content-center">
+                      <span className="display-6 fw-bold">$119.99</span>
+                    </div>
+                    <div className="text-muted small">($9.99 / month – billed yearly)</div>
+                  </div>
+                  <div className="flex-grow-1 small">
+                    <ul className="list-unstyled mb-0">
+                      <li>Everything in Monthly</li>
+                      <li>Best value</li>
+                    </ul>
+                  </div>
+                  <button
+                    className="btn btn-primary mt-3"
+                    onClick={() => handleUpgrade("annual")}
+                  >
+                    Upgrade Annually
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="d-flex justify-content-between align-items-center">
+              <div>
+                <span className="badge bg-success fs-6">
+                  Premium ({tier === "annual" ? "Annual" : "Monthly"})
+                </span>
+                <p className="mb-0 mt-2">
+                  {tier === "annual"
+                    ? "$119.99 billed yearly ($9.99/mo)"
+                    : "$14.99 billed monthly"}
+                </p>
+              </div>
+              <button className="btn btn-outline-primary" onClick={handleManageBilling}>
+                Manage Subscription
+              </button>
+            </div>
+          )}
         </div>
       </div>
-
       {/* Tab Navigation */}
       <ul className="nav nav-tabs mb-4">
         <li className="nav-item">

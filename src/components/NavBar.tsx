@@ -1,9 +1,12 @@
 import { NavLink } from "react-router-dom";
-import { useContext } from "react";
+import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import BootstrapModal from "./BootstrapModal";
+import AccountPage from "../pages/AccountPage";
 
 function NavBar() {
   const authContext = useContext(AuthContext);
+  const [showModal, setShowModal] = useState(false)
 
   if (!authContext) {
     throw new Error("AuthContext not found");
@@ -64,13 +67,14 @@ function NavBar() {
               </li>
             )}
             <li className="nav-item mb-md-0">
-             <NavLink
-              to="/Account"
-              className="nav-link fs-5 text-dark px-3"
-              style={{ zIndex: 1001 }}
-              >
-              <i className="bi bi-gear-fill fs-3"></i>
-             </NavLink>
+              <i className="bi bi-gear-fill fs-3" onClick={()=> setShowModal(true)}></i>
+              <BootstrapModal 
+                  show={showModal}
+                  onHide={() => setShowModal(false)}
+                  title={"Account Page"}
+                  >
+                    <AccountPage/>
+                  </BootstrapModal>
             </li>
             {/* <li className="nav-item mb-md-0 d-flex align-items-center">
               <NavLink className="nav-link fs-5 text-dark px-3" to="/Account">

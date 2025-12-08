@@ -22,7 +22,7 @@ export default function BootstrapModal({
       <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className="modal-title">{title}</h5>
+            <h5 className="modal-title justify-content-center">{title}</h5>
             <button type="button" className="btn-close" onClick={onHide} />
           </div>
           <div className="modal-body">{children}</div>
