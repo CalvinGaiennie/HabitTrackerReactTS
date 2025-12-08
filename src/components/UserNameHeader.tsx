@@ -36,12 +36,6 @@ function UserNameHeader() {
   if (!authContext?.authState.isAuthenticated || !fullName) {
     return null;
   }
-  const now = new Date();
-const formatted = now.toLocaleDateString('en-US', {
-    month: 'long',    // "December"
-    day:   '2-digit', // "02"
-    year:  'numeric'  // "2025"
-  });
 
   return (
     <>
