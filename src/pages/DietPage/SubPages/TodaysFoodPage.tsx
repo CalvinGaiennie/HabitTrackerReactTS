@@ -4,6 +4,8 @@ import type { FoodEntryCreate, FoodEntry } from "../../../types/foodEntries";
 import { createFoodEntry } from "../../../services/foodEntries";
 import fetchFoods from "../../../hooks/fetchFoods";
 import type { Food } from "../../../types/foods";
+import BootstrapModal from "../../../components/BootstrapModal";
+import AddFoodEntryForm from "../components/AddFoodEntry";
 
 function TodaysFoodPage() {
     const [foodEntries, setFoodEntries] = useState<FoodEntry[] | null>(null)
@@ -17,8 +19,8 @@ function TodaysFoodPage() {
         carbs_g: 0,
         fat_g: 0,
     })
-
     const [foods, setFoods] = useState<Food[] | null>(null)
+    const [showModal, setShowModal] = useState(false)
     
     // const [editingFoodEntry, setEditingFoodEntry] = useState<FoodEntry | null>(null);
       const isSubmitting = useRef(false);
@@ -84,48 +86,28 @@ function TodaysFoodPage() {
 
     return (
         <div>
-           <h3 className="mt-4">Add Food Entry</h3>
-            <form
-                onSubmit={handleSubmit}
-                className="w-100 mb-3"
-                style={{ maxWidth: "500px" }}
-            >
-                <div className="mb-3">
-                    <label className="form-label">Food:</label>
-                    <select
-                    name="food_id"
-                    className="form-control"
-                    value={formData.food_id}
-                    onChange={handleChange}
-                    >
-                      <option value={0}> -- Select a food -- </option>
-                      {foods?.map((food) => (
-                        <option key={food.id} value={food.id}>
-                          {food.name}
-                        </option>
-                      )) ?? <option>Loading foods...</option>}
-                    </select>
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Quantity:</label>
-                    <input
-                      name="quantity"
-                      value={formData.quantity}
-                      onChange={handleChange}
-                      className="form-control"
-                      type="number"
-                      min="0"
-                      step=".1"
-                    />
-                  </div>
-                <button
-                  type="submit"
-                  className="btn btn-secondary ms-2"
-                  disabled={isSubmitting.current}
-                >
-                  Create Entry
-                </button>
-            </form>
+             <div className="d-flex gap-3 mb-3 justify-content-between align-items-center">
+              <h3 className="mb-0">Exercise Library</h3>
+              <button 
+                  className="btn btn-primary px-4" 
+                  onClick={() => setShowModal(true)}
+              >
+                  Add Exercise
+              </button>
+            </div>
+            <BootstrapModal
+                show={showModal}
+                onHide={() => setShowModal(false)}
+                title={"Create Exercise"}
+              >
+                <AddFoodEntryForm
+                  foods={foods}
+                  formData={formData}
+                  onChange={handleChange}
+                  onSubmit={handleSubmit}
+                  onCancel={() => setShowModal(false)}
+                />
+              </BootstrapModal>
             {foodEntries?.map((entry, index) => (
                 <div key={index} className="br-white rounded-lg shadow p-5 border border-gray-200 hover:shadow-md transition">
                     <div className="d-flex flex-row gap-2"> 
