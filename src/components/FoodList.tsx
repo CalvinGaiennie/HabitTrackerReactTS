@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react"
 import fetchFoods from "../hooks/fetchFoods"
 import type { Food } from "../types/foods"
+import CreateFoodForm from "./CreateFoodForm"
+import BootstrapModal from "./BootstrapModal"
 function FoodList() {
     const [foods, setFoods] = useState<Food[] | null>(null)
+    const [showModal, setShowModal] = useState(false)
 
     useEffect(() => {
         fetchFoods(setFoods)
@@ -10,7 +13,22 @@ function FoodList() {
 
     return (
         <div>
-            food list
+            <div className="d-flex gap-3 mb-3 justify-content-between align-items-center">
+              <h3 className="mb-0">Food Library</h3>
+              <button 
+                  className="btn btn-primary px-4" 
+                  onClick={() => setShowModal(true)}
+              >
+                  Add Food
+              </button>
+            </div>
+            <BootstrapModal
+                show={showModal}
+                onHide={() => setShowModal(false)}
+                title={"Create Exercise"}
+              >
+                 <CreateFoodForm/>
+              </BootstrapModal>
             {foods?.map((food) => (
                 <div>
                     <h3>{food.name}</h3>
