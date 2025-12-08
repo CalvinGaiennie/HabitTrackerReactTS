@@ -32,7 +32,7 @@ function DietPage() {
                 className={`nav-link ${activeTab === "days" ? "active" : ""}`}
                 onClick={() => setTab("days")}
               >
-                Previous Days
+                Food History
               </button>
             </li>
             <li className="nav-item">
