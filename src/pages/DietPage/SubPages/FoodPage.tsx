@@ -29,15 +29,17 @@ function FoodPage() {
               >
                  <CreateFoodForm/>
               </BootstrapModal>
-            {foods?.map((food) => (
-                <div>
-                    <h3>{food.name}</h3>
+            {foods?.map((food, index) => (
+            <div key={index} className="br-white rounded-lg shadow p-5 border border-gray-200 hover:shadow-md transition">
+                <h3>{food.name}</h3>
+                <div className="d-flex flex-row gap-2"> 
                     <p>Calories: {food.calories}</p>
                     <p>Protein: {food.protein_g}</p>
                     <p>Carbs: {food.carbs_g}</p>
                     <p>Fat: {food.fat_g}</p>
-                    <p>{JSON.stringify(food)}</p>
                 </div>
+                <br></br>
+            </div>
             ))}
         </div>
     )
