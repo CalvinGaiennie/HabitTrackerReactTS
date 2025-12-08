@@ -46,6 +46,24 @@ function NavBar() {
               </NavLink>
             </li>
             <li className="nav-item mb-md-0">
+              <NavLink
+                className="nav-link fs-5 text-dark px-3"
+                to="/HabitsAndGoals"
+              >
+                <i className="bi bi-check2-square"></i>
+              </NavLink>
+            </li>
+              {authState.tier && authState.tier !== "free" && (
+                <li className="nav-item mb-md-0">
+                  <NavLink
+                    className="nav-link fs-5 text-dark px-3"
+                    to="/Analytics"
+                  >
+                    <i className=" bi bi-graph-up-arrow"></i>
+                  </NavLink>
+              </li>
+            )}
+            <li className="nav-item mb-md-0">
              <NavLink
               to="/Account"
               className="nav-link fs-5 text-dark px-3"
@@ -54,24 +72,6 @@ function NavBar() {
               <i className="bi bi-gear-fill fs-3"></i>
              </NavLink>
             </li>
-            {/* <li className="nav-item mb-md-0">
-              <NavLink
-                className="nav-link fs-5 text-dark px-3"
-                to="/HabitsAndGoals"
-              >
-                HabitsAndGoals
-              </NavLink>
-            </li> */}
-            {authState.tier && authState.tier !== "free" && (
-              <li className="nav-item mb-md-0">
-                <NavLink
-                  className="nav-link fs-5 text-dark px-3"
-                  to="/Analytics"
-                >
-                  <i className=" bi bi-graph-up-arrow"></i>
-                </NavLink>
-              </li>
-            )}
             {/* <li className="nav-item mb-md-0 d-flex align-items-center">
               <NavLink className="nav-link fs-5 text-dark px-3" to="/Account">
                 Account
