@@ -27,7 +27,7 @@ function NavBar() {
 
   return (
     <nav className="nav pb-3 fixed-bottom bg-white border-top">
-      <ul className="navbar d-flex justify-content-center w-100 list-unstyled gap-4 mb-0">
+      <ul className="navbar d-flex justify-content-center w-100 list-unstyled gap-2 mb-0">
         {authState.isAuthenticated ? (
           <>
             <li className="nav-item mb-md-0">
