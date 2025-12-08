@@ -68,7 +68,7 @@ function NavBar() {
                   className="nav-link fs-5 text-dark px-3"
                   to="/Analytics"
                 >
-                  Analytics
+                  A
                 </NavLink>
               </li>
             )}
