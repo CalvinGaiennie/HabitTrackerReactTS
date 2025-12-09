@@ -27,7 +27,7 @@ function ExercisePage() {
           onHide={() => setShowModal(false)}
           title={"Create Exercise"}
         >
-           <CreateExerciseForm/>
+           <CreateExerciseForm onSubmit={() => setShowModal(false)}/>
         </BootstrapModal>
       <div className="row">
         {exercises.map((exercise) => (

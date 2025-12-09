@@ -25,9 +25,9 @@ function FoodPage() {
             <BootstrapModal
                 show={showModal}
                 onHide={() => setShowModal(false)}
-                title={"Create Exercise"}
+                title={"Create Food"}
               >
-                 <CreateFoodForm/>
+                 <CreateFoodForm onSubmit={() => setShowModal(false)}/>
               </BootstrapModal>
             {foods?.map((food, index) => (
             <div key={index} className="br-white rounded-lg shadow p-5 border border-gray-200 hover:shadow-md transition">

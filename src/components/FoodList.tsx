@@ -25,9 +25,9 @@ function FoodList() {
             <BootstrapModal
                 show={showModal}
                 onHide={() => setShowModal(false)}
-                title={"Create Exercise"}
+                title={"Create Food"}
               >
-                 <CreateFoodForm/>
+                 <CreateFoodForm onSubmit={() => { setShowModal(false); fetchFoods(setFoods); }} />
               </BootstrapModal>
             {foods?.map((food) => (
                 <div>

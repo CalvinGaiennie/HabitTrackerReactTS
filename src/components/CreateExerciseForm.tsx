@@ -10,8 +10,11 @@ const stringToArray = (str: string): string[] => {
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
 };
+interface CreateExerciseFormProps {
+  onSubmit?: () => void; 
+}
 
-function CreateExerciseForm() {
+function CreateExerciseForm({onSubmit}: CreateExerciseFormProps) {
   const userId = useUserId(); // Get current user ID
   // Use strings for easier form input handling
   const [formData, setFormData] = useState({
@@ -63,6 +66,7 @@ function CreateExerciseForm() {
       const newExercise = await createExercise(exerciseData);
       console.log("Exercise created:", newExercise);
 
+      onSubmit?.();
       // Reset form
       setFormData({
         user_id: userId,

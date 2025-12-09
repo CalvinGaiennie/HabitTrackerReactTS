@@ -57,6 +57,7 @@ function TodaysFoodPage() {
         const today = new Date().toISOString().split("T")[0];
         await fetchFoodEntries(setFoodEntries, today);
 
+        setShowModal(false)
         // Reset form
         setFormData({
           food_id: 0,
@@ -87,18 +88,18 @@ function TodaysFoodPage() {
     return (
         <div>
              <div className="d-flex gap-3 mb-3 justify-content-between align-items-center">
-              <h3 className="mb-0">Exercise Library</h3>
+              <h3 className="mb-0">Todays Food</h3>
               <button 
                   className="btn btn-primary px-4" 
                   onClick={() => setShowModal(true)}
               >
-                  Add Exercise
+                  Add Meal
               </button>
             </div>
             <BootstrapModal
                 show={showModal}
                 onHide={() => setShowModal(false)}
-                title={"Create Exercise"}
+                title={"Add Meal"}
               >
                 <AddFoodEntryForm
                   foods={foods}

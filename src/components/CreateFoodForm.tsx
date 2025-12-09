@@ -2,7 +2,11 @@ import { useState } from "react";
 import { createFood } from "../services/foods.ts";
 import type { FoodCreate } from "../types/foods.ts";
 
-function CreateFoodForm() {
+interface CreateFoodFormProps {
+  onSubmit?: () => void;   // Callback to invoke after successful create (e.g., close modal)
+}
+
+function CreateFoodForm({onSubmit}: CreateFoodFormProps) {
   const [formData, setFormData] = useState({
     name: "",
     serving_size_amount: 100,
@@ -30,11 +34,11 @@ function CreateFoodForm() {
     setFormData((prev) => ({ ...prev, [name]: nextValue }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       // simple client-side validation to avoid server 500s
-      if (!allowedUnits.includes(formData.serving_size_unit as any)) {
+      if (!allowedUnits.some((u) => u === formData.serving_size_unit)) {
         throw new Error(
           "Serving size unit must be one of: g, ml, piece, cup, tbsp, tsp"
         );
@@ -65,6 +69,8 @@ function CreateFoodForm() {
       const newFood = await createFood(foodData);
       console.log("Food created:", newFood);
 
+      onSubmit?.();
+      
       setFormData({
         name: "",
         serving_size_unit: "g",
