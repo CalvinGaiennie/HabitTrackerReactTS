@@ -302,7 +302,7 @@ function HabitsAndGoalsPage() {
                 onHide={() => setShowLogModal(false)}
                 title="Add New Log"
               >
-                <SpecificAdd />
+                <SpecificAdd onSuccess={() => setShowLogModal(false)} />
               </BootstrapModal>
               <div className="row">
                 {/* Group logs by date - newest first */}

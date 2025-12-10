@@ -5,7 +5,11 @@ import { getActiveMetrics } from "../services/metrics";
 import { saveDailyLog, getDailyLogs } from "../services/dailyLogs";
 import { useUserId } from "../hooks/useAuth";
 
-function SpecificAdd() {
+interface SpecificAddProps {
+  onSuccess?: () => void;
+}
+
+function SpecificAdd({ onSuccess }: SpecificAddProps) {
   const userId = useUserId(); // Get current user ID
   const [metrics, setMetrics] = useState<Metric[]>();
   const [selectedMetricId, setSelectedMetricId] = useState<
@@ -115,6 +119,9 @@ function SpecificAdd() {
 
     // Trigger a custom event to notify the HomePage to refresh
     window.dispatchEvent(new CustomEvent("logSaved"));
+    if (onSuccess) {
+      onSuccess();
+    }
   };
 
   function renderLogInput() {
