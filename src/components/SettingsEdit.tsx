@@ -5,6 +5,7 @@ import fetchSettings from "../hooks/fetchSettings.ts";
 import { updateUserSettings } from "../services/users";
 import { getActiveMetrics } from "../services/metrics";
 import { useUserId } from "../hooks/useAuth";
+import { useAuth } from "../hooks/useAuth";
 import type { ChartDefinition } from "../types/chartConfig.ts";
 
 interface SettingsEditProps {
@@ -13,6 +14,7 @@ interface SettingsEditProps {
 
 function SettingsEdit({ settingsKeys }: SettingsEditProps) {
   const userId = useUserId();
+  const { authState } = useAuth();
   const [settings, setSettings] = useState<UserSettings>();
   const [editableSettings, setEditableSettings] = useState<UserSettings>();
   const [metrics, setMetrics] = useState<Metric[]>([]);
@@ -382,9 +384,32 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
           <button className="btn btn-outline-success" onClick={addSection}>
             + Add New Section
           </button>
-          <button className="btn btn-outline-success" onClick={addChart}>
+          <button
+            className="btn btn-outline-success"
+            onClick={addChart}
+            disabled={
+              authState?.tier === "free" &&
+              (editableSettings?.homePageAnalytics?.length || 0) >= 1
+            }
+            title={
+              authState?.tier === "free" &&
+              (editableSettings?.homePageAnalytics?.length || 0) >= 1
+                ? "Free plan limit: one homepage chart"
+                : ""
+            }
+          >
             + Add New Chart
           </button>
+          {authState?.tier === "free" &&
+            (editableSettings?.homePageAnalytics?.length || 0) >= 1 && (
+              <span className="text-muted d-flex align-items-center">
+                Free plan allows 1 chart.{" "}
+                <a className="ms-1" href="/Account">
+                  Upgrade
+                </a>{" "}
+                to add more.
+              </span>
+            )}
         </div>
       )}
     </div>

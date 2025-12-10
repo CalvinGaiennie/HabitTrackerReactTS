@@ -23,6 +23,7 @@ function HabitsAndGoalsPage() {
   const userId = useUserId(); // Get current user ID
   const [activeTab, setActiveTab] = useState<TabType>("metric");
   const [goalMode, setGoalMode] = useState<ModeType>("view");
+  const [metricError, setMetricError] = useState<string | null>(null);
   const [formData, setFormData] = useState<MetricCreate>({
     user_id: userId,
     name: "",
@@ -36,8 +37,8 @@ function HabitsAndGoalsPage() {
   const [logs, setLogs] = useState<DailyLog[]>([]);
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [editingMetric, setEditingMetric] = useState<Metric | null>(null);
-  const [showMetricModal, setShowMetricModal] = useState(false)
-  const [showLogModal, setShowLogModal] = useState(false)
+  const [showMetricModal, setShowMetricModal] = useState(false);
+  const [showLogModal, setShowLogModal] = useState(false);
   const isSubmitting = useRef(false);
 
   // Fetch logs and metrics on component mount
@@ -81,6 +82,7 @@ function HabitsAndGoalsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Submitting metric...");
+    setMetricError(null);
     if (!formData.name.trim()) {
       alert("Name is required");
       isSubmitting.current = false;
@@ -114,9 +116,23 @@ function HabitsAndGoalsPage() {
         notes_on: false,
         time_type: "day",
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Something went wrong with the metric operation.");
+      const friendly =
+        (err?.detail && err.detail.message) ||
+        err?.message ||
+        "Something went wrong with the metric operation.";
+      setMetricError(
+        friendly ||
+          "Free plan limit reached: You can only have up to 4 metrics. Upgrade to unlock more."
+      );
+      try {
+        // Fallback to ensure user sees the message even if inline alert is missed
+        alert(
+          (friendly as string) ||
+            "Free plan limit reached: You can only have up to 4 metrics. Upgrade to unlock more."
+        );
+      } catch {}
     } finally {
       isSubmitting.current = false;
     }
@@ -179,39 +195,57 @@ function HabitsAndGoalsPage() {
       case "metric":
         return (
           <div>
-             <div className="container mt-4">
-                <div className="d-flex gap-3 mb-3 justify-content-between">
-                  <h3>Metrics</h3>
-                  <button className="btn btn-primary" onClick={() => {setEditingMetric(null); setShowMetricModal(true)}}>Add Metric</button>
-                </div>
-                <BootstrapModal
-                  show={showMetricModal}
-                  onHide={() => setShowMetricModal(false)}
-                  title={editingMetric ? "Edit Metric" : "Add New Metric"}
+            <div className="container mt-4">
+              <div className="d-flex gap-3 mb-3 justify-content-between">
+                <h3>Metrics</h3>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => {
+                    setEditingMetric(null);
+                    setShowMetricModal(true);
+                  }}
                 >
-                  <MetricForm
-                    formData={formData}
-                    editingMetric={!!editingMetric}
-                    onChange={handleChange}
-                    onSubmit={handleSubmit}
-                    onCancelEdit={() => {
-                      setEditingMetric(null);
-                      setFormData({
-                        user_id: userId,
-                        name: "",
-                        description: "",
-                        initials: "",
-                        data_type: "text",
-                        unit: "",
-                        notes_on: false,
-                        time_type: "day",
-                      });
-                      setShowMetricModal(false)
-                    }}
-                  />
-                </BootstrapModal>
-                <div className="row">
-                  {metrics.sort((a, b) => b.id - a.id).map((metric) => (
+                  Add Metric
+                </button>
+              </div>
+              <BootstrapModal
+                show={showMetricModal}
+                onHide={() => setShowMetricModal(false)}
+                title={editingMetric ? "Edit Metric" : "Add New Metric"}
+              >
+                {metricError && (
+                  <div className="alert alert-warning d-flex justify-content-between align-items-center">
+                    <span>{metricError}</span>
+                    <a className="btn btn-sm btn-primary" href="/Account">
+                      Upgrade
+                    </a>
+                  </div>
+                )}
+                <MetricForm
+                  formData={formData}
+                  editingMetric={!!editingMetric}
+                  onChange={handleChange}
+                  onSubmit={handleSubmit}
+                  onCancelEdit={() => {
+                    setEditingMetric(null);
+                    setFormData({
+                      user_id: userId,
+                      name: "",
+                      description: "",
+                      initials: "",
+                      data_type: "text",
+                      unit: "",
+                      notes_on: false,
+                      time_type: "day",
+                    });
+                    setShowMetricModal(false);
+                  }}
+                />
+              </BootstrapModal>
+              <div className="row">
+                {metrics
+                  .sort((a, b) => b.id - a.id)
+                  .map((metric) => (
                     <div key={metric.id} className="col-md-6 col-lg-4 mb-3">
                       <div className="card">
                         <div className="card-body">
@@ -228,7 +262,7 @@ function HabitsAndGoalsPage() {
                               className="btn btn-sm btn-outline-primary"
                               onClick={() => {
                                 handleEditMetric(metric);
-                                setShowMetricModal(true)
+                                setShowMetricModal(true);
                               }}
                             >
                               Edit
@@ -244,77 +278,103 @@ function HabitsAndGoalsPage() {
                       </div>
                     </div>
                   ))}
-                </div>
               </div>
+            </div>
           </div>
         );
       case "log":
         return (
           <div>
-              <div>
-                <div className="d-flex gap-3 mb-3 justify-content-between">
-                  <h3>Logs</h3>
-                  <button className="btn btn-primary" onClick={() => {setShowLogModal(true)}}>Add Log</button>
-                </div>
-                <BootstrapModal
-                  show={showLogModal}
-                  onHide={() => setShowLogModal(false)}
-                  title="Add New Log"
+            <div>
+              <div className="d-flex gap-3 mb-3 justify-content-between">
+                <h3>Logs</h3>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => {
+                    setShowLogModal(true);
+                  }}
                 >
-                  <SpecificAdd/>
-                </BootstrapModal>
-                <div className="row">
-                  {/* Group logs by date - newest first */}
-                  {Object.entries(
-                    logs.reduce((groups, log) => {
-                      const date = new Date(log.log_date).toDateString();
-                      if (!groups[date]) groups[date] = [];
-                      groups[date].push(log);
-                      return groups;
-                    }, {} as Record<string, DailyLog[]>)
+                  Add Log
+                </button>
+              </div>
+              <BootstrapModal
+                show={showLogModal}
+                onHide={() => setShowLogModal(false)}
+                title="Add New Log"
+              >
+                <SpecificAdd />
+              </BootstrapModal>
+              <div className="row">
+                {/* Group logs by date - newest first */}
+                {Object.entries(
+                  logs.reduce((groups, log) => {
+                    const date = new Date(log.log_date).toDateString();
+                    if (!groups[date]) groups[date] = [];
+                    groups[date].push(log);
+                    return groups;
+                  }, {} as Record<string, DailyLog[]>)
+                )
+                  .sort(
+                    ([a], [b]) => new Date(b).getTime() - new Date(a).getTime()
                   )
-                    .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
-                    .map(([date, dayLogs]) => (
-                      <div key={date} className="mb-5">
-                        <h5 className="fw-bold border-bottom pb-2 mb-3">
-                          {new Date(date).toLocaleDateString('en-US', { 
-                            weekday: 'long', month: 'long', day: 'numeric' 
-                          })}
-                        </h5>
-                        <div className="row">
-                          {dayLogs.map((log) => (
-                            <div key={log.id} className="col-md-6 col-lg-4 mb-3">
-                              <div className="card">
-                                <div className="card-body">
-                                  <h5 className="card-title">{log.metric.name}</h5>
+                  .map(([date, dayLogs]) => (
+                    <div key={date} className="mb-5">
+                      <h5 className="fw-bold border-bottom pb-2 mb-3">
+                        {new Date(date).toLocaleDateString("en-US", {
+                          weekday: "long",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </h5>
+                      <div className="row">
+                        {dayLogs.map((log) => (
+                          <div key={log.id} className="col-md-6 col-lg-4 mb-3">
+                            <div className="card">
+                              <div className="card-body">
+                                <h5 className="card-title">
+                                  {log.metric.name}
+                                </h5>
+                                <p className="card-text">
+                                  Date:{" "}
+                                  {new Date(log.log_date).toLocaleDateString()}
+                                </p>
+                                <p className="card-text">
+                                  Value:{" "}
+                                  {log.value_text ||
+                                    log.value_int ||
+                                    log.value_decimal ||
+                                    (log.value_boolean ? "Yes" : "No")}
+                                </p>
+                                {log.note && (
                                   <p className="card-text">
-                                    Date: {new Date(log.log_date).toLocaleDateString()}
+                                    <small className="text-muted">
+                                      Note: {log.note}
+                                    </small>
                                   </p>
-                                  <p className="card-text">
-                                    Value: {log.value_text || log.value_int || log.value_decimal || (log.value_boolean ? "Yes" : "No")}
-                                  </p>
-                                  {log.note && (
-                                    <p className="card-text">
-                                      <small className="text-muted">Note: {log.note}</small>
-                                    </p>
-                                  )}
-                                  <div className="btn-group" role="group">
-                                    <button className="btn btn-sm btn-outline-primary" onClick={() => handleEditLog()}>
-                                      Edit
-                                    </button>
-                                    <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeleteLog(log.id)}>
-                                      Delete
-                                    </button>
-                                  </div>
+                                )}
+                                <div className="btn-group" role="group">
+                                  <button
+                                    className="btn btn-sm btn-outline-primary"
+                                    onClick={() => handleEditLog()}
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    className="btn btn-sm btn-outline-danger"
+                                    onClick={() => handleDeleteLog(log.id)}
+                                  >
+                                    Delete
+                                  </button>
                                 </div>
                               </div>
                             </div>
-                          ))}
-                        </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                </div>
+                    </div>
+                  ))}
               </div>
+            </div>
           </div>
         );
       case "settings":
@@ -337,27 +397,27 @@ function HabitsAndGoalsPage() {
   return (
     <div className="container mt-4">
       <div className="row justify-content-center mb-4">
-    <div className="col-12">
-      <h1 className="text-center mb-4">Habits and Goals</h1>
+        <div className="col-12">
+          <h1 className="text-center mb-4">Habits</h1>
 
-      <ul className="nav nav-tabs justify-content-center">
-        <li className="nav-item">
-          <button
-            className={`nav-link ${activeTab === "metric" ? "active" : ""}`}
-            onClick={() => setActiveTab("metric")}
-          >
-            Metrics
-          </button>
-        </li>
-        <li className="nav-item">
-          <button
-            className={`nav-link ${activeTab === "log" ? "active" : ""}`}
-            onClick={() => setActiveTab("log")}
-          >
-            Logs
-          </button>
-        </li>
-        {/* <li className="nav-item">
+          <ul className="nav nav-tabs justify-content-center">
+            <li className="nav-item">
+              <button
+                className={`nav-link ${activeTab === "metric" ? "active" : ""}`}
+                onClick={() => setActiveTab("metric")}
+              >
+                Metrics
+              </button>
+            </li>
+            <li className="nav-item">
+              <button
+                className={`nav-link ${activeTab === "log" ? "active" : ""}`}
+                onClick={() => setActiveTab("log")}
+              >
+                Logs
+              </button>
+            </li>
+            {/* <li className="nav-item">
           <button
             className={`nav-link ${activeTab === "goal" ? "active" : ""}`}
             onClick={() => setActiveTab("goal")}
@@ -365,17 +425,19 @@ function HabitsAndGoalsPage() {
             Goals
           </button>
         </li> */}
-        <li className="nav-item">
-          <button
-            className={`nav-link ${activeTab === "settings" ? "active" : ""}`}
-            onClick={() => setActiveTab("settings")}
-          >
-            Settings
-          </button>
-        </li>
-      </ul>
-    </div>
-  </div>
+            <li className="nav-item">
+              <button
+                className={`nav-link ${
+                  activeTab === "settings" ? "active" : ""
+                }`}
+                onClick={() => setActiveTab("settings")}
+              >
+                Settings
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
       {/* Tab Content */}
       <div className="tab-content mb-5">{renderTabContent()}</div>
     </div>

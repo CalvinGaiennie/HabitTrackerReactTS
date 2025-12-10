@@ -21,6 +21,7 @@ function TodaysFoodPage() {
     })
     const [foods, setFoods] = useState<Food[] | null>(null)
     const [showModal, setShowModal] = useState(false)
+    const [foodError, setFoodError] = useState<string | null>(null)
     
     // const [editingFoodEntry, setEditingFoodEntry] = useState<FoodEntry | null>(null);
       const isSubmitting = useRef(false);
@@ -52,6 +53,7 @@ function TodaysFoodPage() {
       isSubmitting.current = true;
 
       try {
+        setFoodError(null)
         await createFoodEntry(formData);
         
         const today = new Date().toISOString().split("T")[0];
@@ -69,9 +71,16 @@ function TodaysFoodPage() {
           carbs_g: 0,
           fat_g: 0,
         });
-      } catch (err) {
+      } catch (err: any) {
         console.error("Submit error:", err);
-        alert("Failed to save food entry");
+        const friendly =
+          (err?.detail && err.detail.message) ||
+          err?.message ||
+          "Failed to save food entry";
+        setFoodError(
+          friendly ||
+            "Free plan limit: up to 3 food logs per day. Upgrade to add more."
+        );
       } finally {
         isSubmitting.current = false;
       }
@@ -101,6 +110,14 @@ function TodaysFoodPage() {
                 onHide={() => setShowModal(false)}
                 title={"Add Meal"}
               >
+                {foodError && (
+                  <div className="alert alert-warning d-flex justify-content-between align-items-center">
+                    <span>{foodError}</span>
+                    <a className="btn btn-sm btn-primary" href="/Account">
+                      Upgrade
+                    </a>
+                  </div>
+                )}
                 <AddFoodEntryForm
                   foods={foods}
                   formData={formData}

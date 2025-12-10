@@ -17,6 +17,7 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -249,6 +250,7 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
 
     setIsSubmitting(true);
     setSuccessMessage("");
+    setErrorMessage(null);
 
     try {
       await createWorkout({
@@ -267,9 +269,16 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
       if (onWorkoutCreated) {
         onWorkoutCreated();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating workout:", error);
-      alert("Failed to create workout. Please try again.");
+      const friendly =
+        (error?.detail && error.detail.message) ||
+        error?.message ||
+        "Failed to create workout. Please try again.";
+      setErrorMessage(
+        friendly ||
+          "Free plan limit: one workout per day. Try again tomorrow or Upgrade for unlimited."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -295,6 +304,14 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
             <div className="card-body">
               {successMessage && (
                 <div className="alert alert-success">{successMessage}</div>
+              )}
+              {errorMessage && (
+                <div className="alert alert-warning d-flex justify-content-between align-items-center">
+                  <span>{errorMessage}</span>
+                  <a className="btn btn-sm btn-primary" href="/Account">
+                    Upgrade
+                  </a>
+                </div>
               )}
 
               {workoutTypes.length === 0 ? (

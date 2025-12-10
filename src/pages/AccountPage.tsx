@@ -26,6 +26,7 @@ function AccountPage() {
   const [activeTab, setActiveTab] = useState<TabType>("goal");
   const [metricMode, setMetricMode] = useState<ModeType>("add");
   const [logMode, setLogMode] = useState<ModeType>("add");
+  const [metricError, setMetricError] = useState<string | null>(null);
   const [formData, setFormData] = useState<MetricCreate>({
     user_id: userId,
     name: "",
@@ -33,13 +34,17 @@ function AccountPage() {
     data_type: "text",
     unit: "",
     notes_on: false,
-    time_type: ""
+    time_type: "",
   });
   const [logs, setLogs] = useState<DailyLog[]>([]);
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [editingMetric, setEditingMetric] = useState<Metric | null>(null);
   const navigate = useNavigate();
-  const authContext = useContext(AuthContext) ?? { authState: null, logout: () => {}, user: null };
+  const authContext = useContext(AuthContext) ?? {
+    authState: null,
+    logout: () => {},
+    user: null,
+  };
   const logout = authContext.logout;
   const tier = authContext?.authState?.tier || "free";
 
@@ -86,7 +91,6 @@ function AccountPage() {
     }
   };
 
-
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -108,6 +112,7 @@ function AccountPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Submitting metric...");
+    setMetricError(null);
     if (!formData.name.trim()) {
       alert("Name is required");
       isSubmitting.current = false;
@@ -139,11 +144,24 @@ function AccountPage() {
         data_type: "text",
         unit: "",
         notes_on: false,
-        time_type: ""
+        time_type: "",
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Something went wrong with the metric operation.");
+      const friendly =
+        (err?.detail && err.detail.message) ||
+        err?.message ||
+        "Something went wrong with the metric operation.";
+      setMetricError(
+        friendly ||
+          "Free plan limit reached: You can only have up to 4 metrics. Upgrade to unlock more."
+      );
+      try {
+        alert(
+          (friendly as string) ||
+            "Free plan limit reached: You can only have up to 4 metrics. Upgrade to unlock more."
+        );
+      } catch {}
     } finally {
       isSubmitting.current = false;
     }
@@ -160,7 +178,7 @@ function AccountPage() {
       notes_on: metric.notes_on,
       scale_min: metric.scale_min,
       scale_max: metric.scale_max,
-      time_type: metric.time_type
+      time_type: metric.time_type,
     });
     setMetricMode("add"); // Switch to add mode to show the form
   };
@@ -225,6 +243,14 @@ function AccountPage() {
             {metricMode === "add" && (
               <div>
                 <h3>Add New Metric</h3>
+                {metricError && (
+                  <div className="alert alert-warning d-flex justify-content-between align-items-center">
+                    <span>{metricError}</span>
+                    <a className="btn btn-sm btn-primary" href="/Account">
+                      Upgrade
+                    </a>
+                  </div>
+                )}
                 <form
                   onSubmit={handleSubmit}
                   className="w-100"
@@ -328,7 +354,7 @@ function AccountPage() {
                           data_type: "text",
                           unit: "",
                           notes_on: false,
-                          time_type: ""
+                          time_type: "",
                         });
                       }}
                     >
@@ -504,7 +530,7 @@ function AccountPage() {
         return null;
     }
   };
-return (
+  return (
     <div className="container mt-4">
       <h1 className="justify mb-4">Account</h1>
 
@@ -574,7 +600,9 @@ return (
                     <div className="d-flex align-items-baseline justify-content-center">
                       <span className="display-6 fw-bold">$119.99</span>
                     </div>
-                    <div className="text-muted small">($9.99 / month – billed yearly)</div>
+                    <div className="text-muted small">
+                      ($9.99 / month – billed yearly)
+                    </div>
                   </div>
                   <div className="flex-grow-1 small">
                     <ul className="list-unstyled mb-0">
@@ -603,7 +631,10 @@ return (
                     : "$14.99 billed monthly"}
                 </p>
               </div>
-              <button className="btn btn-outline-primary" onClick={handleManageBilling}>
+              <button
+                className="btn btn-outline-primary"
+                onClick={handleManageBilling}
+              >
                 Manage Subscription
               </button>
             </div>
@@ -635,12 +666,12 @@ return (
       {/* Tab Content */}
       <div className="tab-content mb-5">{renderTabContent()}</div>
       <button
-      className="btn btn-primary"
-      onClick={handleLogout}
-      style={{ textDecoration: "none" }}
-    >
-      Logout
-    </button>
+        className="btn btn-primary"
+        onClick={handleLogout}
+        style={{ textDecoration: "none" }}
+      >
+        Logout
+      </button>
     </div>
   );
 }

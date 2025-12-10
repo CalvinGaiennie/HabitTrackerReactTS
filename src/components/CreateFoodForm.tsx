@@ -3,7 +3,7 @@ import { createFood } from "../services/foods.ts";
 import type { FoodCreate } from "../types/foods.ts";
 
 interface CreateFoodFormProps {
-  onSubmit?: () => void;   // Callback to invoke after successful create (e.g., close modal)
+  onSubmit: () => void;   // ← This is the correct type!
 }
 
 function CreateFoodForm({onSubmit}: CreateFoodFormProps) {
@@ -38,7 +38,7 @@ function CreateFoodForm({onSubmit}: CreateFoodFormProps) {
     e.preventDefault();
     try {
       // simple client-side validation to avoid server 500s
-      if (!allowedUnits.some((u) => u === formData.serving_size_unit)) {
+      if (!allowedUnits.includes(formData.serving_size_unit as any)) {
         throw new Error(
           "Serving size unit must be one of: g, ml, piece, cup, tbsp, tsp"
         );
@@ -69,7 +69,7 @@ function CreateFoodForm({onSubmit}: CreateFoodFormProps) {
       const newFood = await createFood(foodData);
       console.log("Food created:", newFood);
 
-      onSubmit?.();
+      onSubmit();
       
       setFormData({
         name: "",

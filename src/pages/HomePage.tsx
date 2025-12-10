@@ -11,6 +11,7 @@ import type { UserSettings } from "../types/users";
 import fetchLogs from "../hooks/fetchLogs.ts";
 import ClockButton from "../components/ClockButton";
 import { useUserId } from "../hooks/useAuth";
+import { useAuth } from "../hooks/useAuth";
 import ChartRenderer from "../components/ChartRenderer.tsx";
 import type { ChartConfig, BooleanStats } from "../types/chartConfig";
 import DatePicker from "../components/DatePicker.tsx";
@@ -18,6 +19,7 @@ import { getCurrentWeekRange } from "../utils/dateUtils.ts";
 
 function HomePage() {
   const userId = useUserId();
+  const { authState } = useAuth();
   const [activeMetrics, setActiveMetrics] = useState<Metric[]>([]);
   const [logValues, setLogValues] = useState<Record<number, string>>({});
   const [logs, setLogs] = useState<DailyLog[]>([]);
@@ -445,7 +447,8 @@ function HomePage() {
           }
         }
 
-        setHomeCharts(results);
+        const limited = authState?.tier === "free" ? results.slice(0, 1) : results;
+        setHomeCharts(limited);
       } catch (e) {
         console.error("Failed building home page charts:", e);
         setHomeCharts([]);
@@ -666,6 +669,16 @@ function HomePage() {
           </div>
         </div>
       ))}
+      {authState?.tier === "free" &&
+        (settings?.homePageAnalytics?.length || 0) > 1 && (
+          <div className="alert alert-warning w-100">
+            Free plan shows 1 chart on the homepage.{" "}
+            <a href="/Account" className="alert-link">
+              Upgrade
+            </a>{" "}
+            to show more charts.
+          </div>
+        )}
       {homeCharts.map((c, idx) => {
         const def = settings?.homePageAnalytics?.[idx];
         const metric = activeMetrics.find((m) => m.id === (def?.metricId ?? 0));

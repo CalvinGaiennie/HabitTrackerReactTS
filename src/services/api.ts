@@ -39,8 +39,32 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   });
 
   if (!res.ok) {
-    const errorBody = await res.text();
-    throw new Error(`API error ${res.status}: ${errorBody}`);
+    let bodyText: string | null = null;
+    let parsed: any = null;
+    const contentType = res.headers.get("content-type") || "";
+    try {
+      if (contentType.includes("application/json")) {
+        parsed = await res.json();
+      } else {
+        bodyText = await res.text();
+        try {
+          parsed = JSON.parse(bodyText);
+        } catch {
+          parsed = null;
+        }
+      }
+    } catch {
+      // ignore parse errors
+    }
+    const message =
+      (parsed && (parsed.detail?.message || parsed.message)) ||
+      bodyText ||
+      res.statusText ||
+      "Request failed";
+    const error: any = new Error(message);
+    (error as any).status = res.status;
+    (error as any).detail = (parsed && parsed.detail) || parsed || bodyText;
+    throw error;
   }
 
   const data: T = await res.json();

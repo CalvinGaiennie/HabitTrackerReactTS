@@ -27,7 +27,13 @@ function FoodList() {
                 onHide={() => setShowModal(false)}
                 title={"Create Food"}
               >
-                 <CreateFoodForm onSubmit={() => { setShowModal(false); fetchFoods(setFoods); }} />
+                 <CreateFoodForm onSubmit={async () => {
+                    try {
+                      await fetchFoods(setFoods)
+                    } finally {
+                      setShowModal(false)
+                    }
+                 }}/>
               </BootstrapModal>
             {foods?.map((food) => (
                 <div>

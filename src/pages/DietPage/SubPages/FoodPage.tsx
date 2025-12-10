@@ -27,7 +27,13 @@ function FoodPage() {
                 onHide={() => setShowModal(false)}
                 title={"Create Food"}
               >
-                 <CreateFoodForm onSubmit={() => setShowModal(false)}/>
+                 <CreateFoodForm onSubmit={async () => {
+                    try {
+                        await fetchFoods(setFoods)
+                    } finally {
+                        setShowModal(false)
+                    }
+                 }}/>
               </BootstrapModal>
             {foods?.map((food, index) => (
             <div key={index} className="br-white rounded-lg shadow p-5 border border-gray-200 hover:shadow-md transition">

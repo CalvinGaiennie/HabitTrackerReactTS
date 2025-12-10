@@ -11,7 +11,6 @@ import { AuthProvider } from "./context";
 import CreateAccountPage from "./pages/CreateAccountPage.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
 import { ProtectedRoute } from "./components/ProtectedRoute.tsx";
-import PaidRoute from "./components/PaidRoute.tsx";
 import { AuthRoute } from "./components/AuthRoute.tsx";
 import HabitsAndGoalsPage from "./pages/HabitsAndGoalsPage.tsx";
 import WorkoutViewer from "./components/WorkoutViewer.tsx";
@@ -79,9 +78,7 @@ function App() {
               path="/Analytics"
               element={
                 <ProtectedRoute>
-                  <PaidRoute>
-                    <AnalyticsPage />
-                  </PaidRoute>
+                  <AnalyticsPage />
                 </ProtectedRoute>
               }
             />
