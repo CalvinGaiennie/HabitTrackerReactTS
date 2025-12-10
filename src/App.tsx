@@ -19,7 +19,12 @@ function App() {
   return (
     <div
       className="App"
-      style={{ maxWidth: "700px", margin: "0 auto", marginBottom: "5rem", marginTop: "2rem"}}
+      style={{
+        maxWidth: "700px",
+        margin: "0 auto",
+        marginBottom: "5rem",
+        marginTop: "2rem",
+      }}
     >
       <AuthProvider>
         <BrowserRouter>

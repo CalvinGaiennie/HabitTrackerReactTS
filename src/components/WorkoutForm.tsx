@@ -37,32 +37,32 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
 
   // Load draft on mount
   useEffect(() => {
-  const loadDraft = async () => {
-    try {
-      const draft = await getDraft();
-      console.log("Draft loaded:", draft);
-      setTitle(draft.title || "");
-      setSelectedTypes(draft.workout_types || []);
-      setNotes(draft.notes || "");
-      setExercises(draft.exercises || []);
-    } catch (error: unknown) {
-      // Type guard: check if error has a 'status' property
-      if (error && typeof error === 'object' && 'status' in error) {
-        const status = (error as { status?: number }).status;
-        if (status !== 404) {
-          console.error("Error loading draft:", error);
+    const loadDraft = async () => {
+      try {
+        const draft = await getDraft();
+        console.log("Draft loaded:", draft);
+        setTitle(draft.title || "");
+        setSelectedTypes(draft.workout_types || []);
+        setNotes(draft.notes || "");
+        setExercises(draft.exercises || []);
+      } catch (error: unknown) {
+        // Type guard: check if error has a 'status' property
+        if (error && typeof error === "object" && "status" in error) {
+          const status = (error as { status?: number }).status;
+          if (status !== 404) {
+            console.error("Error loading draft:", error);
+          }
+        } else {
+          // Non-HTTP errors (network, parsing, etc.)
+          console.error("Unexpected error loading draft:", error);
         }
-      } else {
-        // Non-HTTP errors (network, parsing, etc.)
-        console.error("Unexpected error loading draft:", error);
+      } finally {
+        setIsDraftLoaded(true);
       }
-    } finally {
-      setIsDraftLoaded(true);
-    }
-  };
+    };
 
-  loadDraft();
-}, []);
+    loadDraft();
+  }, []);
 
   // Auto-save draft whenever form data changes (with debouncing)
   useEffect(() => {
@@ -423,7 +423,11 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
                             }
                           >
                             {specificExercises.map((ex) => (
-                              <option key={ex.id} value={ex.name} className="font-weight-bold">
+                              <option
+                                key={ex.id}
+                                value={ex.name}
+                                className="font-weight-bold"
+                              >
                                 {ex.name}
                               </option>
                             ))}
@@ -437,19 +441,18 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
                           </button>
                         </div>
                         <button
-                        className="btn btn-outline-primary btn-sm mx-3"
-                        onChange={() => toggleSuperset(exerciseIndex)}
-                      >
-                        Superset
-                      </button>
-                        <div className=" d-flex justify-content-between align-items-center mx-4">
-                        </div>
+                          className="btn btn-outline-primary btn-sm mx-3"
+                          onChange={() => toggleSuperset(exerciseIndex)}
+                        >
+                          Superset
+                        </button>
+                        <div className=" d-flex justify-content-between align-items-center mx-4"></div>
                         <div className="card-body">
                           {/* Sets */}
                           <div className="mb-3">
                             {exercise.sets.map((set, setIndex) => (
                               <div key={setIndex} className="row mb-2">
-                                <div className='d-flex flex-row justify-content-between'>
+                                <div className="d-flex flex-row justify-content-between">
                                   <h4>Set {setIndex + 1}</h4>
                                 </div>
                                 <div className="d-flex gap-3 align-items-center">
@@ -469,13 +472,13 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
                                           setIndex,
                                           "weight",
                                           e.target.value
-                                          ? parseFloat(e.target.value)
-                                          : undefined
+                                            ? parseFloat(e.target.value)
+                                            : undefined
                                         )
                                       }
-                                      />
+                                    />
                                   </div>
-                                  <span style={{ marginTop: '2rem'}}>x</span>
+                                  <span style={{ marginTop: "2rem" }}>x</span>
                                   <div className="flex-fill">
                                     <label className="form-label">Reps</label>
                                     <input
@@ -489,11 +492,11 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
                                           setIndex,
                                           "reps",
                                           e.target.value
-                                          ? parseInt(e.target.value)
-                                          : undefined
+                                            ? parseInt(e.target.value)
+                                            : undefined
                                         )
                                       }
-                                      />
+                                    />
                                   </div>
                                 </div>
                                 <div className="col-md-3">
@@ -547,7 +550,7 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
                                     Delete Set
                                   </button>
                                 </div>
-                                <hr className="mt-4"/>
+                                <hr className="mt-4" />
                               </div>
                             ))}
                           </div>

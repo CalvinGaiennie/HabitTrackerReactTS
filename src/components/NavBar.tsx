@@ -6,7 +6,7 @@ import AccountPage from "../pages/AccountPage";
 
 function NavBar() {
   const authContext = useContext(AuthContext);
-  const [showModal, setShowModal] = useState(false)
+  const [showModal, setShowModal] = useState(false);
 
   if (!authContext) {
     throw new Error("AuthContext not found");
@@ -35,12 +35,12 @@ function NavBar() {
           <>
             <li className="nav-item mb-md-0">
               <NavLink className="nav-link fs-5 text-dark px-3" to="/">
-               <i className="bi bi-house-door"></i>
+                <i className="bi bi-house-door"></i>
               </NavLink>
             </li>
             <li className="nav-item mb-md-0">
               <NavLink className="nav-link fs-5 text-dark px-3" to="/Workout">
-              <i className="bi bi-person-walking"></i>
+                <i className="bi bi-person-walking"></i>
               </NavLink>
             </li>
             <li className="nav-item mb-md-0">
@@ -57,22 +57,22 @@ function NavBar() {
               </NavLink>
             </li>
             <li className="nav-item mb-md-0">
-              <NavLink
-                className="nav-link fs-5 text-dark px-3"
-                to="/Analytics"
-              >
+              <NavLink className="nav-link fs-5 text-dark px-3" to="/Analytics">
                 <i className=" bi bi-graph-up-arrow"></i>
               </NavLink>
             </li>
             <li className="nav-item mb-md-0">
-              <i className="bi bi-gear-fill fs-3" onClick={()=> setShowModal(true)}></i>
-              <BootstrapModal 
-                  show={showModal}
-                  onHide={() => setShowModal(false)}
-                  title={"Account Page"}
-                  >
-                    <AccountPage/>
-                  </BootstrapModal>
+              <i
+                className="bi bi-gear-fill fs-3"
+                onClick={() => setShowModal(true)}
+              ></i>
+              <BootstrapModal
+                show={showModal}
+                onHide={() => setShowModal(false)}
+                title={"Account Page"}
+              >
+                <AccountPage />
+              </BootstrapModal>
             </li>
             {/* <li className="nav-item mb-md-0 d-flex align-items-center">
               <NavLink className="nav-link fs-5 text-dark px-3" to="/Account">

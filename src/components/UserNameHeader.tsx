@@ -39,7 +39,10 @@ function UserNameHeader() {
 
   return (
     <>
-      <div className="position-fixed top-0 start-0 end-0 text-center py-4 bg-white border-bottom" style={{ zIndex: 1000 }}>
+      <div
+        className="position-fixed top-0 start-0 end-0 text-center py-4 bg-white border-bottom"
+        style={{ zIndex: 1000 }}
+      >
         <h1 className="mb-0 fs-3 fw-bold">CG HabitTracker</h1>
       </div>
       <NavLink
@@ -50,7 +53,7 @@ function UserNameHeader() {
         <i className="bi bi-gear-fill fs-3"></i>
       </NavLink>
     </>
-  )
+  );
 }
 
 export default UserNameHeader;
