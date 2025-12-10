@@ -4,16 +4,8 @@ import type { UserSettings } from "../types/users";
 // Default settings structure
 const defaultSettings: UserSettings = {
   enabledPages: ["homePage", "dietPage", "workoutPage", "analyticsPage"],
-  homePageLayout: [
-    {
-      section: "To Log",
-      metricIds: [1, 2, 3, 4, 9],
-    },
-    {
-      section: "To Do",
-      metricIds: [5, 6, 7, 8, 10, 11, 12, 13, 14, 15],
-    },
-  ],
+  // Start with no hard-coded metric IDs; we'll auto-init on HomePage if needed
+  homePageLayout: [],
 };
 
 export default function fetchSettings(

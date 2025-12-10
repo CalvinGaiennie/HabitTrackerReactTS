@@ -115,7 +115,11 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
     setEditableSettings({ ...editableSettings, homePageLayout: updated });
   };
 
-  const updateSectionItemId = (sectionIndex: number, itemIndex: number, newValue: string) => {
+  const updateSectionItemId = (
+    sectionIndex: number,
+    itemIndex: number,
+    newValue: string
+  ) => {
     if (!editableSettings?.homePageLayout) return;
     const updated = [...editableSettings.homePageLayout];
     const ids = [...updated[sectionIndex].metricIds];
@@ -139,14 +143,19 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
     const updated = [...editableSettings.homePageLayout];
     updated[sectionIndex] = {
       ...updated[sectionIndex],
-      metricIds: updated[sectionIndex].metricIds.filter((_, i) => i !== itemIndex),
+      metricIds: updated[sectionIndex].metricIds.filter(
+        (_, i) => i !== itemIndex
+      ),
     };
     setEditableSettings({ ...editableSettings, homePageLayout: updated });
   };
 
   const addSection = () => {
     if (!editableSettings) return;
-    const newSection: HomePageSection = { section: "New Section", metricIds: [0] };
+    const newSection: HomePageSection = {
+      section: "New Section",
+      metricIds: [0],
+    };
     setEditableSettings({
       ...editableSettings,
       homePageLayout: [...(editableSettings.homePageLayout || []), newSection],
@@ -157,7 +166,9 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
     if (!editableSettings?.homePageLayout) return;
     setEditableSettings({
       ...editableSettings,
-      homePageLayout: editableSettings.homePageLayout.filter((_, i) => i !== sectionIndex),
+      homePageLayout: editableSettings.homePageLayout.filter(
+        (_, i) => i !== sectionIndex
+      ),
     });
   };
 
@@ -165,14 +176,20 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
   const updateChartType = (chartIndex: number, newType: string) => {
     if (!editableSettings?.homePageAnalytics) return;
     const updated = [...editableSettings.homePageAnalytics];
-    updated[chartIndex] = { ...updated[chartIndex], type: newType as ChartDefinition["type"] };
+    updated[chartIndex] = {
+      ...updated[chartIndex],
+      type: newType as ChartDefinition["type"],
+    };
     setEditableSettings({ ...editableSettings, homePageAnalytics: updated });
   };
 
   const updateChartMetricId = (chartIndex: number, newMetricId: string) => {
     if (!editableSettings?.homePageAnalytics) return;
     const updated = [...editableSettings.homePageAnalytics];
-    updated[chartIndex] = { ...updated[chartIndex], metricId: parseInt(newMetricId) || 0 };
+    updated[chartIndex] = {
+      ...updated[chartIndex],
+      metricId: parseInt(newMetricId) || 0,
+    };
     setEditableSettings({ ...editableSettings, homePageAnalytics: updated });
   };
 
@@ -180,7 +197,9 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
     if (!editableSettings?.homePageAnalytics) return;
     setEditableSettings({
       ...editableSettings,
-      homePageAnalytics: editableSettings.homePageAnalytics.filter((_, i) => i !== chartIndex),
+      homePageAnalytics: editableSettings.homePageAnalytics.filter(
+        (_, i) => i !== chartIndex
+      ),
     });
   };
 
@@ -189,7 +208,10 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
     const newChart: ChartDefinition = { type: "line", metricId: 0 };
     setEditableSettings({
       ...editableSettings,
-      homePageAnalytics: [...(editableSettings.homePageAnalytics || []), newChart],
+      homePageAnalytics: [
+        ...(editableSettings.homePageAnalytics || []),
+        newChart,
+      ],
     });
   };
 
@@ -216,12 +238,16 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
     if (key === "workoutTypes") {
       setEditableSettings({
         ...editableSettings,
-        workoutTypes: (editableSettings.workoutTypes || []).filter((_, i) => i !== index),
+        workoutTypes: (editableSettings.workoutTypes || []).filter(
+          (_, i) => i !== index
+        ),
       });
     } else if (key === "enabledPages") {
       setEditableSettings({
         ...editableSettings,
-        enabledPages: (editableSettings.enabledPages || []).filter((_, i) => i !== index),
+        enabledPages: (editableSettings.enabledPages || []).filter(
+          (_, i) => i !== index
+        ),
       });
     }
   };
@@ -237,7 +263,10 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
     <div className="row">
       {/* Sections */}
       {editableSettings?.homePageLayout?.map((section, sectionIndex) => (
-        <div key={sectionIndex} className="col-12 col-sm-6 col-md-6 col-lg-6 mb-3">
+        <div
+          key={sectionIndex}
+          className="col-12 col-sm-6 col-md-6 col-lg-6 mb-3"
+        >
           <div className="card h-100">
             <div className="card-body">
               <div className="d-flex justify-content-between align-items-center mb-3">
@@ -245,7 +274,9 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
                   <input
                     className="form-control"
                     value={section.section}
-                    onChange={(e) => updateSectionName(sectionIndex, e.target.value)}
+                    onChange={(e) =>
+                      updateSectionName(sectionIndex, e.target.value)
+                    }
                     placeholder="Section name"
                   />
                 ) : (
@@ -272,18 +303,27 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
                             name="activeTab"
                             value={metricId}
                             onChange={(e) =>
-                              updateSectionItemId(sectionIndex, metricIndex, e.target.value)
+                              updateSectionItemId(
+                                sectionIndex,
+                                metricIndex,
+                                e.target.value
+                              )
                             }
                             className="form-select"
                           >
+                            <option value={0}>— Select metric —</option>
                             {metrics.map((metric) => (
-                              <option key={metric.id} value={metric.id}>{metric.name}</option>
+                              <option key={metric.id} value={metric.id}>
+                                {metric.name}
+                              </option>
                             ))}
                           </select>
                         </div>
                         <button
                           className="btn btn-outline-danger btn-sm"
-                          onClick={() => removeSectionItem(sectionIndex, metricIndex)}
+                          onClick={() =>
+                            removeSectionItem(sectionIndex, metricIndex)
+                          }
                           title="Remove metric"
                         >
                           ×
@@ -314,7 +354,8 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
       <div className="col-12 mt-4">
         <h4>Analytics Charts</h4>
 
-        {editableSettings?.homePageAnalytics && editableSettings.homePageAnalytics.length > 0 ? (
+        {editableSettings?.homePageAnalytics &&
+        editableSettings.homePageAnalytics.length > 0 ? (
           editableSettings.homePageAnalytics.map((chart, chartIndex) => (
             <div
               key={chartIndex}
@@ -326,9 +367,13 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
                   <select
                     className="form-select"
                     value={chart.type}
-                    onChange={(e) => updateChartType(chartIndex, e.target.value)}
+                    onChange={(e) =>
+                      updateChartType(chartIndex, e.target.value)
+                    }
                   >
-                    <option value="" disabled>Select chart type</option>
+                    <option value="" disabled>
+                      Select chart type
+                    </option>
                     <option value="line">Line Chart</option>
                     <option value="bar">Bar Chart</option>
                     <option value="pie">Pie Chart</option>
@@ -345,18 +390,31 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
               <div className="flex-grow-1">
                 {isEditing ? (
                   <>
-                    <input
-                      type="number"
-                      className="form-control"
-                      placeholder="Metric ID"
+                    <select
+                      className="form-select"
                       value={chart.metricId}
-                      onChange={(e) => updateChartMetricId(chartIndex, e.target.value)}
-                    />
-                    <small className="text-muted">{getMetricName(chart.metricId)}</small>
+                      onChange={(e) =>
+                        updateChartMetricId(chartIndex, e.target.value)
+                      }
+                    >
+                      <option value={0}>— Select metric —</option>
+                      {metrics.map((metric) => (
+                        <option key={metric.id} value={metric.id}>
+                          {metric.name}
+                        </option>
+                      ))}
+                    </select>
+                    <small className="text-muted">
+                      {chart.metricId
+                        ? getMetricName(chart.metricId)
+                        : "No metric selected"}
+                    </small>
                   </>
                 ) : (
                   <span className="form-control-plaintext">
-                    {getMetricName(chart.metricId)}
+                    {chart.metricId
+                      ? getMetricName(chart.metricId)
+                      : "No metric selected"}
                   </span>
                 )}
               </div>
@@ -452,7 +510,8 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
               </div>
             ) : (
               <p className="text-muted">
-                No {key === "workoutTypes" ? "workout types" : "enabled pages"} defined
+                No {key === "workoutTypes" ? "workout types" : "enabled pages"}{" "}
+                defined
               </p>
             )}
             {isEditing && (
@@ -460,14 +519,22 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
                 <input
                   type="text"
                   className="form-control"
-                  placeholder={`Add new ${key === "workoutTypes" ? "workout type" : "page"}`}
+                  placeholder={`Add new ${
+                    key === "workoutTypes" ? "workout type" : "page"
+                  }`}
                   value={newListItem[key] || ""}
                   onChange={(e) =>
-                    setNewListItem((prev) => ({ ...prev, [key]: e.target.value }))
+                    setNewListItem((prev) => ({
+                      ...prev,
+                      [key]: e.target.value,
+                    }))
                   }
                   onKeyPress={(e) => e.key === "Enter" && addListItem(key)}
                 />
-                <button className="btn btn-primary" onClick={() => addListItem(key)}>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => addListItem(key)}
+                >
                   Add
                 </button>
               </div>
@@ -507,7 +574,9 @@ function SettingsEdit({ settingsKeys }: SettingsEditProps) {
 
       {saveMessage && (
         <div
-          className={`alert alert-${saveMessage.type === "success" ? "success" : "danger"} mb-3`}
+          className={`alert alert-${
+            saveMessage.type === "success" ? "success" : "danger"
+          } mb-3`}
         >
           {saveMessage.text}
         </div>
