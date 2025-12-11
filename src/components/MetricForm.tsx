@@ -76,8 +76,8 @@ function MetricForm({
             onChange={onChange}
             className="form-select"
           >
-            <option value="day">Day</option>
-            <option value="week">Week</option>
+            <option value="day">Day (Homepage resets it every midnight)</option>
+            <option value="week">Week (Homepage resets it at midnight between sunday and monday.)</option>
           </select>
         </div>
 

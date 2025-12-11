@@ -479,213 +479,211 @@ function HomePage() {
     <div className="container d-flex flex-column align-items-center">
       <h1 className="pb-3">Home Page</h1>
       {!settings && <div>Loading settings...</div>}
-      {settings && !settings.homePageLayout && (
-        <div>No homePageLayout found</div>
-      )}
+      {settings?.homePageLayout && settings.homePageLayout.length > 0 ? (
+        settings.homePageLayout?.map((section) => (
+          <div key={section.section} className="mb-4 p-4 w-100 border">
+            <h2>{section.section}</h2>
+            <div className="row">
+              {section.metricIds.map((metricId) => {
+                const metric = activeMetrics.find((m) => m.id === metricId);
+                if (!metric) return null;
 
-      {settings?.homePageLayout?.map((section) => (
-        <div key={section.section} className="mb-4 p-4 w-100 border">
-          <h2>{section.section}</h2>
-          <div className="row">
-            {section.metricIds.map((metricId) => {
-              const metric = activeMetrics.find((m) => m.id === metricId);
-              if (!metric) return null;
-
-              console.log(
-                `DEBUG → "${metric.name}" | time_type: "${metric.time_type}" | today: "${today}" | week: ${weekStart} to ${weekEnd}`
-              );
-
-              const hasLogToday = logs.some((log) => {
-                const [year, month, day] = log.log_date.split("-").map(Number);
-                const logDate = new Date(year, month - 1, day);
-                return (
-                  log.metric_id === metric.id &&
-                  logDate.toISOString().split("T")[0] === today
+                console.log(
+                  `DEBUG → "${metric.name}" | time_type: "${metric.time_type}" | today: "${today}" | week: ${weekStart} to ${weekEnd}`
                 );
-              });
 
-              const hasLogThisWeek = logs.some((log) => {
+                const hasLogToday = logs.some((log) => {
+                  const [year, month, day] = log.log_date.split("-").map(Number);
+                  const logDate = new Date(year, month - 1, day);
+                  return (
+                    log.metric_id === metric.id &&
+                    logDate.toISOString().split("T")[0] === today
+                  );
+                });
+
+                const hasLogThisWeek = logs.some((log) => {
+                  return (
+                    log.metric_id === metric.id &&
+                    log.log_date >= weekStart &&
+                    log.log_date <= weekEnd
+                  );
+                });
+
                 return (
-                  log.metric_id === metric.id &&
-                  log.log_date >= weekStart &&
-                  log.log_date <= weekEnd
-                );
-              });
-
-              return (
-                <div key={metricId} className="col-12 col-md-6 col-lg-4 mb-2">
-                  <div
-                    className="card"
-                    style={{ border: "none", boxShadow: "none" }}
-                  >
-                    {metric.time_type === "day" ? (
-                      <div
-                        className={`card-body rounded p-3 ${
-                          hasLogToday ? "" : "bg-danger-subtle"
-                        }`}
-                      >
-                        <label className="form-label">
-                          {metric.name}{" "}
-                          {hasLogToday && (
-                            <span className="badge bg-success ms-2">Today</span>
+                  <div key={metricId} className="col-12 col-md-6 col-lg-4 mb-2">
+                    <div
+                      className="card"
+                      style={{ border: "none", boxShadow: "none" }}
+                    >
+                      {metric.time_type === "day" ? (
+                        <div
+                          className={`card-body rounded p-3 ${
+                            hasLogToday ? "" : "bg-danger-subtle"
+                          }`}
+                        >
+                          <label className="form-label">
+                            {metric.name}{" "}
+                            {hasLogToday && (
+                              <span className="badge bg-success ms-2">Today</span>
+                            )}
+                          </label>
+                          {metric.data_type === "clock" ? (
+                            <ClockButton
+                              metric={metric}
+                              clockData={clockData[metric.id]}
+                              onClockToggle={handleClockToggle}
+                            />
+                          ) : metric.data_type === "boolean" ? (
+                            <div>
+                              <div className="form-check form-check-inline">
+                                <input
+                                  type="radio"
+                                  id={`metric-${metric.id}-yes`}
+                                  name={`metric-${metric.id}`}
+                                  value="true"
+                                  checked={logValues[metric.id] === "true"}
+                                  onChange={(e) =>
+                                    setLogValues({
+                                      ...logValues,
+                                      [metric.id]: e.target.value,
+                                    })
+                                  }
+                                  className="form-check-input"
+                                />
+                                <label
+                                  htmlFor={`metric-${metric.id}-yes`}
+                                  className="form-check-label"
+                                >
+                                  Yes
+                                </label>
+                              </div>
+                              <div className="form-check form-check-inline">
+                                <input
+                                  type="radio"
+                                  id={`metric-${metric.id}-no`}
+                                  name={`metric-${metric.id}`}
+                                  value="false"
+                                  checked={logValues[metric.id] === "false"}
+                                  onChange={(e) =>
+                                    setLogValues({
+                                      ...logValues,
+                                      [metric.id]: e.target.value,
+                                    })
+                                  }
+                                  className="form-check-input"
+                                />
+                                <label
+                                  htmlFor={`metric-${metric.id}-no`}
+                                  className="form-check-label"
+                                >
+                                  No
+                                </label>
+                              </div>
+                            </div>
+                          ) : (
+                            <input
+                              className="form-control"
+                              value={logValues[metric.id] ?? ""}
+                              onChange={(e) =>
+                                setLogValues({
+                                  ...logValues,
+                                  [metric.id]: e.target.value,
+                                })
+                              }
+                              placeholder={`Enter ${metric.data_type}`}
+                            />
                           )}
-                        </label>
-                        {metric.data_type === "clock" ? (
-                          <ClockButton
-                            metric={metric}
-                            clockData={clockData[metric.id]}
-                            onClockToggle={handleClockToggle}
-                          />
-                        ) : metric.data_type === "boolean" ? (
-                          <div>
-                            <div className="form-check form-check-inline">
-                              <input
-                                type="radio"
-                                id={`metric-${metric.id}-yes`}
-                                name={`metric-${metric.id}`}
-                                value="true"
-                                checked={logValues[metric.id] === "true"}
-                                onChange={(e) =>
-                                  setLogValues({
-                                    ...logValues,
-                                    [metric.id]: e.target.value,
-                                  })
-                                }
-                                className="form-check-input"
-                              />
-                              <label
-                                htmlFor={`metric-${metric.id}-yes`}
-                                className="form-check-label"
-                              >
-                                Yes
-                              </label>
+                        </div>
+                      ) : (
+                        <div
+                          className={`card-body rounded p-3 ${
+                            hasLogThisWeek ? "" : "bg-danger-subtle"
+                          }`}
+                        >
+                          <label className="form-label">
+                            {metric.name}{" "}
+                            {hasLogThisWeek && (
+                              <span className="badge bg-success ms-2">
+                                This Week
+                              </span>
+                            )}
+                          </label>
+                          {metric.data_type === "clock" ? (
+                            <ClockButton
+                              metric={metric}
+                              clockData={clockData[metric.id]}
+                              onClockToggle={handleClockToggle}
+                            />
+                          ) : metric.data_type === "boolean" ? (
+                            <div>
+                              <div className="form-check form-check-inline">
+                                <input
+                                  type="radio"
+                                  id={`metric-${metric.id}-yes`}
+                                  name={`metric-${metric.id}`}
+                                  value="true"
+                                  checked={logValues[metric.id] === "true"}
+                                  onChange={(e) =>
+                                    setLogValues({
+                                      ...logValues,
+                                      [metric.id]: e.target.value,
+                                    })
+                                  }
+                                  className="form-check-input"
+                                />
+                                <label
+                                  htmlFor={`metric-${metric.id}-yes`}
+                                  className="form-check-label"
+                                >
+                                  Yes
+                                </label>
+                              </div>
+                              <div className="form-check form-check-inline">
+                                <input
+                                  type="radio"
+                                  id={`metric-${metric.id}-no`}
+                                  name={`metric-${metric.id}`}
+                                  value="false"
+                                  checked={logValues[metric.id] === "false"}
+                                  onChange={(e) =>
+                                    setLogValues({
+                                      ...logValues,
+                                      [metric.id]: e.target.value,
+                                    })
+                                  }
+                                  className="form-check-input"
+                                />
+                                <label
+                                  htmlFor={`metric-${metric.id}-no`}
+                                  className="form-check-label"
+                                >
+                                  No
+                                </label>
+                              </div>
                             </div>
-                            <div className="form-check form-check-inline">
-                              <input
-                                type="radio"
-                                id={`metric-${metric.id}-no`}
-                                name={`metric-${metric.id}`}
-                                value="false"
-                                checked={logValues[metric.id] === "false"}
-                                onChange={(e) =>
-                                  setLogValues({
-                                    ...logValues,
-                                    [metric.id]: e.target.value,
-                                  })
-                                }
-                                className="form-check-input"
-                              />
-                              <label
-                                htmlFor={`metric-${metric.id}-no`}
-                                className="form-check-label"
-                              >
-                                No
-                              </label>
-                            </div>
-                          </div>
-                        ) : (
-                          <input
-                            className="form-control"
-                            value={logValues[metric.id] ?? ""}
-                            onChange={(e) =>
-                              setLogValues({
-                                ...logValues,
-                                [metric.id]: e.target.value,
-                              })
-                            }
-                            placeholder={`Enter ${metric.data_type}`}
-                          />
-                        )}
-                      </div>
-                    ) : (
-                      <div
-                        className={`card-body rounded p-3 ${
-                          hasLogThisWeek ? "" : "bg-danger-subtle"
-                        }`}
-                      >
-                        <label className="form-label">
-                          {metric.name}{" "}
-                          {hasLogThisWeek && (
-                            <span className="badge bg-success ms-2">
-                              This Week
-                            </span>
+                          ) : (
+                            <input
+                              className="form-control"
+                              value={logValues[metric.id] ?? ""}
+                              onChange={(e) =>
+                                setLogValues({
+                                  ...logValues,
+                                  [metric.id]: e.target.value,
+                                })
+                              }
+                              placeholder={`Enter ${metric.data_type}`}
+                            />
                           )}
-                        </label>
-                        {metric.data_type === "clock" ? (
-                          <ClockButton
-                            metric={metric}
-                            clockData={clockData[metric.id]}
-                            onClockToggle={handleClockToggle}
-                          />
-                        ) : metric.data_type === "boolean" ? (
-                          <div>
-                            <div className="form-check form-check-inline">
-                              <input
-                                type="radio"
-                                id={`metric-${metric.id}-yes`}
-                                name={`metric-${metric.id}`}
-                                value="true"
-                                checked={logValues[metric.id] === "true"}
-                                onChange={(e) =>
-                                  setLogValues({
-                                    ...logValues,
-                                    [metric.id]: e.target.value,
-                                  })
-                                }
-                                className="form-check-input"
-                              />
-                              <label
-                                htmlFor={`metric-${metric.id}-yes`}
-                                className="form-check-label"
-                              >
-                                Yes
-                              </label>
-                            </div>
-                            <div className="form-check form-check-inline">
-                              <input
-                                type="radio"
-                                id={`metric-${metric.id}-no`}
-                                name={`metric-${metric.id}`}
-                                value="false"
-                                checked={logValues[metric.id] === "false"}
-                                onChange={(e) =>
-                                  setLogValues({
-                                    ...logValues,
-                                    [metric.id]: e.target.value,
-                                  })
-                                }
-                                className="form-check-input"
-                              />
-                              <label
-                                htmlFor={`metric-${metric.id}-no`}
-                                className="form-check-label"
-                              >
-                                No
-                              </label>
-                            </div>
-                          </div>
-                        ) : (
-                          <input
-                            className="form-control"
-                            value={logValues[metric.id] ?? ""}
-                            onChange={(e) =>
-                              setLogValues({
-                                ...logValues,
-                                [metric.id]: e.target.value,
-                              })
-                            }
-                            placeholder={`Enter ${metric.data_type}`}
-                          />
-                        )}
-                      </div>
-                    )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ))}
+        ))) : (<p>You currently have no homepage settings. Go to the habits page here  <i className="bi bi-check2-square"></i>, create some metrics, then edit your homepage settings. Add a new section and put your metrics there.</p>)
+      }
       {authState?.tier === "free" &&
         (settings?.homePageAnalytics?.length || 0) > 1 && (
           <div className="alert alert-warning w-100">
