@@ -1,5 +1,5 @@
 import { eachDayOfInterval, subDays, format } from "date-fns";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { getDailyLogs } from "../services/dailyLogs";
 import type { DailyLog } from "../types/dailyLogs";
 import type { Metric } from "../types/Metrics";
@@ -92,11 +92,6 @@ function CommitTracker({ metrics = [] }: CommitTrackerProps) {
       return newSet;
     });
   };
-
-  // Filter metrics to only include selected ones
-  const selectedMetrics = useMemo(() => {
-    return metrics.filter(m => selectedMetricIds.has(m.id));
-  }, [metrics, selectedMetricIds]);
 
   // Count logs per day (only for selected metrics)
   const getLogCountForDate = (date: Date): number => {
