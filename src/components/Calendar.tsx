@@ -21,6 +21,7 @@ function Calendar({
   const [currentYear, setCurrentYear] = useState(year);
   const [currentMonth, setCurrentMonth] = useState(month);
   const [allLogs, setAllLogs] = useState<DailyLog[]>([]);
+  const [selectedMetricIds, setSelectedMetricIds] = useState<Set<number>>(new Set());
 
   // Navigation functions
   const goToPreviousMonth = () => {
@@ -108,6 +109,24 @@ function Calendar({
     ...metric,
     color: metricColors[index % metricColors.length],
   }));
+
+  // Toggle metric selection
+  const toggleMetricSelection = (metricId: number) => {
+    setSelectedMetricIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(metricId)) {
+        newSet.delete(metricId);
+      } else {
+        newSet.add(metricId);
+      }
+      return newSet;
+    });
+  };
+
+  // Filter metrics to only include selected ones
+  const selectedMetrics = useMemo(() => {
+    return metrics.filter(m => selectedMetricIds.has(m.id));
+  }, [metrics, selectedMetricIds]);
 
   const deriveInitials = (name: string): string => {
     if (!name) return "";
@@ -204,24 +223,43 @@ function Calendar({
         <div className="calendar-legend">
           <h5 className="legend-title">Metrics</h5>
           <div className="legend-items">
-            {metricsWithColors.map((metric) => (
-              <div key={metric.id} className="legend-item">
-                <div
-                  className="legend-dot"
-                  style={{ backgroundColor: metric.color }}
-                ></div>
-                <span className="legend-label">
-                  {metric.name}({(metric.initials ?? deriveInitials(metric.name)).toUpperCase()})
-                </span>
-              </div>
-            ))}
+            {metricsWithColors.map((metric) => {
+              const isSelected = selectedMetricIds.has(metric.id);
+              return (
+                <div 
+                  key={metric.id} 
+                  className="legend-item"
+                  style={{ 
+                    cursor: "pointer",
+                    opacity: isSelected ? 1 : 0.5,
+                    userSelect: "none"
+                  }}
+                  onClick={() => toggleMetricSelection(metric.id)}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => toggleMetricSelection(metric.id)}
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ marginRight: "8px", cursor: "pointer" }}
+                  />
+                  <div
+                    className="legend-dot"
+                    style={{ backgroundColor: metric.color }}
+                  ></div>
+                  <span className="legend-label">
+                    {metric.name}({(metric.initials ?? deriveInitials(metric.name)).toUpperCase()})
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
         <CalendarMonth
           year={currentYear}
           month={currentMonth}
-          metrics={metrics}
+          metrics={selectedMetrics}
         />
       </div>
     </div>

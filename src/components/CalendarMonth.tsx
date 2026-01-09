@@ -256,9 +256,9 @@ function CalendarMonth({ year = new Date().getFullYear(), month = new Date().get
                   });
                 }
 
-                // Get boolean logs with "yes" responses
+                // Get boolean logs with "yes" responses, filtered to only selected metrics
                 const yesLogs = dayLogs.filter(
-                  (log) => log.value_boolean === true
+                  (log) => log.value_boolean === true && metrics?.some(m => m.id === log.metric_id)
                 );
 
                 return (
