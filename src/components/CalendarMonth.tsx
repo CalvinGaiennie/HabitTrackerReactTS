@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import type { Metric } from "../types/Metrics";
 import type { DailyLog } from "../types/dailyLogs";
 import { getDailyLogs } from "../services/dailyLogs";
+import { format } from "date-fns";
 import "./Calendar.css";
 // from "./CalendarMonth";
 
@@ -42,6 +43,12 @@ const metricColors = [
 
 function CalendarMonth({ year = new Date().getFullYear(), month = new Date().getMonth(), metrics }: CalendarMonthProps) {
   const [logs, setLogs] = useState<DailyLog[]>([]);
+  const [tooltipState, setTooltipState] = useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+    content: React.ReactNode;
+  }>({ visible: false, x: 0, y: 0, content: null });
   const currentYear = year;
   const currentMonth = month;
   // Get the first day of the month and how many days it has
@@ -98,15 +105,33 @@ function CalendarMonth({ year = new Date().getFullYear(), month = new Date().get
   }
 
   const booleanMetrics = useMemo(() => {
-    // console.log("Calculating boolean metrics:", { logsLength: logs.length, metricsLength: metrics.length });
     if (logs.length > 0 && metrics && metrics.length > 0) {
       const result = metrics.filter((metric) => {
-        // Check if this metric has any logs with value_boolean
-        return logs.some(
-          (log) => log.metric_id === metric.id && log.value_boolean !== null
-        );
+        // Check if this metric has any logs with value_boolean or clock data
+        return logs.some((log) => {
+          if (log.metric_id === metric.id) {
+            // Boolean metrics
+            if (log.value_boolean !== null) {
+              return true;
+            }
+            // Clock metrics - check if value_text contains clock data
+            if (metric.data_type === "clock" && log.value_text) {
+              try {
+                const clockData = JSON.parse(log.value_text);
+                // Show if there are clock sessions or if currently clocked in
+                return (
+                  (clockData.sessions && clockData.sessions.length > 0) ||
+                  clockData.current_state === "clocked_in" ||
+                  (clockData.total_duration_minutes && clockData.total_duration_minutes > 0)
+                );
+              } catch {
+                return false;
+              }
+            }
+          }
+          return false;
+        });
       });
-      // console.log("Boolean metrics result:", result.length);
       return result;
     }
     return [];
@@ -199,6 +224,18 @@ function CalendarMonth({ year = new Date().getFullYear(), month = new Date().get
     <div className="calendar">
       {/* Calendar grid */}
       <h4 className="mb-3 text-center">{monthNames[currentMonth]}</h4>
+      {tooltipState.visible && (
+        <div
+          className="calendar-day-tooltip"
+          style={{
+            left: `${tooltipState.x}px`,
+            top: `${tooltipState.y}px`,
+            transform: tooltipState.y < 200 ? 'translate(-50%, 0)' : 'translate(-50%, -100%)',
+          }}
+        >
+          {tooltipState.content}
+        </div>
+      )}
       <div className="calendar-grid">
         {/* Day names header */}
         <div className="calendar-weekdays d-flex">
@@ -256,10 +293,161 @@ function CalendarMonth({ year = new Date().getFullYear(), month = new Date().get
                   });
                 }
 
-                // Get boolean logs with "yes" responses, filtered to only selected metrics
-                const yesLogs = dayLogs.filter(
-                  (log) => log.value_boolean === true && metrics?.some(m => m.id === log.metric_id)
+                // Get boolean logs with "yes" responses and clock logs with sessions, filtered to only selected metrics
+                const yesLogs = dayLogs.filter((log) => {
+                  if (!metrics?.some(m => m.id === log.metric_id)) {
+                    return false;
+                  }
+                  // Boolean metrics - show if value is true
+                  if (log.value_boolean === true) {
+                    return true;
+                  }
+                  // Clock metrics - show if there are clock sessions
+                  const metric = metrics.find(m => m.id === log.metric_id);
+                  if (metric?.data_type === "clock" && log.value_text) {
+                    try {
+                      const clockData = JSON.parse(log.value_text);
+                      return (
+                        (clockData.sessions && clockData.sessions.length > 0) ||
+                        clockData.current_state === "clocked_in" ||
+                        (clockData.total_duration_minutes && clockData.total_duration_minutes > 0)
+                      );
+                    } catch {
+                      return false;
+                    }
+                  }
+                  return false;
+                });
+
+                // Get all logs for the day (for tooltip) - filtered to selected metrics
+                const allDayLogs = dayLogs.filter(
+                  (log) => metrics?.some(m => m.id === log.metric_id)
                 );
+
+                // Format log value for display
+                const formatLogValue = (log: DailyLog): string => {
+                  const metric = metrics?.find(m => m.id === log.metric_id);
+                  
+                  // Clock metrics - parse JSON and format
+                  if (metric?.data_type === "clock" && log.value_text) {
+                    try {
+                      const clockData = JSON.parse(log.value_text);
+                      if (clockData.total_duration_minutes > 0) {
+                        const hours = Math.floor(clockData.total_duration_minutes / 60);
+                        const minutes = clockData.total_duration_minutes % 60;
+                        if (hours > 0) {
+                          return `${hours}h ${minutes}m`;
+                        }
+                        return `${minutes}m`;
+                      }
+                      if (clockData.current_state === "clocked_in") {
+                        return "Clocked in";
+                      }
+                      if (clockData.sessions && clockData.sessions.length > 0) {
+                        return `${clockData.sessions.length} session(s)`;
+                      }
+                      return "No time logged";
+                    } catch {
+                      return log.value_text;
+                    }
+                  }
+                  
+                  if (log.value_boolean !== null) {
+                    return log.value_boolean ? "Yes" : "No";
+                  }
+                  if (log.value_int !== null) {
+                    return log.value_int.toString();
+                  }
+                  if (log.value_decimal !== null) {
+                    return log.value_decimal.toString();
+                  }
+                  if (log.value_text !== null && log.value_text !== "") {
+                    return log.value_text;
+                  }
+                  return "—";
+                };
+
+                // Build tooltip content
+                const tooltipDate = new Date(dayData.year, dayData.month, dayData.day);
+                const tooltipContent = allDayLogs.length > 0 ? (
+                  <div className="calendar-day-tooltip-content">
+                    <div className="tooltip-header">
+                      {format(tooltipDate, "MMMM d, yyyy")}
+                    </div>
+                    <div className="tooltip-logs">
+                      {allDayLogs.map((log, logIdx) => (
+                        <div key={logIdx} className="tooltip-log-item">
+                          <div className="tooltip-log-metric">
+                            <span
+                              className="tooltip-log-dot"
+                              style={{ backgroundColor: getMetricColor(log.metric_id) }}
+                            ></span>
+                            <strong>{log.metric.name}</strong>
+                          </div>
+                          <div className="tooltip-log-value">{formatLogValue(log)}</div>
+                          {log.note && log.note.trim() !== "" && (
+                            <div className="tooltip-log-note">{log.note}</div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null;
+
+                const calculateTooltipPosition = (rect: DOMRect) => {
+                  const tooltipWidth = 250; // Approximate tooltip width
+                  const tooltipHeight = 200; // Approximate tooltip height
+                  const padding = 8;
+                  
+                  let tooltipX = rect.left + rect.width / 2;
+                  let tooltipY = rect.top - padding;
+                  
+                  // Adjust if tooltip would go off the right edge
+                  if (tooltipX + tooltipWidth / 2 > window.innerWidth) {
+                    tooltipX = window.innerWidth - tooltipWidth / 2 - padding;
+                  }
+                  
+                  // Adjust if tooltip would go off the left edge
+                  if (tooltipX - tooltipWidth / 2 < padding) {
+                    tooltipX = tooltipWidth / 2 + padding;
+                  }
+                  
+                  // Adjust if tooltip would go off the top edge (show below instead)
+                  if (tooltipY - tooltipHeight < padding) {
+                    tooltipY = rect.bottom + padding;
+                  }
+                  
+                  return { x: tooltipX, y: tooltipY };
+                };
+
+                const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+                  if (allDayLogs.length > 0 && tooltipContent) {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const { x: tooltipX, y: tooltipY } = calculateTooltipPosition(rect);
+                    setTooltipState({
+                      visible: true,
+                      x: tooltipX,
+                      y: tooltipY,
+                      content: tooltipContent,
+                    });
+                  }
+                };
+
+                const handleMouseLeave = () => {
+                  setTooltipState({ visible: false, x: 0, y: 0, content: null });
+                };
+
+                const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+                  if (allDayLogs.length > 0 && tooltipState.visible) {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const { x: tooltipX, y: tooltipY } = calculateTooltipPosition(rect);
+                    setTooltipState(prev => ({
+                      ...prev,
+                      x: tooltipX,
+                      y: tooltipY,
+                    }));
+                  }
+                };
 
                 return (
                   <div
@@ -268,7 +456,10 @@ function CalendarMonth({ year = new Date().getFullYear(), month = new Date().get
                       dayData.isCurrentMonth
                         ? "calendar-day-current"
                         : "calendar-day-previous"
-                    }`}
+                    } ${allDayLogs.length > 0 ? "calendar-day-has-logs" : ""}`}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                    onMouseMove={handleMouseMove}
                   >
                     <div className="calendar-day-number">{dayData.day}</div>
                     {yesLogs.length > 0 && (

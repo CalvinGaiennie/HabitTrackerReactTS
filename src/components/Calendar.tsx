@@ -94,16 +94,35 @@ function Calendar({
     "#4ECDC4",
   ];
 
-  // Get boolean metrics for legend - check if any logs have value_boolean
+  // Get boolean and clock metrics for legend
   const booleanMetrics = useMemo(() => {
     if (allLogs.length > 0 && metrics.length > 0) {
       const result = metrics.filter((metric) => {
-        // Check if this metric has any logs with value_boolean
-        return allLogs.some(
-          (log) => log.metric_id === metric.id && log.value_boolean !== null
-        );
+        // Check if this metric has any logs with value_boolean or clock data
+        return allLogs.some((log) => {
+          if (log.metric_id === metric.id) {
+            // Boolean metrics
+            if (log.value_boolean !== null) {
+              return true;
+            }
+            // Clock metrics - check if value_text contains clock data
+            if (metric.data_type === "clock" && log.value_text) {
+              try {
+                const clockData = JSON.parse(log.value_text);
+                // Show if there are clock sessions or if currently clocked in
+                return (
+                  (clockData.sessions && clockData.sessions.length > 0) ||
+                  clockData.current_state === "clocked_in" ||
+                  (clockData.total_duration_minutes && clockData.total_duration_minutes > 0)
+                );
+              } catch {
+                return false;
+              }
+            }
+          }
+          return false;
+        });
       });
-      // console.log("Boolean metrics result:", result.length);
       return result;
     }
     return [];
