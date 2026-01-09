@@ -4,6 +4,9 @@ import "./Calendar.css";
 import CalendarMonth from "./CalendarMonth";
 import type { DailyLog } from "../types/dailyLogs";
 import { getDailyLogs } from "../services/dailyLogs";
+import fetchSettings from "../hooks/fetchSettings";
+import type { UserSettings } from "../types/users";
+import { useUserId } from "../hooks/useAuth";
 
 interface CalendarProps {
   year?: number;
@@ -18,10 +21,12 @@ function Calendar({
   metrics = [],
   className = "",
 }: CalendarProps) {
+  const userId = useUserId();
   const [currentYear, setCurrentYear] = useState(year);
   const [currentMonth, setCurrentMonth] = useState(month);
   const [allLogs, setAllLogs] = useState<DailyLog[]>([]);
   const [selectedMetricIds, setSelectedMetricIds] = useState<Set<number>>(new Set());
+  const [settings, setSettings] = useState<UserSettings>();
 
   // Navigation functions
   const goToPreviousMonth = () => {
@@ -109,6 +114,36 @@ function Calendar({
     ...metric,
     color: metricColors[index % metricColors.length],
   }));
+
+  // Fetch settings
+  useEffect(() => {
+    if (userId) {
+      fetchSettings((fetchedSettings) => {
+        setSettings(fetchedSettings);
+      }, userId);
+    }
+  }, [userId]);
+
+  // Initialize selectedMetricIds with metrics from homePageLayout when booleanMetrics are available
+  useEffect(() => {
+    if (booleanMetrics.length > 0 && settings?.homePageLayout && selectedMetricIds.size === 0) {
+      // Extract all metricIds from all sections in homePageLayout
+      const homepageMetricIds = new Set<number>();
+      settings.homePageLayout.forEach((section) => {
+        section.metricIds.forEach((metricId) => {
+          // Only add if it's a boolean metric that exists
+          if (booleanMetrics.some(m => m.id === metricId)) {
+            homepageMetricIds.add(metricId);
+          }
+        });
+      });
+      
+      if (homepageMetricIds.size > 0) {
+        setSelectedMetricIds(homepageMetricIds);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [booleanMetrics, settings]);
 
   // Toggle metric selection
   const toggleMetricSelection = (metricId: number) => {
