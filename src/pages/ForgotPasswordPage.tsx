@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { requestPasswordReset } from "../services/users";
 
 function ForgotPasswordPage() {
@@ -9,8 +8,6 @@ function ForgotPasswordPage() {
     text: string;
     type: "success" | "error";
   } | null>(null);
-
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
