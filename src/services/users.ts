@@ -57,3 +57,27 @@ export async function changePassword(
     }),
   });
 }
+
+export async function requestPasswordReset(
+  email: string
+): Promise<{ message: string }> {
+  return request<{ message: string }>(`/users/request-password-reset`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function resetPassword(
+  token: string,
+  newPassword: string
+): Promise<{ message: string }> {
+  return request<{ message: string }>(`/users/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      token,
+      new_password: newPassword,
+    }),
+  });
+}
