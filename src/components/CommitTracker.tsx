@@ -1,10 +1,18 @@
 import { eachDayOfInterval, subDays, format } from "date-fns";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { getDailyLogs } from "../services/dailyLogs";
 import type { DailyLog } from "../types/dailyLogs";
+import type { Metric } from "../types/Metrics";
+import fetchSettings from "../hooks/fetchSettings";
+import type { UserSettings } from "../types/users";
+import { useUserId } from "../hooks/useAuth";
 import styles from "./CommitTracker.module.css";
 
-function CommitTracker() {
+interface CommitTrackerProps {
+  metrics?: Metric[];
+}
+
+function CommitTracker({ metrics = [] }: CommitTrackerProps) {
   type DayStatus = {
     date: Date;
     count: number;
@@ -15,8 +23,11 @@ function CommitTracker() {
   const startDate = subDays(today, 364);
   const allDays = eachDayOfInterval({ start: startDate, end: today });
   
+  const userId = useUserId();
   const [logs, setLogs] = useState<DailyLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedMetricIds, setSelectedMetricIds] = useState<Set<number>>(new Set());
+  const [settings, setSettings] = useState<UserSettings>();
 
   // Fetch logs for the past year (365 days)
   useEffect(() => {
@@ -39,10 +50,61 @@ function CommitTracker() {
     fetchLogs();
   }, []);
 
-  // Count logs per day
+  // Fetch settings
+  useEffect(() => {
+    if (userId) {
+      fetchSettings((fetchedSettings) => {
+        setSettings(fetchedSettings);
+      }, userId);
+    }
+  }, [userId]);
+
+  // Initialize selectedMetricIds with metrics from homePageLayout when metrics are available
+  useEffect(() => {
+    if (metrics.length > 0 && settings?.homePageLayout && selectedMetricIds.size === 0) {
+      // Extract all metricIds from all sections in homePageLayout
+      const homepageMetricIds = new Set<number>();
+      settings.homePageLayout.forEach((section) => {
+        section.metricIds.forEach((metricId) => {
+          // Only add if the metric exists
+          if (metrics.some(m => m.id === metricId)) {
+            homepageMetricIds.add(metricId);
+          }
+        });
+      });
+      
+      if (homepageMetricIds.size > 0) {
+        setSelectedMetricIds(homepageMetricIds);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [metrics, settings]);
+
+  // Toggle metric selection
+  const toggleMetricSelection = (metricId: number) => {
+    setSelectedMetricIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(metricId)) {
+        newSet.delete(metricId);
+      } else {
+        newSet.add(metricId);
+      }
+      return newSet;
+    });
+  };
+
+  // Filter metrics to only include selected ones
+  const selectedMetrics = useMemo(() => {
+    return metrics.filter(m => selectedMetricIds.has(m.id));
+  }, [metrics, selectedMetricIds]);
+
+  // Count logs per day (only for selected metrics)
   const getLogCountForDate = (date: Date): number => {
     const dateStr = format(date, "yyyy-MM-dd");
-    return logs.filter(log => log.log_date === dateStr).length;
+    return logs.filter(log => 
+      log.log_date === dateStr && 
+      (selectedMetricIds.size === 0 || selectedMetricIds.has(log.metric_id))
+    ).length;
   };
 
   // Build data array from actual logs
@@ -112,6 +174,40 @@ function CommitTracker() {
     <div className="card shadow-sm" style={{ border: "none", borderRadius: "12px" }}>
       <div className="card-body p-4">
         <h5 className="text-center mb-3 fw-semibold">Commit Tracker</h5>
+        
+        {/* Metric Selection */}
+        {metrics.length > 0 && (
+          <div className="mb-4 p-3" style={{ backgroundColor: "#f8f9fa", borderRadius: "8px" }}>
+            <h6 className="mb-2 fw-semibold" style={{ fontSize: "0.875rem" }}>Select Metrics:</h6>
+            <div className="d-flex flex-wrap gap-3">
+              {metrics.map((metric) => {
+                const isSelected = selectedMetricIds.has(metric.id);
+                return (
+                  <div
+                    key={metric.id}
+                    className="d-flex align-items-center"
+                    style={{
+                      cursor: "pointer",
+                      opacity: isSelected ? 1 : 0.5,
+                      userSelect: "none"
+                    }}
+                    onClick={() => toggleMetricSelection(metric.id)}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleMetricSelection(metric.id)}
+                      onClick={(e) => e.stopPropagation()}
+                      style={{ marginRight: "6px", cursor: "pointer" }}
+                    />
+                    <span style={{ fontSize: "0.875rem" }}>{metric.name}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        
         {/* Month Labels */}
         <div className={styles.monthLabels}>
           {monthLabels.map((label, i) => (

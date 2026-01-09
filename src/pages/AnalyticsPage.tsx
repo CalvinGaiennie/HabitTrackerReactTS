@@ -340,7 +340,7 @@ function AnalyticsPage() {
 
       {activeTab === "commit-tracker" && (
         <div className="row justify-content-center">
-          <CommitTracker />
+          <CommitTracker metrics={metrics || []} />
         </div>
       )}
 
