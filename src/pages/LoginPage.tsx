@@ -86,6 +86,9 @@ function LoginPage() {
 
       <div className="mt-3">
         <p>
+          <a href="/ForgotPassword">Forgot your password?</a>
+        </p>
+        <p>
           Don't have an account? <a href="/CreateAccount">Create one here</a>
         </p>
       </div>

@@ -10,6 +10,8 @@ import AnalyticsPage from "./pages/AnalyticsPage.tsx";
 import { AuthProvider } from "./context";
 import CreateAccountPage from "./pages/CreateAccountPage.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage.tsx";
+import ResetPasswordPage from "./pages/ResetPasswordPage.tsx";
 import { ProtectedRoute } from "./components/ProtectedRoute.tsx";
 import { AuthRoute } from "./components/AuthRoute.tsx";
 import HabitsAndGoalsPage from "./pages/HabitsAndGoalsPage.tsx";
@@ -100,6 +102,22 @@ function App() {
               element={
                 <AuthRoute>
                   <LoginPage />
+                </AuthRoute>
+              }
+            />
+            <Route
+              path="/ForgotPassword"
+              element={
+                <AuthRoute>
+                  <ForgotPasswordPage />
+                </AuthRoute>
+              }
+            />
+            <Route
+              path="/reset-password"
+              element={
+                <AuthRoute>
+                  <ResetPasswordPage />
                 </AuthRoute>
               }
             />
