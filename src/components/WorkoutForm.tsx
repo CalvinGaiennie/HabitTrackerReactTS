@@ -5,12 +5,14 @@ import type { UserSettings } from "../types/users";
 import type { Exercise, ExerciseSet } from "../types/workouts";
 import type { ExerciseFull } from "../types/exercises";
 import fetchExercises from "../hooks/fetchExercises";
+import { useToast } from "../context/ToastContext";
 
 interface WorkoutFormProps {
   onWorkoutCreated?: () => void;
 }
 
 function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
+  const { showToast } = useToast();
   const [title, setTitle] = useState("");
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
@@ -244,7 +246,7 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
     e.preventDefault();
 
     if (selectedTypes.length === 0) {
-      alert("Please select at least one workout type");
+      showToast("Please select at least one workout type", "error");
       return;
     }
 

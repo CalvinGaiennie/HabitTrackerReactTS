@@ -17,6 +17,8 @@ import type { ModeType } from "../types/general";
 import SubPage from "../components/SubPage.tsx";
 import BootstrapModal from "../components/BootstrapModal.tsx";
 import MetricForm from "../components/MetricForm.tsx";
+import { useToast } from "../context/ToastContext";
+import ConfirmDialog from "../components/ConfirmDialog.tsx";
 
 type TabType = "goal" | "metric" | "log" | "settings" | "password";
 function HabitsAndGoalsPage() {
@@ -39,7 +41,10 @@ function HabitsAndGoalsPage() {
   const [editingMetric, setEditingMetric] = useState<Metric | null>(null);
   const [showMetricModal, setShowMetricModal] = useState(false);
   const [showLogModal, setShowLogModal] = useState(false);
+  const [confirmDeleteMetric, setConfirmDeleteMetric] = useState<number | null>(null);
+  const [confirmDeleteLog, setConfirmDeleteLog] = useState<number | null>(null);
   const isSubmitting = useRef(false);
+  const { showToast } = useToast();
 
   // Fetch logs and metrics on component mount
   useEffect(() => {
@@ -84,7 +89,7 @@ function HabitsAndGoalsPage() {
     console.log("Submitting metric...");
     setMetricError(null);
     if (!formData.name.trim()) {
-      alert("Name is required");
+      showToast("Name is required", "error");
       isSubmitting.current = false;
       return;
     }
@@ -93,7 +98,7 @@ function HabitsAndGoalsPage() {
       formData.data_type === "scale" &&
       formData.scale_min! >= formData.scale_max!
     ) {
-      alert("Scale min must be less than scale max");
+      showToast("Scale min must be less than scale max", "error");
       isSubmitting.current = false;
       return;
     }
@@ -128,9 +133,11 @@ function HabitsAndGoalsPage() {
       );
       try {
         // Fallback to ensure user sees the message even if inline alert is missed
-        alert(
+        showToast(
           (friendly as string) ||
-            "Free plan limit reached: You can only have up to 4 metrics. Upgrade to unlock more."
+            "Free plan limit reached: You can only have up to 4 metrics. Upgrade to unlock more.",
+          "warning",
+          5000
         );
       } catch {}
     } finally {
@@ -155,32 +162,42 @@ function HabitsAndGoalsPage() {
   };
 
   const handleDeleteMetric = async (metricId: number) => {
-    if (confirm("Are you sure you want to delete this metric?")) {
-      try {
-        await deleteMetric(metricId);
-        alert("Metric deleted successfully!");
-        fetchMetrics(setMetrics);
-      } catch (err) {
-        console.error(err);
-        alert("Something went wrong deleting the metric.");
-      }
+    setConfirmDeleteMetric(metricId);
+  };
+
+  const confirmDeleteMetricAction = async () => {
+    if (confirmDeleteMetric === null) return;
+    try {
+      await deleteMetric(confirmDeleteMetric);
+      showToast("Metric deleted successfully!", "success");
+      fetchMetrics(setMetrics);
+      setConfirmDeleteMetric(null);
+    } catch (err) {
+      console.error(err);
+      showToast("Something went wrong deleting the metric.", "error");
+      setConfirmDeleteMetric(null);
     }
   };
 
   const handleEditLog = () => {
-    alert("Log editing functionality will be implemented in a future update.");
+    showToast("Log editing functionality will be implemented in a future update.", "info");
   };
 
   const handleDeleteLog = async (logId: number) => {
-    if (confirm("Are you sure you want to delete this log entry?")) {
-      try {
-        await deleteDailyLog(logId);
-        alert("Log entry deleted successfully!");
-        fetchLogs(setLogs);
-      } catch (err) {
-        console.error(err);
-        alert("Something went wrong deleting the log entry.");
-      }
+    setConfirmDeleteLog(logId);
+  };
+
+  const confirmDeleteLogAction = async () => {
+    if (confirmDeleteLog === null) return;
+    try {
+      await deleteDailyLog(confirmDeleteLog);
+      showToast("Log entry deleted successfully!", "success");
+      fetchLogs(setLogs);
+      setConfirmDeleteLog(null);
+    } catch (err) {
+      console.error(err);
+      showToast("Something went wrong deleting the log entry.", "error");
+      setConfirmDeleteLog(null);
     }
   };
 
@@ -440,6 +457,28 @@ function HabitsAndGoalsPage() {
       </div>
       {/* Tab Content */}
       <div className="tab-content mb-5">{renderTabContent()}</div>
+      
+      {/* Confirmation Dialogs */}
+      <ConfirmDialog
+        show={confirmDeleteMetric !== null}
+        title="Delete Metric"
+        message="Are you sure you want to delete this metric? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        onConfirm={confirmDeleteMetricAction}
+        onCancel={() => setConfirmDeleteMetric(null)}
+      />
+      <ConfirmDialog
+        show={confirmDeleteLog !== null}
+        title="Delete Log Entry"
+        message="Are you sure you want to delete this log entry? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        onConfirm={confirmDeleteLogAction}
+        onCancel={() => setConfirmDeleteLog(null)}
+      />
     </div>
   );
 }

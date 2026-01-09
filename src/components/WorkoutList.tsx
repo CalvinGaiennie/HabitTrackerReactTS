@@ -3,26 +3,36 @@ import { deleteWorkout } from "../services/workouts";
 import type { Workout } from "../types/workouts";
 import fetchWorkouts from "../hooks/fetchWorkouts"
 import { useNavigate } from 'react-router-dom';
+import { useToast } from "../context/ToastContext";
+import ConfirmDialog from "./ConfirmDialog";
 
 function WorkoutList() {
+  const { showToast } = useToast();
   const [workouts, setWorkouts] = useState<Workout[]>([]);
+  const [confirmDeleteWorkout, setConfirmDeleteWorkout] = useState<number | null>(null);
   const navigate = useNavigate();
   useEffect(() => {
     fetchWorkouts(setWorkouts);
   }, []);
 
   const handleDelete = async (workoutId: number) => {
-    if (!window.confirm("Delete this workout?")) return;
+    setConfirmDeleteWorkout(workoutId);
+  };
 
+  const confirmDeleteWorkoutAction = async () => {
+    if (confirmDeleteWorkout === null) return;
     try {
-      console.log("Attempting to delete workout ID:", workoutId);
-      const result = await deleteWorkout(workoutId);
+      console.log("Attempting to delete workout ID:", confirmDeleteWorkout);
+      const result = await deleteWorkout(confirmDeleteWorkout);
       console.log("Delete result:", result);
-      setWorkouts(workouts.filter((workout) => workout.id !== workoutId));
+      setWorkouts(workouts.filter((workout) => workout.id !== confirmDeleteWorkout));
       console.log("Workout removed from list");
+      showToast("Workout deleted successfully!", "success");
+      setConfirmDeleteWorkout(null);
     } catch (error) {
       console.error("Error deleting workout:", error);
-      alert(`Failed to delete workout: ${error}`);
+      showToast(`Failed to delete workout: ${error}`, "error");
+      setConfirmDeleteWorkout(null);
     }
   };
 
@@ -123,6 +133,16 @@ function WorkoutList() {
           </div>
         ))}
       </div>
+      <ConfirmDialog
+        show={confirmDeleteWorkout !== null}
+        title="Delete Workout"
+        message="Are you sure you want to delete this workout? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        onConfirm={confirmDeleteWorkoutAction}
+        onCancel={() => setConfirmDeleteWorkout(null)}
+      />
     </div>
   );
 }

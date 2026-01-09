@@ -17,6 +17,8 @@ import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext.tsx";
 import { useNavigate } from "react-router-dom";
 import { createCheckoutSession, createPortalSession } from "../services/stripe";
+import { useToast } from "../context/ToastContext";
+import ConfirmDialog from "../components/ConfirmDialog.tsx";
 
 type TabType = "goal" | "metric" | "log" | "settings" | "password";
 type ModeType = "add" | "edit" | "view";
@@ -39,6 +41,8 @@ function AccountPage() {
   const [logs, setLogs] = useState<DailyLog[]>([]);
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [editingMetric, setEditingMetric] = useState<Metric | null>(null);
+  const [confirmDeleteMetric, setConfirmDeleteMetric] = useState<number | null>(null);
+  const [confirmDeleteLog, setConfirmDeleteLog] = useState<number | null>(null);
   const navigate = useNavigate();
   const authContext = useContext(AuthContext) ?? {
     authState: null,
@@ -47,6 +51,7 @@ function AccountPage() {
   };
   const logout = authContext.logout;
   const tier = authContext?.authState?.tier || "free";
+  const { showToast } = useToast();
 
   const isSubmitting = useRef(false);
 
@@ -79,7 +84,7 @@ function AccountPage() {
     try {
       await createCheckoutSession(which);
     } catch (e) {
-      alert((e as Error).message);
+      showToast((e as Error).message, "error");
     }
   };
 
@@ -87,7 +92,7 @@ function AccountPage() {
     try {
       await createPortalSession();
     } catch (e) {
-      alert((e as Error).message);
+      showToast((e as Error).message, "error");
     }
   };
 
@@ -114,7 +119,7 @@ function AccountPage() {
     console.log("Submitting metric...");
     setMetricError(null);
     if (!formData.name.trim()) {
-      alert("Name is required");
+      showToast("Name is required", "error");
       isSubmitting.current = false;
       return;
     }
@@ -123,18 +128,18 @@ function AccountPage() {
       formData.data_type === "scale" &&
       formData.scale_min! >= formData.scale_max!
     ) {
-      alert("Scale min must be less than scale max");
+      showToast("Scale min must be less than scale max", "error");
       isSubmitting.current = false;
       return;
     }
     try {
       if (editingMetric) {
         await updateMetric(editingMetric.id, formData);
-        alert("Metric updated successfully!");
+        showToast("Metric updated successfully!", "success");
         setEditingMetric(null);
       } else {
         await createMetric(formData);
-        alert("Metric created successfully!");
+        showToast("Metric created successfully!", "success");
       }
       fetchMetrics(setMetrics);
       setFormData({
@@ -157,9 +162,11 @@ function AccountPage() {
           "Free plan limit reached: You can only have up to 4 metrics. Upgrade to unlock more."
       );
       try {
-        alert(
+        showToast(
           (friendly as string) ||
-            "Free plan limit reached: You can only have up to 4 metrics. Upgrade to unlock more."
+            "Free plan limit reached: You can only have up to 4 metrics. Upgrade to unlock more.",
+          "warning",
+          5000
         );
       } catch {}
     } finally {
@@ -184,32 +191,42 @@ function AccountPage() {
   };
 
   const handleDeleteMetric = async (metricId: number) => {
-    if (confirm("Are you sure you want to delete this metric?")) {
-      try {
-        await deleteMetric(metricId);
-        alert("Metric deleted successfully!");
-        fetchMetrics(setMetrics);
-      } catch (err) {
-        console.error(err);
-        alert("Something went wrong deleting the metric.");
-      }
+    setConfirmDeleteMetric(metricId);
+  };
+
+  const confirmDeleteMetricAction = async () => {
+    if (confirmDeleteMetric === null) return;
+    try {
+      await deleteMetric(confirmDeleteMetric);
+      showToast("Metric deleted successfully!", "success");
+      fetchMetrics(setMetrics);
+      setConfirmDeleteMetric(null);
+    } catch (err) {
+      console.error(err);
+      showToast("Something went wrong deleting the metric.", "error");
+      setConfirmDeleteMetric(null);
     }
   };
 
   const handleEditLog = () => {
-    alert("Log editing functionality will be implemented in a future update.");
+    showToast("Log editing functionality will be implemented in a future update.", "info");
   };
 
   const handleDeleteLog = async (logId: number) => {
-    if (confirm("Are you sure you want to delete this log entry?")) {
-      try {
-        await deleteDailyLog(logId);
-        alert("Log entry deleted successfully!");
-        fetchLogs(setLogs);
-      } catch (err) {
-        console.error(err);
-        alert("Something went wrong deleting the log entry.");
-      }
+    setConfirmDeleteLog(logId);
+  };
+
+  const confirmDeleteLogAction = async () => {
+    if (confirmDeleteLog === null) return;
+    try {
+      await deleteDailyLog(confirmDeleteLog);
+      showToast("Log entry deleted successfully!", "success");
+      fetchLogs(setLogs);
+      setConfirmDeleteLog(null);
+    } catch (err) {
+      console.error(err);
+      showToast("Something went wrong deleting the log entry.", "error");
+      setConfirmDeleteLog(null);
     }
   };
 
@@ -665,6 +682,28 @@ function AccountPage() {
 
       {/* Tab Content */}
       <div className="tab-content mb-5">{renderTabContent()}</div>
+      
+      {/* Confirmation Dialogs */}
+      <ConfirmDialog
+        show={confirmDeleteMetric !== null}
+        title="Delete Metric"
+        message="Are you sure you want to delete this metric? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        onConfirm={confirmDeleteMetricAction}
+        onCancel={() => setConfirmDeleteMetric(null)}
+      />
+      <ConfirmDialog
+        show={confirmDeleteLog !== null}
+        title="Delete Log Entry"
+        message="Are you sure you want to delete this log entry? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        onConfirm={confirmDeleteLogAction}
+        onCancel={() => setConfirmDeleteLog(null)}
+      />
       <button
         className="btn btn-primary"
         onClick={handleLogout}
