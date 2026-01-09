@@ -14,7 +14,7 @@ import type { BooleanStats, ChartConfig } from "../types/chartConfig";
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28"];
 
 type ChartType = "pie" | "line" | "radar" | "bar" | "bubble";
-type AnalyticsTab = "charts" | "calendar" | "commit-tracker" | "time-line" | "settings";
+type AnalyticsTab = "charts" | "calendar" | "commit-tracker" | "settings";
 
 // Data for bubble chart (x, y, z coordinates)
 const bubbleData = [
@@ -43,17 +43,20 @@ function AnalyticsPage() {
   };
 
   const getChartTitle = () => {
+    const selectedMetric = metrics?.find((m) => m.id === selectedData);
+    const metricName = selectedMetric?.name || "";
+    
     switch (selectedChart) {
       case "pie":
-        return "Pie Chart";
+        return metricName ? `${metricName} - Pie Chart` : "Pie Chart";
       case "line":
-        return "Line Chart";
+        return metricName ? `${metricName} - Line Chart` : "Line Chart";
       case "bar":
-        return "Bar Chart";
+        return metricName ? `${metricName} - Bar Chart` : "Bar Chart";
       case "bubble":
-        return "Bubble Chart";
+        return metricName ? `${metricName} - Bubble Chart` : "Bubble Chart";
       default:
-        return "Pie Chart";
+        return metricName ? `${metricName} - Pie Chart` : "Pie Chart";
     }
   };
 
@@ -169,17 +172,18 @@ function AnalyticsPage() {
   }, [selectedChart, data, metrics, selectedData]);
 
   return (
-    <div className="container mb-5">
-      <h1 className="text-center mb-4">Analytics Page</h1>
+    <div className="container mb-5" style={{ maxWidth: "700px" }}>
+      <h1 className="text-center mb-4">Analytics</h1>
 
       {/* Tab Navigation */}
       <div className="row justify-content-center mb-4">
         <div className="col-12">
-          <ul className="nav nav-tabs justify-content-center">
+          <ul className="nav nav-tabs nav-justified">
             <li className="nav-item">
               <button
                 className={`nav-link ${activeTab === "charts" ? "active" : ""}`}
                 onClick={() => setActiveTab("charts")}
+                style={{ border: "none", background: "transparent", cursor: "pointer" }}
               >
                 Charts
               </button>
@@ -190,6 +194,7 @@ function AnalyticsPage() {
                   activeTab === "calendar" ? "active" : ""
                 }`}
                 onClick={() => setActiveTab("calendar")}
+                style={{ border: "none", background: "transparent", cursor: "pointer" }}
               >
                 Calendar
               </button>
@@ -200,18 +205,9 @@ function AnalyticsPage() {
                   activeTab === "commit-tracker" ? "active" : ""
                 }`}
                 onClick={() => setActiveTab("commit-tracker")}
+                style={{ border: "none", background: "transparent", cursor: "pointer" }}
               >
                 Commit Tracker
-              </button>
-            </li>
-            <li className="nav-item">
-              <button
-                className={`nav-link ${
-                  activeTab === "time-line" ? "active" : ""
-                }`}
-                onClick={() => setActiveTab("time-line")}
-              >
-                Time Line
               </button>
             </li>
             <li className="nav-item">
@@ -220,6 +216,7 @@ function AnalyticsPage() {
                   activeTab === "settings" ? "active" : ""
                 }`}
                 onClick={() => setActiveTab("settings")}
+                style={{ border: "none", background: "transparent", cursor: "pointer" }}
               >
                 Settings
               </button>
@@ -234,9 +231,9 @@ function AnalyticsPage() {
           {/* Data Selector */}
           <div className="row justify-content-center mb-4">
             <div className="col-12">
-              <div className="card">
-                <div className="card-body">
-                  <div className="d-flex gap-4 pb-4">
+              <div className="card shadow-sm" style={{ border: "none", borderRadius: "12px" }}>
+                <div className="card-body p-4">
+                  <div className="d-flex gap-3 pb-3 flex-wrap">
                     <DatePicker
                       title="Start Date"
                       setTargetDate={setStartDate}
@@ -249,14 +246,15 @@ function AnalyticsPage() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="chart-select" className="form-label">
-                      <strong>Select Data:</strong>
+                    <label htmlFor="chart-select" className="form-label fw-semibold mb-2">
+                      Select Data:
                     </label>
                     <select
                       id="data-select"
                       className="form-select"
                       value={selectedData}
                       onChange={handleDataChange}
+                      style={{ borderRadius: "8px" }}
                     >
                       <option value={0}>Select a metric...</option>
                       {metrics?.map((metric) => (
@@ -271,17 +269,54 @@ function AnalyticsPage() {
             </div>
           </div>
 
+          {/* Boolean Stats Card - Prominent display like Swift version */}
+          {booleanStats && (
+            <div className="row justify-content-center mb-4">
+              <div className="col-12">
+                <div className="card shadow-sm" style={{ border: "none", borderRadius: "12px" }}>
+                  <div className="card-body p-4">
+                    <h5 className="mb-3 text-center fw-semibold">Boolean Metric Statistics</h5>
+                    <div className="row g-3 text-center">
+                      <div className="col-6 col-md-3">
+                        <div className="p-3 rounded" style={{ backgroundColor: "#f8f9fa" }}>
+                          <div className="fw-bold text-primary" style={{ fontSize: "1.75rem" }}>{booleanStats.totalDays}</div>
+                          <div className="text-muted" style={{ fontSize: "0.875rem", marginTop: "0.25rem" }}>Total Days</div>
+                        </div>
+                      </div>
+                      <div className="col-6 col-md-3">
+                        <div className="p-3 rounded" style={{ backgroundColor: "#d1e7dd" }}>
+                          <div className="fw-bold text-success" style={{ fontSize: "1.75rem" }}>{booleanStats.yesDays}</div>
+                          <div className="text-muted" style={{ fontSize: "0.875rem", marginTop: "0.25rem" }}>Yes Days</div>
+                        </div>
+                      </div>
+                      <div className="col-6 col-md-3">
+                        <div className="p-3 rounded" style={{ backgroundColor: "#f8d7da" }}>
+                          <div className="fw-bold text-danger" style={{ fontSize: "1.75rem" }}>{booleanStats.noDays}</div>
+                          <div className="text-muted" style={{ fontSize: "0.875rem", marginTop: "0.25rem" }}>No/Null Days</div>
+                        </div>
+                      </div>
+                      <div className="col-6 col-md-3">
+                        <div className="p-3 rounded" style={{ backgroundColor: "#cff4fc" }}>
+                          <div className="fw-bold text-info" style={{ fontSize: "1.75rem" }}>{booleanStats.percentage}%</div>
+                          <div className="text-muted" style={{ fontSize: "0.875rem", marginTop: "0.25rem" }}>Success Rate</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Selected Chart */}
           <div className="row justify-content-center">
             <div className="col-12">
-              <div className="card">
-                <div className="card-header">
-                  <h3 className="text-center mb-0">{getChartTitle()}</h3>
-                </div>
-                <div className="card-body">
+              <div className="card shadow-sm" style={{ border: "none", borderRadius: "12px" }}>
+                <div className="card-body p-4">
+                  <h5 className="text-center mb-3 fw-semibold">{getChartTitle()}</h5>
                   <ChartRenderer
                     config={chartConfig}
-                    booleanStats={booleanStats}
+                    booleanStats={null}
                   />
                 </div>
               </div>
@@ -293,11 +328,9 @@ function AnalyticsPage() {
       {activeTab === "calendar" && (
         <div className="row justify-content-center">
           <div className="col-12">
-            <div className="card">
-              <div className="card-header">
-                <h3 className="text-center mb-0"> Boolean Calendar View</h3>
-              </div>
-              <div className="card-body">
+            <div className="card shadow-sm" style={{ border: "none", borderRadius: "12px" }}>
+              <div className="card-body p-4">
+                <h5 className="text-center mb-3 fw-semibold">Boolean Calendar View</h5>
                 <Calendar metrics={metrics || []} />
               </div>
             </div>
@@ -313,7 +346,14 @@ function AnalyticsPage() {
 
       {activeTab === "settings" && (
         <div className="row justify-content-center">
-          <SettingsEdit settingsKeys={["enabledPages"]} />
+          <div className="col-12">
+            <div className="card shadow-sm" style={{ border: "none", borderRadius: "12px" }}>
+              <div className="card-body p-4">
+                <h5 className="text-center mb-3 fw-semibold">Settings</h5>
+                <SettingsEdit settingsKeys={["enabledPages"]} />
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

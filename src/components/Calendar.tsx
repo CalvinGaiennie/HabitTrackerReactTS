@@ -20,7 +20,6 @@ function Calendar({
 }: CalendarProps) {
   const [currentYear, setCurrentYear] = useState(year);
   const [currentMonth, setCurrentMonth] = useState(month);
-  const [numberOfMonths, setNumberOfMonths] = useState<number>(1);
   const [allLogs, setAllLogs] = useState<DailyLog[]>([]);
 
   // Navigation functions
@@ -173,12 +172,6 @@ function Calendar({
     fetchLogs();
   }, []);
 
-  useEffect(() => {
-    console.log("allLogs fetched:", allLogs)
-  }, [allLogs])
-  useEffect(() => {
-    console.log("metrics:", metrics);
-  }, [metrics]);
 
   return (
     <div className={`calendar-with-legend ${className}`}>
@@ -203,23 +196,6 @@ function Calendar({
             →
           </button>
         </div>
-        <div className="d-flex flex-row">
-          <h6># Of Months: </h6>{" "}
-          <input
-            value={numberOfMonths}
-            onChange={(e) => setNumberOfMonths(Number(e.target.value))}
-            type="number"
-          />
-        </div>
-        {/* <div className="mt-2">
-          <button
-            className="btn btn-outline-primary btn-sm"
-            onClick={goToToday}
-            title="Go to current month"
-          >
-            Today
-          </button>
-        </div> */}
       </div>
 
       {/* Content container for legend and calendar */}
@@ -246,7 +222,6 @@ function Calendar({
           year={currentYear}
           month={currentMonth}
           metrics={metrics}
-          numberOfMonths={numberOfMonths}
         />
       </div>
     </div>

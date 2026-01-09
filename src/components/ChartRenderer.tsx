@@ -18,7 +18,7 @@ type ChartRendererProps = {
 export default function ChartRenderer({ config, booleanStats }: ChartRendererProps) {
   return (
     <>
-      <div style={{ width: "100%", height: "400px" }}>
+      <div style={{ width: "100%", height: "240px" }}>
         {config.type === "pie" && (
           <PieChartComponent data={config.data} COLORS={config.COLORS} />
         )}

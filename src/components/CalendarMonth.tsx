@@ -10,7 +10,6 @@ interface CalendarMonthProps {
   month?: number; // 0-11 (0 = January, 11 = December)
   metrics?: Metric[];
   className?: string;
-  numberOfMonths: number;
 }
 
 const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -41,10 +40,10 @@ const metricColors = [
   "#4ECDC4",
 ];
 
-function CalendarMonth({ metrics }: CalendarMonthProps) {
+function CalendarMonth({ year = new Date().getFullYear(), month = new Date().getMonth(), metrics }: CalendarMonthProps) {
   const [logs, setLogs] = useState<DailyLog[]>([]);
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth();
+  const currentYear = year;
+  const currentMonth = month;
   // Get the first day of the month and how many days it has
   const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
   const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
@@ -172,8 +171,8 @@ function CalendarMonth({ metrics }: CalendarMonthProps) {
     const fetchLogs = async () => {
       try {
         // Fetch logs for a wider range to include previous and next month days
-        const startDate = new Date(currentYear, currentMonth - 1, 1); // Previous month
-        const endDate = new Date(currentYear, currentMonth + 2, 0); // Next month
+        const startDate = new Date(year, month - 1, 1); // Previous month
+        const endDate = new Date(year, month + 2, 0); // Next month
         const logsData = await getDailyLogs();
 
         // Filter logs for the expanded range
@@ -194,7 +193,7 @@ function CalendarMonth({ metrics }: CalendarMonthProps) {
     };
 
     fetchLogs();
-  }, [currentYear, currentMonth, metrics]);
+  }, [year, month, metrics]);
 
   return (
     <div className="calendar">
