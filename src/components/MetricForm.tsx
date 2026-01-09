@@ -133,6 +133,36 @@ function MetricForm({
           </select>
         </div>
 
+        {editingMetric && (
+          <div className="mb-3">
+            <div className="form-check">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                name="active"
+                id="active-checkbox"
+                checked={formData.active !== false}
+                onChange={(e) => {
+                  // Handle checkbox change
+                  const syntheticEvent = {
+                    target: {
+                      name: "active",
+                      value: e.target.checked ? "true" : "false",
+                    },
+                  } as React.ChangeEvent<HTMLInputElement>;
+                  onChange(syntheticEvent);
+                }}
+              />
+              <label className="form-check-label" htmlFor="active-checkbox">
+                Active (uncheck to disable this metric)
+              </label>
+            </div>
+            <small className="form-text text-muted">
+              Disabled metrics won't appear in analytics or homepage selection
+            </small>
+          </div>
+        )}
+
         <button type="submit" className="btn btn-primary">
           {editingMetric ? "Update Metric" : "Save Metric"}
         </button>

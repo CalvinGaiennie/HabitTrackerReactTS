@@ -35,4 +35,5 @@ export interface MetricCreate {
   unit?: string;
   notes_on: boolean;
   time_type: string;
+  active?: boolean; // optional; defaults to true
 }

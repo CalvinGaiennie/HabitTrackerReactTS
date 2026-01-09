@@ -11,7 +11,7 @@ import SpecificAdd from "../components/SpecificAdd.tsx";
 import SettingsEdit from "../components/SettingsEdit.tsx";
 import PasswordChangeForm from "../components/PasswordChangeForm.tsx";
 import fetchLogs from "../hooks/fetchLogs.ts";
-import fetchMetrics from "../hooks/fetchMetrics.ts";
+import fetchAllMetrics from "../hooks/fetchAllMetrics.ts";
 import { useUserId } from "../hooks/useAuth";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext.tsx";
@@ -58,7 +58,7 @@ function AccountPage() {
   // Fetch logs and metrics on component mount
   useEffect(() => {
     fetchLogs(setLogs, undefined, undefined, undefined, userId);
-    fetchMetrics(setMetrics);
+    fetchAllMetrics(setMetrics);
   }, [userId]);
 
   // Listen for log saved events from SpecificAdd component
@@ -107,6 +107,9 @@ function AccountPage() {
       if (name === "notes_on") {
         return { ...prev, notes_on: value === "true" };
       }
+      if (name === "active") {
+        return { ...prev, active: value === "true" };
+      }
       if (name === "data_type") {
         return { ...prev, data_type: value as MetricCreate["data_type"] };
       }
@@ -141,7 +144,7 @@ function AccountPage() {
         await createMetric(formData);
         showToast("Metric created successfully!", "success");
       }
-      fetchMetrics(setMetrics);
+      fetchAllMetrics(setMetrics);
       setFormData({
         user_id: userId,
         name: "",
@@ -186,6 +189,7 @@ function AccountPage() {
       scale_min: metric.scale_min,
       scale_max: metric.scale_max,
       time_type: metric.time_type,
+      active: metric.active,
     });
     setMetricMode("add"); // Switch to add mode to show the form
   };
@@ -198,9 +202,9 @@ function AccountPage() {
     if (confirmDeleteMetric === null) return;
     try {
       await deleteMetric(confirmDeleteMetric);
-      showToast("Metric deleted successfully!", "success");
-      fetchMetrics(setMetrics);
-      setConfirmDeleteMetric(null);
+        showToast("Metric deleted successfully!", "success");
+        fetchAllMetrics(setMetrics);
+        setConfirmDeleteMetric(null);
     } catch (err) {
       console.error(err);
       showToast("Something went wrong deleting the metric.", "error");
@@ -355,6 +359,34 @@ function AccountPage() {
                       <option value="false">No</option>
                     </select>
                   </div>
+                  {editingMetric && (
+                    <div className="mb-3">
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          name="active"
+                          id="active-checkbox-account"
+                          checked={formData.active !== false}
+                          onChange={(e) => {
+                            const syntheticEvent = {
+                              target: {
+                                name: "active",
+                                value: e.target.checked ? "true" : "false",
+                              },
+                            } as React.ChangeEvent<HTMLInputElement>;
+                            handleChange(syntheticEvent);
+                          }}
+                        />
+                        <label className="form-check-label" htmlFor="active-checkbox-account">
+                          Active (uncheck to disable this metric)
+                        </label>
+                      </div>
+                      <small className="form-text text-muted">
+                        Disabled metrics won't appear in analytics or homepage selection
+                      </small>
+                    </div>
+                  )}
                   <button type="submit" className="btn btn-primary">
                     {editingMetric ? "Update Metric" : "Save Metric"}
                   </button>

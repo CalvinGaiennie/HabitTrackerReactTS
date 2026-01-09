@@ -5,6 +5,10 @@ export async function getActiveMetrics(): Promise<Metric[]> {
   return request<Metric[]>("/metrics/");
 }
 
+export async function getAllMetrics(): Promise<Metric[]> {
+  return request<Metric[]>("/metrics/all");
+}
+
 export async function createMetric(data: MetricCreate): Promise<Metric> {
   return request<Metric>("/metrics/", {
     method: "POST",
