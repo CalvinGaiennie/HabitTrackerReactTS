@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { createWorkout, getDraft, saveDraft } from "../services/workouts";
+import { useNavigate } from "react-router-dom";
+import { createWorkout, updateWorkout, getWorkout, getDraft, saveDraft } from "../services/workouts";
 import { getUserSettings } from "../services/users";
 import type { UserSettings } from "../types/users";
 import type { Exercise, ExerciseSet } from "../types/workouts";
@@ -9,10 +10,13 @@ import { useToast } from "../context/ToastContext";
 
 interface WorkoutFormProps {
   onWorkoutCreated?: () => void;
+  workoutId?: number;
 }
 
-function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
+function WorkoutForm({ onWorkoutCreated, workoutId }: WorkoutFormProps = {}) {
   const { showToast } = useToast();
+  const navigate = useNavigate();
+  const isEditMode = workoutId !== undefined;
   const [title, setTitle] = useState("");
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
@@ -27,6 +31,7 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
     []
   );
   const [isDraftLoaded, setIsDraftLoaded] = useState(false);
+  const [isWorkoutLoaded, setIsWorkoutLoaded] = useState(false);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -37,8 +42,37 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
     fetchUserSettings();
   }, []);
 
-  // Load draft on mount
+  // Load workout data when in edit mode
   useEffect(() => {
+    if (workoutId) {
+      const loadWorkout = async () => {
+        try {
+          setLoading(true);
+          const workout = await getWorkout(workoutId);
+          setTitle(workout.title || "");
+          setSelectedTypes(workout.workout_types || []);
+          setNotes(workout.notes || "");
+          setExercises(workout.exercises || []);
+          setIsWorkoutLoaded(true);
+        } catch (error: unknown) {
+          console.error("Error loading workout:", error);
+          showToast("Failed to load workout", "error");
+          navigate("/Workout");
+        } finally {
+          setLoading(false);
+        }
+      };
+      loadWorkout();
+    }
+  }, [workoutId, navigate, showToast]);
+
+  // Load draft on mount (only when not in edit mode)
+  useEffect(() => {
+    if (isEditMode) {
+      setIsDraftLoaded(true);
+      return;
+    }
+
     const loadDraft = async () => {
       try {
         const draft = await getDraft();
@@ -64,10 +98,13 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
     };
 
     loadDraft();
-  }, []);
+  }, [isEditMode]);
 
-  // Auto-save draft whenever form data changes (with debouncing)
+  // Auto-save draft whenever form data changes (with debouncing) - skip in edit mode
   useEffect(() => {
+    // Don't auto-save drafts when editing
+    if (isEditMode) return;
+
     // Don't save until initial draft is loaded
     if (!isDraftLoaded) return;
 
@@ -107,7 +144,7 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [title, selectedTypes, notes, exercises, isDraftLoaded]);
+  }, [title, selectedTypes, notes, exercises, isDraftLoaded, isEditMode]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -255,28 +292,42 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
     setErrorMessage(null);
 
     try {
-      await createWorkout({
-        title,
-        workout_types: selectedTypes,
-        notes: notes || undefined,
-        exercises: exercises.length > 0 ? exercises : undefined,
-      });
-      setSuccessMessage("Workout created successfully!");
-      setTitle("");
-      setSelectedTypes([]);
-      setNotes("");
-      setExercises([]);
+      if (isEditMode && workoutId) {
+        // Update existing workout
+        await updateWorkout(workoutId, {
+          title,
+          workout_types: selectedTypes,
+          notes: notes || undefined,
+          exercises: exercises.length > 0 ? exercises : undefined,
+        });
+        showToast("Workout updated successfully!", "success");
+        // Navigate back to workout viewer
+        navigate(`/WorkoutViewer/${workoutId}`);
+      } else {
+        // Create new workout
+        await createWorkout({
+          title,
+          workout_types: selectedTypes,
+          notes: notes || undefined,
+          exercises: exercises.length > 0 ? exercises : undefined,
+        });
+        setSuccessMessage("Workout created successfully!");
+        setTitle("");
+        setSelectedTypes([]);
+        setNotes("");
+        setExercises([]);
 
-      // Call the callback if provided
-      if (onWorkoutCreated) {
-        onWorkoutCreated();
+        // Call the callback if provided
+        if (onWorkoutCreated) {
+          onWorkoutCreated();
+        }
       }
     } catch (error: any) {
-      console.error("Error creating workout:", error);
+      console.error(`Error ${isEditMode ? "updating" : "creating"} workout:`, error);
       const friendly =
         (error?.detail && error.detail.message) ||
         error?.message ||
-        "Failed to create workout. Please try again.";
+        `Failed to ${isEditMode ? "update" : "create"} workout. Please try again.`;
       setErrorMessage(
         friendly ||
           "Free plan limit: one workout per day. Try again tomorrow or Upgrade for unlimited."
@@ -286,7 +337,7 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
     }
   };
 
-  if (loading) {
+  if (loading || (isEditMode && !isWorkoutLoaded)) {
     return <div className="text-center">Loading...</div>;
   }
 
@@ -301,7 +352,7 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
         <div className="col-12">
           <div className="card">
             <div className="card-header">
-              <h2 className="text-center mb-0">Create Workout</h2>
+              <h2 className="text-center mb-0">{isEditMode ? "Edit Workout" : "Create Workout"}</h2>
             </div>
             <div className="card-body">
               {successMessage && (
@@ -612,7 +663,9 @@ function WorkoutForm({ onWorkoutCreated }: WorkoutFormProps = {}) {
                       className="btn btn-primary btn-lg"
                       disabled={isSubmitting}
                     >
-                      {isSubmitting ? "Creating..." : "Create Workout"}
+                      {isSubmitting 
+                        ? (isEditMode ? "Updating..." : "Creating...") 
+                        : (isEditMode ? "Update Workout" : "Create Workout")}
                     </button>
                   </div>
                 </form>

@@ -1,20 +1,43 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import WorkoutForm from "../../components/WorkoutForm";
 import WorkoutList from "../../components/WorkoutList";
 import SettingsEdit from "../../components/SettingsEdit";
 import ExercisePage from "./SubPages/ExercisePage";
 
 function WorkoutPage() {
-  const [activeTab, setActiveTab] = useState<"create" | "workout-list" | "exercises" | "settings">("create");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const editId = searchParams.get("edit");
+  const workoutId = editId ? parseInt(editId, 10) : undefined;
+  const isEditMode = workoutId !== undefined && !isNaN(workoutId);
+
+  const [activeTab, setActiveTab] = useState<"create" | "workout-list" | "exercises" | "settings">(
+    isEditMode ? "create" : "create"
+  );
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Set active tab to "create" when edit mode is detected
+  useEffect(() => {
+    if (isEditMode) {
+      setActiveTab("create");
+    }
+  }, [isEditMode]);
 
   const handleWorkoutCreated = () => {
     setRefreshTrigger((prev) => prev + 1);
     setTab("workout-list");
+    // Clear edit param if it exists
+    if (searchParams.has("edit")) {
+      setSearchParams({});
+    }
   };
 
   const setTab = (tab: "create" | "workout-list"| "exercises"| "settings") => {
     setActiveTab(tab);
+    // Clear edit param when switching tabs
+    if (searchParams.has("edit")) {
+      setSearchParams({});
+    }
   };
 
   return (
@@ -30,7 +53,7 @@ function WorkoutPage() {
                 className={`nav-link ${activeTab === "create" ? "active" : ""}`}
                 onClick={() => setTab("create")}
               >
-                Create Workout
+                {isEditMode ? "Edit Workout" : "Create Workout"}
               </button>
             </li>
             <li className="nav-item">
@@ -63,7 +86,10 @@ function WorkoutPage() {
 
       {/* Tab Content */}
       {activeTab === "create" && (
-        <WorkoutForm onWorkoutCreated={handleWorkoutCreated} />
+        <WorkoutForm 
+          onWorkoutCreated={handleWorkoutCreated} 
+          workoutId={workoutId}
+        />
       )}
 
       {activeTab === "workout-list" && <WorkoutList key={refreshTrigger} />}

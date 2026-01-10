@@ -113,12 +113,20 @@ function WorkoutViewer() {
       <div className="card">
         <div className="card-header d-flex justify-content-between align-items-center">
           <h4 className="mb-0">{workout.title}</h4>
-          <button
-            className="btn btn-danger btn-sm"
-            onClick={() => handleDelete(workout.id)}
-          >
-            Delete
-          </button>
+          <div className="d-flex gap-2">
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={() => navigate(`/Workout?edit=${workout.id}`)}
+            >
+              Edit
+            </button>
+            <button
+              className="btn btn-danger btn-sm"
+              onClick={() => handleDelete(workout.id)}
+            >
+              Delete
+            </button>
+          </div>
         </div>
         <div className="card-body">
           <div className="mb-3">
