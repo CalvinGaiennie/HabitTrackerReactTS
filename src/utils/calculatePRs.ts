@@ -1,4 +1,4 @@
-import type { Workout, Exercise, ExerciseSet } from "../types/workouts";
+import type { Workout } from "../types/workouts";
 
 interface PRInfo {
   weight: number;
