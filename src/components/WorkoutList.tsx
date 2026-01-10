@@ -24,7 +24,7 @@ function WorkoutList() {
   }, []);
 
   // Calculate PRs from all workouts
-  const prMap = useMemo(() => calculatePRs(workouts), [workouts]);
+  const { prMap, setPRStatusMap } = useMemo(() => calculatePRs(workouts), [workouts]);
 
   const handleDelete = async (workoutId: number) => {
     setConfirmDeleteWorkout(workoutId);
@@ -112,32 +112,66 @@ function WorkoutList() {
                           <div className="mt-1">
                             <small className="text-muted">Sets:</small>
                             {exercise.sets.map((set, setIndex) => {
-                              const setIsPR = isPR(exercise.name, set.reps, set.weight, prMap);
-                              const setIsNewPR = isNewPR(
+                              const setIsPR = isPR(
                                 exercise.name, 
                                 set.reps, 
                                 set.weight, 
                                 workout.id,
                                 exerciseIndex,
                                 setIndex,
-                                prMap
+                                setPRStatusMap
+                              );
+                              const setIsNewPR = isNewPR(
+                                workout.id,
+                                exerciseIndex,
+                                setIndex,
+                                setPRStatusMap
                               );
                               const tooltipText = setIsPR 
-                                ? getPRTooltipText(exercise.name, set.reps, set.weight, setIsNewPR, prMap)
+                                ? getPRTooltipText(
+                                    exercise.name, 
+                                    set.reps, 
+                                    set.weight, 
+                                    workout.id,
+                                    exerciseIndex,
+                                    setIndex,
+                                    prMap,
+                                    setPRStatusMap
+                                  )
                                 : "";
-                              const badgeText = setIsNewPR ? "PR" : "=";
+                              const setKey = `${workout.id}-${exerciseIndex}-${setIndex}`;
+                              const setStatus = setPRStatusMap.get(setKey);
+                              
+                              // Determine badge text and color
+                              let badgeText = "";
+                              let badgeColorClass = "";
+                              
+                              if (setStatus) {
+                                if (setStatus.isCurrentPR) {
+                                  // Current PR: gold color
+                                  badgeColorClass = "bg-warning text-dark";
+                                  badgeText = setStatus.wasNewPRWhenDone ? "PR" : "=";
+                                } else if (setStatus.wasPRWhenDone) {
+                                  // Previous PR: medium gray color
+                                  badgeColorClass = "bg-secondary bg-opacity-75 text-white";
+                                  badgeText = setStatus.wasNewPRWhenDone ? "PR" : "=";
+                                }
+                              }
+                              
+                              // Only highlight row if it's a CURRENT new PR
+                              const shouldHighlightRow = setStatus?.isCurrentPR && setStatus?.wasNewPRWhenDone;
                               
                               return (
                                 <div 
                                   key={setIndex} 
-                                  className={`ms-2 small ${setIsNewPR ? 'bg-warning bg-opacity-25 rounded px-2 py-1 my-1' : ''}`}
+                                  className={`ms-2 small ${shouldHighlightRow ? 'bg-warning bg-opacity-25 rounded px-2 py-1 my-1' : ''}`}
                                 >
                                   {set.weight && (
                                     <span className="ms-2">
                                       <strong>Weight:</strong> {set.weight}lbs
-                                      {setIsPR && (
+                                      {setIsPR && badgeText && (
                                         <span 
-                                          className="badge bg-warning text-dark ms-2" 
+                                          className={`badge ${badgeColorClass} ms-2`}
                                           style={{ cursor: 'help' }}
                                           onMouseEnter={(e) => {
                                             const rect = e.currentTarget.getBoundingClientRect();
