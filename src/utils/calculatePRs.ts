@@ -216,14 +216,14 @@ export function getPRTooltipText(
 
   let statusText = "";
   if (setStatus.isCurrentPR) {
-    statusText = "this is your current PR";
+    statusText = "Current Personal Record";
   } else if (setStatus.wasNewPRWhenDone) {
     // Was a new PR when done, but is no longer current
-    statusText = "when you did this workout this was a new PR";
+    statusText = "Personal Record (achieved in this workout)";
   } else {
     // Matched an existing PR when done
-    statusText = "when you hit this it matched your PR";
+    statusText = "Matched Personal Record (when performed)";
   }
 
-  return `${exerciseName} ${weight}x${reps}, ${statusText}`;
+  return `${exerciseName} ${weight}x${reps} — ${statusText}`;
 }
