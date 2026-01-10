@@ -1,19 +1,30 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { deleteWorkout } from "../services/workouts";
 import type { Workout } from "../types/workouts";
 import fetchWorkouts from "../hooks/fetchWorkouts"
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "../context/ToastContext";
 import ConfirmDialog from "./ConfirmDialog";
+import { calculatePRs, isPR, isNewPR, getPRTooltipText } from "../utils/calculatePRs";
 
 function WorkoutList() {
   const { showToast } = useToast();
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [confirmDeleteWorkout, setConfirmDeleteWorkout] = useState<number | null>(null);
+  const [tooltipState, setTooltipState] = useState<{ visible: boolean; x: number; y: number; text: string }>({
+    visible: false,
+    x: 0,
+    y: 0,
+    text: ""
+  });
   const navigate = useNavigate();
+  
   useEffect(() => {
     fetchWorkouts(setWorkouts);
   }, []);
+
+  // Calculate PRs from all workouts
+  const prMap = useMemo(() => calculatePRs(workouts), [workouts]);
 
   const handleDelete = async (workoutId: number) => {
     setConfirmDeleteWorkout(workoutId);
@@ -59,7 +70,10 @@ function WorkoutList() {
                 <h5 className="mb-0">{workout.title}</h5>
                 <button
                   className="btn btn-danger btn-sm"
-                  onClick={() => handleDelete(workout.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(workout.id);
+                  }}
                 >
                   Delete
                 </button>
@@ -97,26 +111,67 @@ function WorkoutList() {
                         {exercise.sets && exercise.sets.length > 0 && (
                           <div className="mt-1">
                             <small className="text-muted">Sets:</small>
-                            {exercise.sets.map((set, setIndex) => (
-                              <div key={setIndex} className="ms-2 small">
-                                {set.weight && (
-                                  <span className="ms-2">
-                                    <strong>Weight:</strong> {set.weight}lbs{"  "}
-                                  </span>
-                                )}
-                                {set.reps && <span><strong>Reps: </strong> {set.reps}</span>}
-                                {set.rest_duration && (
-                                  <span className="ms-2">
-                                    <strong>Rest: </strong> {set.rest_duration}s
-                                  </span>
-                                )}
-                                {set.notes && (
-                                  <span className="ms-2">
-                                    Notes: {set.notes}
-                                  </span>
-                                )}
-                              </div>
-                            ))}
+                            {exercise.sets.map((set, setIndex) => {
+                              const setIsPR = isPR(exercise.name, set.reps, set.weight, prMap);
+                              const setIsNewPR = isNewPR(
+                                exercise.name, 
+                                set.reps, 
+                                set.weight, 
+                                workout.id,
+                                exerciseIndex,
+                                setIndex,
+                                prMap
+                              );
+                              const tooltipText = setIsPR 
+                                ? getPRTooltipText(exercise.name, set.reps, set.weight, setIsNewPR, prMap)
+                                : "";
+                              const badgeText = setIsNewPR ? "PR" : "=";
+                              
+                              return (
+                                <div 
+                                  key={setIndex} 
+                                  className={`ms-2 small ${setIsNewPR ? 'bg-warning bg-opacity-25 rounded px-2 py-1 my-1' : ''}`}
+                                >
+                                  {set.weight && (
+                                    <span className="ms-2">
+                                      <strong>Weight:</strong> {set.weight}lbs
+                                      {setIsPR && (
+                                        <span 
+                                          className="badge bg-warning text-dark ms-2" 
+                                          style={{ cursor: 'help' }}
+                                          onMouseEnter={(e) => {
+                                            const rect = e.currentTarget.getBoundingClientRect();
+                                            setTooltipState({
+                                              visible: true,
+                                              x: rect.left + rect.width / 2,
+                                              y: rect.top - 8,
+                                              text: tooltipText
+                                            });
+                                          }}
+                                          onMouseLeave={() => {
+                                            setTooltipState({ visible: false, x: 0, y: 0, text: "" });
+                                          }}
+                                        >
+                                          {badgeText}
+                                        </span>
+                                      )}
+                                      {"  "}
+                                    </span>
+                                  )}
+                                  {set.reps && <span><strong>Reps: </strong> {set.reps}</span>}
+                                  {set.rest_duration && (
+                                    <span className="ms-2">
+                                      <strong>Rest: </strong> {set.rest_duration}s
+                                    </span>
+                                  )}
+                                  {set.notes && (
+                                    <span className="ms-2">
+                                      Notes: {set.notes}
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         )}
                         {exercise.notes && (
@@ -143,6 +198,27 @@ function WorkoutList() {
         onConfirm={confirmDeleteWorkoutAction}
         onCancel={() => setConfirmDeleteWorkout(null)}
       />
+      {tooltipState.visible && (
+        <div
+          style={{
+            position: 'fixed',
+            left: `${tooltipState.x}px`,
+            top: `${tooltipState.y}px`,
+            transform: 'translate(-50%, -100%)',
+            backgroundColor: '#212529',
+            color: 'white',
+            padding: '0.5rem 0.75rem',
+            borderRadius: '0.375rem',
+            fontSize: '0.875rem',
+            zIndex: 10000,
+            pointerEvents: 'none',
+            whiteSpace: 'nowrap',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          }}
+        >
+          {tooltipState.text}
+        </div>
+      )}
     </div>
   );
 }

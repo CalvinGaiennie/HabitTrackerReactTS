@@ -422,7 +422,12 @@ function AccountPage() {
                     <div key={metric.id} className="col-md-6 col-lg-4 mb-3">
                       <div className="card">
                         <div className="card-body">
-                          <h5 className="card-title">{metric.name}</h5>
+                          <h5 className="card-title d-flex align-items-center gap-2">
+                            {metric.name}
+                            {!metric.active && (
+                              <span className="badge bg-secondary">Disabled</span>
+                            )}
+                          </h5>
                           <p className="card-text">{metric.description}</p>
                           <p className="card-text">
                             <small className="text-muted">
@@ -460,7 +465,12 @@ function AccountPage() {
                     <div key={metric.id} className="col-md-6 col-lg-4 mb-3">
                       <div className="card">
                         <div className="card-body">
-                          <h5 className="card-title">{metric.name}</h5>
+                          <h5 className="card-title d-flex align-items-center gap-2">
+                            {metric.name}
+                            {!metric.active && (
+                              <span className="badge bg-secondary">Disabled</span>
+                            )}
+                          </h5>
                           <p className="card-text">{metric.description}</p>
                           <p className="card-text">
                             <small className="text-muted">
